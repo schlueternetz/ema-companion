@@ -1,6 +1,6 @@
-# better-ema
+# ema-companion
 
-An Android app for better EMA (Ecological Momentary Assessment).
+An Android app to provide missing features of the [APsystems EMA app](https://play.google.com/store/apps/details?id=com.apsemaappforandroid) for solar arrays.
 
 ## Overview
 

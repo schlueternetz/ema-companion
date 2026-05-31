@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working in this repository.
 
 ## Project
 
-Android app for better EMA (Ecological Momentary Assessment).
+Android app for for missing features of the [APsystems EMA app](https://play.google.com/store/apps/details?id=com.apsemaappforandroid) for solar arrays.
 
 ## Stack
 
