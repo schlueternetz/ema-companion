@@ -22,8 +22,6 @@ C4Context
     Rel(owner, companion, "Uses")
     Rel(emaApp, emaApi, "Retrieves data")
     Rel(companion, emaApi, "Retrieves data")
-
-    UpdateLayoutConfig($c4ShapeInRow, "2", $c4BoundaryInRow, "1")
 ```
 
 This project is currently in early development.
