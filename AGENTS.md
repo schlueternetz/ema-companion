@@ -3,8 +3,7 @@
 This file provides guidance to AI coding agents when working in this repository.
 
 ## Project
-
-Android app for missing features of the [APsystems EMA app](https://play.google.com/store/apps/details?id=com.apsemaappforandroid) for solar arrays.
+Load @README.md for general project information.
 
 ## Stack
 

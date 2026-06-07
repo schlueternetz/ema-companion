@@ -1,0 +1,7 @@
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: /code/ema-companion
+    schedule:
+      interval: weekly
+      day: monday

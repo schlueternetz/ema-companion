@@ -1,4 +1,4 @@
-# ema-companion
+# EMA App Companion
 
 An Android app to provide missing features of the [APsystems EMA app](https://play.google.com/store/apps/details?id=com.apsemaappforandroid) for solar arrays.
 
@@ -17,11 +17,13 @@ C4Context
     }
 
     System_Ext(emaApi, "EMA API")
+    System_Ext(solarArray, "Solar Array")
 
     Rel(owner, emaApp, "Uses")
     Rel(owner, companion, "Uses")
     Rel(emaApp, emaApi, "Retrieves data")
     Rel(companion, emaApi, "Retrieves data")
+    Rel(emaApi, solarArray, "Retrieves data")
 ```
 
 This project is currently in early development.
@@ -32,4 +34,5 @@ _Setup instructions will be added as the project takes shape._
 
 ## Development
 This project uses [OpenSpec](https://openspec.dev/) for functional development.
+
 All application code is stored in `code/` and generated using Claude Code.
