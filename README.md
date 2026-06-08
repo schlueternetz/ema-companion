@@ -28,7 +28,7 @@ C4Context
 
 ## Getting Started
 
-See [docs/getting-started.md](docs/getting-started.md) for setup, build, and run instructions.
+See the [User Guide](docs/user-guide/user-guide.md) for an overview of the app, or [docs/getting-started.md](docs/getting-started.md) for setup, build, and run instructions.
 
 ## Development
 This project uses [OpenSpec](https://openspec.dev/) for functional development.

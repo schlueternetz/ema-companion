@@ -34,6 +34,9 @@ Architecture decisions are documented in [`docs/adr/`](docs/adr/). Read the rele
 - Accessibility target: WCAG 2.1 AA; all interactive elements need content descriptions, 48dp touch targets minimum
 - UI tasks are only complete when lint passes and Robolectric tests include ATF (`AccessibilityValidator`) checks
 
+**User guide**:
+- After completing any UI (frontend) change — layouts, activities, fragments, menus, or navigation — invoke the `write-user-guide` skill to update `docs/user-guide/user-guide.md`
+
 ## Build & Run
 
 ```bash
