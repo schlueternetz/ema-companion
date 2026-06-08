@@ -34,8 +34,22 @@ Architecture decisions are documented in [`docs/adr/`](docs/adr/). Read the rele
 - Accessibility target: WCAG 2.1 AA; all interactive elements need content descriptions, 48dp touch targets minimum
 - UI tasks are only complete when lint passes and Robolectric tests include ATF (`AccessibilityValidator`) checks
 
+**Package and code organization** (ADR-004):
+- Feature-first: all code lives in `feature/<name>/` (e.g. `feature/home/`, `feature/settings/`)
+- Only `MainActivity` stays at the root package
+- Shared code goes in `core/` only when used by ≥2 features
+- Test packages mirror source packages (`feature/home/HomeFragmentTest` alongside `HomeFragment`)
+
+**ADRs**:
+- When writing a new ADR or significantly updating an existing one, invoke the `write-adr` skill — it writes the file and updates all cross-references (`getting-started.md` ADR table, `AGENTS.md` Key Conventions)
+
 **User guide**:
 - After completing any UI (frontend) change — layouts, activities, fragments, menus, or navigation — invoke the `write-user-guide` skill to update `docs/user-guide/user-guide.md`
+
+**Hooks** (`.claude/settings.json` — fire automatically, but know they exist):
+- **UX file written** (`PostToolUse` on Edit/Write): fires when layout, Activity, Fragment, strings, menu, or navigation files change — injects a reminder to invoke `write-user-guide`
+- **SKILL.md written** (`PostToolUse` on Edit/Write): fires when `.claude/skills/*/SKILL.md` is written — injects a reminder to invoke `skill-check`
+- **`git commit` staged** (`PreToolUse` on Bash): scans staged diff for secrets (API keys, tokens, private keys) and blocks the commit if found
 
 ## Build & Run
 

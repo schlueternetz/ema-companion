@@ -2,6 +2,25 @@
 This file is for the AI to keep track of lessons learned and avoid making the same mistakes again.
 It is never authored by a human.
 
+## 2026-06-08: main-navigation-and-settings implementation
+
+### What Went Well
+* Implementing string resources and icons before fragment/activity code prevented circular dependency failures — layouts reference strings/drawables at compile time
+* Using an injectable `SharedPreferences` constructor (`SettingsRepository(prefs)`) alongside a `create(context)` factory made unit tests trivial without mocking frameworks — plain `SharedPreferences` in tests, encrypted in production
+* Adding `debugImplementation(fragment-testing)` (not `testImplementation`) is the correct way to make `launchFragmentInContainer` available to Robolectric — it puts `EmptyFragmentActivity` in the debug merged manifest that Robolectric reads
+* AI-TDD order: write resource files first (strings, icons, nav graph, menus) without tests, then write failing tests for behavior classes — avoids the problem of tests failing to compile because referenced resources don't exist yet
+
+### What Didn't Work (Obstacles & Roadblocks)
+* `EncryptedSharedPreferences.create()` throws `KeyStoreException → NoSuchAlgorithmException` in Robolectric because the Android Keystore provider is not emulated — any fragment that calls `SettingsRepository.create(context)` in `onViewCreated` will crash all its Robolectric tests
+* `launchFragmentInContainer<F>(Bundle(), R.style.X)` produces a confusing "type mismatch: actual Int but Int expected" compile error when `F` is unresolved — the real error is the unresolved fragment class, not the argument types
+* The ktlint Gradle plugin 12.x with AGP 9.2.x only discovers `.kts` scripts, not app `.kt` source files — `./gradlew ktlintCheck` passes vacuously for Kotlin source
+
+### ⚠️ Mistakes to Avoid Next Time
+* **Never call `EncryptedSharedPreferences.create()` directly inside a Fragment lifecycle method** without a Keystore fallback — Robolectric cannot run any test on that fragment. Always wrap the factory with a try-catch that falls back to plain `SharedPreferences`, or use constructor injection so tests bypass the encrypted path entirely
+* When `launchFragmentInContainer<MyFragment>(...)` gives confusing type mismatch errors, check that `MyFragment` is resolvable first — the cascade of type errors is caused by the unresolved generic type, not the argument types
+* When adding `fragment-testing` for Robolectric use: use `debugImplementation`, not `testImplementation` — only the debug manifest is merged into what Robolectric uses
+* Use named parameters (`themeResId = R.style.X`) in `launchFragmentInContainer` calls to avoid nullable-vs-non-nullable `Bundle?` ambiguity
+
 ## 2026-06-08: ATF accessibility testing setup
 
 ### What Went Well

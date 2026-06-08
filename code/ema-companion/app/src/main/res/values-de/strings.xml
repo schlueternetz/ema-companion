@@ -1,3 +1,10 @@
 <resources>
     <string name="placeholder_hello">Hallo Welt!</string>
+    <string name="nav_home">Startseite</string>
+    <string name="nav_settings">Einstellungen</string>
+    <string name="settings_language_label">Sprache</string>
+    <string name="language_option_system">System</string>
+    <string name="language_option_english">Englisch</string>
+    <string name="language_option_german">Deutsch</string>
+    <string name="settings_language_dialog_title">Sprache auswählen</string>
 </resources>

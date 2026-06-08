@@ -31,9 +31,7 @@ All feature implementation follows the AI-TDD workflow — an AI-assisted varian
 
 This is the required workflow for all implementation tasks, including those driven by `/opsx:apply`.
 
-Test types:
-- **Unit tests** (`src/test/`): pure logic, no Android framework — JUnit 4
-- **Instrumented tests** (`src/androidTest/`): UI and Android-specific behavior — Espresso + JUnit 4
+For the full test layer strategy (unit, Robolectric, integration, Maestro) and guidance on which layer to use for each task, see [ADR-002](002-testing-strategy.md).
 
 ## Consequences
 
@@ -41,3 +39,4 @@ Test types:
 - Linting failures block merges, keeping the codebase consistently formatted
 - Dependabot PRs require review but reduce the cost of staying up to date
 - The AI-TDD workflow adds a test-writing step per task but produces a test suite as a natural byproduct of implementation
+- The test layer for each task is chosen per ADR-002; Espresso is not used

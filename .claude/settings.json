@@ -7,9 +7,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"const c=[];process.stdin.on('data',d=>c.push(d));process.stdin.on('end',()=>{try{const data=JSON.parse(Buffer.concat(c).toString());const raw=((data.tool_input||{}).file_path||'');let fp='';for(let i=0;i<raw.length;i++){const ch=raw.charCodeAt(i);fp+=ch===92?'/':raw[i];}const ux=['res/layout/','Activity.kt','Fragment.kt','values/strings.xml','res/menu/','res/navigation/'];if(ux.some(p=>fp.includes(p))){process.stdout.write(JSON.stringify({message:'UX file changed. Invoke the write-user-guide skill to update docs/user-guide/user-guide.md.'}));}process.exit(0);}catch(e){process.exit(0);}});\"",
+            "command": "node -e \"const c=[];process.stdin.on('data',d=>c.push(d));process.stdin.on('end',()=>{try{const data=JSON.parse(Buffer.concat(c).toString());const raw=((data.tool_input||{}).file_path||'');let fp='';for(let i=0;i<raw.length;i++){const ch=raw.charCodeAt(i);fp+=ch===92?'/':raw[i];}const ux=['res/layout/','Activity.kt','Fragment.kt','values/strings.xml','res/menu/','res/navigation/'];if(ux.some(p=>fp.includes(p))){process.stdout.write(JSON.stringify({systemMessage:'UX file changed - invoke write-user-guide.',hookSpecificOutput:{hookEventName:'PostToolUse',additionalContext:'A UX file was just changed. Invoke the write-user-guide skill now to update docs/user-guide/user-guide.md before finishing.'}}));}process.exit(0);}catch(e){process.exit(0);}});\"",
             "shell": "bash",
             "statusMessage": "Checking for UX changes..."
+          },
+          {
+            "type": "command",
+            "command": "node -e \"const c=[];process.stdin.on('data',d=>c.push(d));process.stdin.on('end',()=>{try{const data=JSON.parse(Buffer.concat(c).toString());const raw=((data.tool_input||{}).file_path||'');let fp='';for(let i=0;i<raw.length;i++){fp+=raw.charCodeAt(i)===92?'/':raw[i];}if(fp.includes('.claude/skills/')&&fp.endsWith('/SKILL.md')){process.stdout.write(JSON.stringify({systemMessage:'SKILL.md written - run skill-check to validate.',hookSpecificOutput:{hookEventName:'PostToolUse',additionalContext:'A SKILL.md file was just written. Invoke the skill-check skill now to validate it against Anthropic guidelines before finishing.'}}));}process.exit(0);}catch(e){process.exit(0);}});\"",
+            "shell": "bash",
+            "statusMessage": "Checking skill..."
           }
         ]
       }
