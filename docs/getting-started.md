@@ -19,7 +19,7 @@ Start your emulator, then install and launch:
 ```bash
 cd code/ema-companion
 ./gradlew installDebug
-adb shell am start -n com.schlueternetz.emacompanion/.MainActivity
+adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1
 ```
 
 ## Architecture Decision Records

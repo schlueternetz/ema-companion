@@ -41,7 +41,7 @@ allowed-tools: PowerShell Read
 4. **Launch the app:**
    ```powershell
    $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
-   & $adb shell am start -n "com.schlueternetz.emacompanion/.MainActivity"
+   & $adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1
    ```
 
 ## Task: Rebuild and redeploy (emulator already running)
@@ -57,7 +57,7 @@ Use this when the user asks to update, rebuild, or redeploy after a code change.
 2. **Re-launch the app:**
    ```powershell
    $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
-   & $adb shell am start -n "com.schlueternetz.emacompanion/.MainActivity"
+   & $adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1
    ```
 
 ## Gotchas
