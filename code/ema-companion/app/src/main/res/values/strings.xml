@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">EMA Companion</string>
+    <string name="app_name" translatable="false">EMA Companion</string>
+    <string name="placeholder_hello">Hello World!</string>
 </resources>
