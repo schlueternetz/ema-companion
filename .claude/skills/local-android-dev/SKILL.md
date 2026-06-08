@@ -4,13 +4,15 @@ description: Runs the EMA Companion Android app on the local emulator in debug m
 allowed-tools: PowerShell Read
 ---
 
+> **Scope**: manual testing and app verification only. For automated test execution (unit, Robolectric, instrumented), use `/ai-tdd`.
+
 ## Environment
 
 - **SDK root:** `%LOCALAPPDATA%\Android\Sdk`
 - **Emulator:** `%LOCALAPPDATA%\Android\Sdk\emulator\emulator.exe`
 - **ADB:** `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe`
 - **AVD:** `Lenovo_Tab_11_Plus` (android-33, 1200×2000 portrait, 213 DPI — matches Lenovo Tab 11 Plus)
-- **Project root:** `d:\projects\ema-companion\code\ema-companion`
+- **Project root:** `code\ema-companion`
 - **APK output:** `app\build\outputs\apk\debug\app-debug.apk`
 - **App ID:** `com.schlueternetz.emacompanion`
 - **Main activity:** `.MainActivity`
@@ -32,7 +34,7 @@ allowed-tools: PowerShell Read
 
 3. **Build and install the debug APK:**
    ```powershell
-   Set-Location "d:\projects\ema-companion\code\ema-companion"
+   Set-Location "code\ema-companion"
    .\gradlew.bat installDebug
    ```
 
@@ -48,7 +50,7 @@ Use this when the user asks to update, rebuild, or redeploy after a code change.
 
 1. **Build and reinstall** (handles both build and install in one step):
    ```powershell
-   Set-Location "d:\projects\ema-companion\code\ema-companion"
+   Set-Location "code\ema-companion"
    .\gradlew.bat installDebug
    ```
 
