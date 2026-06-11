@@ -122,8 +122,8 @@ class SettingsRepositoryTest {
 
     // Historic Data Days
     @Test
-    fun getHistoricDataDays_returnsSentinel_whenNothingStored() {
-        assertEquals(-1, repo.getHistoricDataDays())
+    fun getHistoricDataDays_returnsDefault_whenNothingStored() {
+        assertEquals(SettingsRepository.HISTORIC_DATA_DAYS_DEFAULT, repo.getHistoricDataDays())
     }
 
     @Test
@@ -226,19 +226,9 @@ class SettingsRepositoryTest {
         assertEquals(false, repo.isConfigured())
     }
 
-    @Test
-    fun isConfigured_returnsFalse_whenHistoricDaysIsSentinel() {
-        repo.setEmaAppId("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-        repo.setEmaAppSecret("bbbbbbbbbbbb")
-        repo.setEmaSystemId("CCCCCCCCCCCCCCCC")
-        repo.setEmaEcuId("123456789012")
-        repo.setSystemCapacity(4.5f)
-        assertEquals(false, repo.isConfigured())
-    }
-
     // exportToJson
     @Test
-    fun exportToJson_containsAllTenKeys() {
+    fun exportToJson_containsAllElevenKeys() {
         repo.setLanguage("en")
         repo.setEmaAppId("abc")
         repo.setEmaAppSecret("secret")
@@ -246,6 +236,7 @@ class SettingsRepositoryTest {
         repo.setEmaEcuId("123456789012")
         repo.setSystemCapacity(4.5f)
         repo.setHistoricDataDays(30)
+        repo.setApiRequestLimit(1000)
         repo.setNotificationsEnabled(false)
         repo.setBaseUrl("http://test.com")
         repo.setDisplayMode("dark")
@@ -260,6 +251,7 @@ class SettingsRepositoryTest {
         assertTrue(obj.has("emaEcuId"))
         assertTrue(obj.has("systemCapacity"))
         assertTrue(obj.has("historicDataDays"))
+        assertTrue(obj.has("apiRequestLimit"))
         assertTrue(obj.has("notificationsEnabled"))
         assertTrue(obj.has("baseUrl"))
         assertTrue(obj.has("displayMode"))
@@ -305,10 +297,10 @@ class SettingsRepositoryTest {
     }
 
     @Test
-    fun importFromJson_importsAllTenFields() {
+    fun importFromJson_importsAllElevenFields() {
         repo.importFromJson(
             """{"language":"de","emaAppId":"a","emaAppSecret":"b","emaSystemId":"c",
-            "emaEcuId":"d","systemCapacity":5.5,"historicDataDays":45,
+            "emaEcuId":"d","systemCapacity":5.5,"historicDataDays":45,"apiRequestLimit":800,
             "notificationsEnabled":false,"baseUrl":"http://x.com","displayMode":"light"}""",
         )
         assertEquals("de", repo.getLanguage())
@@ -318,9 +310,47 @@ class SettingsRepositoryTest {
         assertEquals("d", repo.getEmaEcuId())
         assertEquals(5.5f, repo.getSystemCapacity(), 0.01f)
         assertEquals(45, repo.getHistoricDataDays())
+        assertEquals(800, repo.getApiRequestLimit())
         assertEquals(false, repo.getNotificationsEnabled())
         assertEquals("http://x.com", repo.getBaseUrl())
         assertEquals("light", repo.getDisplayMode())
+    }
+
+    // API Request Limit
+    @Test
+    fun getApiRequestLimit_returnsDefault_whenNotSet() {
+        assertEquals(SettingsRepository.API_REQUEST_LIMIT_DEFAULT, repo.getApiRequestLimit())
+    }
+
+    @Test
+    fun setApiRequestLimit_persists() {
+        repo.setApiRequestLimit(1000)
+        assertEquals(1000, repo.getApiRequestLimit())
+    }
+
+    @Test
+    fun isConfigured_returnsTrue_whenApiRequestLimitNotExplicitlySet() {
+        repo.setEmaAppId("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        repo.setEmaAppSecret("bbbbbbbbbbbb")
+        repo.setEmaSystemId("CCCCCCCCCCCCCCCC")
+        repo.setEmaEcuId("123456789012")
+        repo.setSystemCapacity(4.5f)
+        repo.setHistoricDataDays(30)
+        assertEquals(true, repo.isConfigured())
+    }
+
+    @Test
+    fun exportToJson_includesApiRequestLimit() {
+        repo.setApiRequestLimit(500)
+        val obj = JSONObject(repo.exportToJson())
+        assertTrue(obj.has("apiRequestLimit"))
+        assertEquals(500, obj.getInt("apiRequestLimit"))
+    }
+
+    @Test
+    fun importFromJson_setsApiRequestLimit() {
+        repo.importFromJson("""{"apiRequestLimit":750}""")
+        assertEquals(750, repo.getApiRequestLimit())
     }
 
     // clearAll
@@ -345,7 +375,7 @@ class SettingsRepositoryTest {
         assertEquals("", repo.getEmaSystemId())
         assertEquals("", repo.getEmaEcuId())
         assertEquals(-1f, repo.getSystemCapacity(), 0.001f)
-        assertEquals(-1, repo.getHistoricDataDays())
+        assertEquals(SettingsRepository.HISTORIC_DATA_DAYS_DEFAULT, repo.getHistoricDataDays())
         assertEquals(true, repo.getNotificationsEnabled())
         assertEquals(SettingsRepository.BASE_URL_DEFAULT, repo.getBaseUrl())
         assertEquals(SettingsRepository.DISPLAY_MODE_DEFAULT, repo.getDisplayMode())

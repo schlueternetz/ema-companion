@@ -27,11 +27,21 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
 
+        val configured = repository.isConfigured()
+        if (!configured) {
+            // Make Settings the start destination so the back stack is just [settings].
+            // Pushing settings on top of the home start destination instead leaves an
+            // orphaned [home, settings] stack that breaks bottom-nav navigation back to
+            // Home once the app is configured.
+            val graph = navController.navInflater.inflate(R.navigation.nav_graph)
+            graph.setStartDestination(R.id.settingsFragment)
+            navController.graph = graph
+        }
+
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_nav)
         bottomNav.setupWithNavController(navController)
 
-        if (!repository.isConfigured()) {
-            navController.navigate(R.id.settingsFragment)
+        if (!configured) {
             disableNonSettingsNavItems(bottomNav, navController)
         }
     }

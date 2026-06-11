@@ -1,7 +1,7 @@
 ## Requirements
 
 ### Requirement: System Capacity is configurable
-The app SHALL provide an editable field for the solar array's System Capacity in kW. The field SHALL accept a positive decimal number with at most 2 decimal places and a maximum value of 999.99. The field SHALL present a decimal keyboard and display a " kW" suffix. The field SHALL be grouped under the "Solar Array Settings" section.
+The app SHALL provide an editable field for the solar array's System Capacity in kW. The field SHALL accept a positive decimal number with at most 2 decimal places and a maximum value of 2,000. The field SHALL present a decimal keyboard and display a " kW" suffix. The field SHALL be grouped under the "Solar Array Settings" section.
 
 #### Scenario: Valid capacity is accepted and saved
 - **WHEN** the user enters a decimal number with up to 2 decimal places (e.g. "4.56") and taps Save

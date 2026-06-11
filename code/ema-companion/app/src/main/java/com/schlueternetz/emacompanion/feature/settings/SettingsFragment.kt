@@ -16,6 +16,7 @@ import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import com.schlueternetz.emacompanion.R
 import org.json.JSONException
@@ -34,7 +35,12 @@ class SettingsFragment : Fragment() {
     private lateinit var settingEmaEcuId: SettingRowView
     private lateinit var settingSystemCapacity: SettingRowView
     private lateinit var settingHistoricDays: SettingRowView
+    private lateinit var settingApiRequestLimit: SettingRowView
+    private lateinit var apiRequestProgressBar: LinearProgressIndicator
+    private lateinit var apiRequestProgressLabel: TextView
     private lateinit var settingBaseUrl: SettingRowView
+
+    private var activeEditRow: SettingRowView? = null
 
     private var pendingExportJson: String? = null
 
@@ -66,6 +72,9 @@ class SettingsFragment : Fragment() {
         settingEmaEcuId = view.findViewById(R.id.setting_ema_ecu_id)
         settingSystemCapacity = view.findViewById(R.id.setting_system_capacity)
         settingHistoricDays = view.findViewById(R.id.setting_historic_days)
+        settingApiRequestLimit = view.findViewById(R.id.setting_api_request_limit)
+        apiRequestProgressBar = view.findViewById(R.id.api_request_progress_bar)
+        apiRequestProgressLabel = view.findViewById(R.id.api_request_progress_label)
         settingBaseUrl = view.findViewById(R.id.setting_base_url)
         languageValueView = view.findViewById(R.id.settings_language_value)
         displayModeValueView = view.findViewById(R.id.settings_display_mode_value)
@@ -80,8 +89,10 @@ class SettingsFragment : Fragment() {
         wireDisplayMode(view)
         wireNotifications()
         wireHistoricDays()
+        wireApiRequestLimit(view)
         wireBaseUrl(view)
         wireImportExportReset(view)
+        wireExclusiveEditMode()
     }
 
     private fun wireEmaAppId() {
@@ -139,40 +150,95 @@ class SettingsFragment : Fragment() {
     }
 
     private fun wireSystemCapacity() {
-        val suffix = getString(R.string.settings_system_capacity_suffix)
         settingSystemCapacity.label = getString(R.string.settings_system_capacity_label)
         settingSystemCapacity.isRequired = true
-        settingSystemCapacity.suffix = suffix
+        settingSystemCapacity.suffix = getString(R.string.settings_system_capacity_suffix)
         val cap = repository.getSystemCapacity()
-        settingSystemCapacity.value = if (cap == -1f) "" else "$cap$suffix"
+        settingSystemCapacity.value = if (cap == -1f) "" else "$cap"
         settingSystemCapacity.keyboardType =
             InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
         settingSystemCapacity.errorMessage = getString(R.string.settings_system_capacity_error)
         settingSystemCapacity.validator = { input ->
             val f = input.toFloatOrNull()
-            f != null && f > 0 && f <= 999.99f && input.matches(Regex("\\d+(\\.\\d{1,2})?"))
+            f != null && f > 0 && f <= SettingsRepository.SYSTEM_CAPACITY_MAX_KW && input.matches(Regex("\\d+(\\.\\d{1,2})?"))
         }
         settingSystemCapacity.onSave = { v ->
             repository.setSystemCapacity(v.toFloat())
-            settingSystemCapacity.value = "${repository.getSystemCapacity()}$suffix"
+            settingSystemCapacity.value = "${repository.getSystemCapacity()}"
             checkConfigurationAndUpdateNav()
         }
     }
 
     private fun wireHistoricDays() {
-        val suffix = getString(R.string.settings_historic_days_suffix)
         settingHistoricDays.label = getString(R.string.settings_historic_days_label)
-        settingHistoricDays.isRequired = true
-        val days = repository.getHistoricDataDays()
-        settingHistoricDays.value = if (days == -1) "" else "$days$suffix"
+        settingHistoricDays.suffix = getString(R.string.settings_historic_days_suffix)
+        settingHistoricDays.value = "${repository.getHistoricDataDays()}"
         settingHistoricDays.keyboardType = InputType.TYPE_CLASS_NUMBER
         settingHistoricDays.errorMessage = getString(R.string.settings_historic_days_error)
         settingHistoricDays.validator = { input -> input.toIntOrNull()?.let { it in 1..90 } ?: false }
         settingHistoricDays.onSave = { v ->
             repository.setHistoricDataDays(v.toInt())
-            val stored = repository.getHistoricDataDays()
-            settingHistoricDays.value = "$stored$suffix"
+            settingHistoricDays.value = "${repository.getHistoricDataDays()}"
+        }
+    }
+
+    private fun wireApiRequestLimit(view: View) {
+        settingApiRequestLimit.label = getString(R.string.settings_api_request_limit_label)
+        settingApiRequestLimit.suffix = getString(R.string.settings_api_request_limit_suffix)
+        settingApiRequestLimit.keyboardType = android.text.InputType.TYPE_CLASS_NUMBER
+        settingApiRequestLimit.errorMessage = getString(R.string.settings_api_request_limit_error)
+        settingApiRequestLimit.validator = { input ->
+            input.toIntOrNull()?.let { it > 0 && it <= SettingsRepository.API_REQUEST_LIMIT_MAX_PER_MONTH } ?: false
+        }
+        settingApiRequestLimit.value = "${repository.getApiRequestLimit()}"
+        updateApiRequestProgress()
+        settingApiRequestLimit.onSave = { v ->
+            repository.setApiRequestLimit(v.toInt())
+            settingApiRequestLimit.value = "${repository.getApiRequestLimit()}"
+            updateApiRequestProgress()
             checkConfigurationAndUpdateNav()
+        }
+        val apiResetBtn = view.findViewById<View>(R.id.setting_api_request_limit_reset)
+        apiResetBtn.setOnClickListener {
+            repository.setApiRequestLimit(SettingsRepository.API_REQUEST_LIMIT_DEFAULT)
+            settingApiRequestLimit.value = "${repository.getApiRequestLimit()}"
+            updateApiRequestProgress()
+        }
+        settingApiRequestLimit.onEditStateChanged = { editing ->
+            apiResetBtn.isEnabled = !editing
+            apiResetBtn.alpha = if (editing) 0.38f else 1f
+        }
+    }
+
+    private fun updateApiRequestProgress() {
+        val hardcodedConsumedRequests = 800
+        val limit = repository.getApiRequestLimit()
+        val progress = if (limit <= 0) 0f else (hardcodedConsumedRequests.toFloat() / limit.toFloat()).coerceIn(0f, 1f)
+        apiRequestProgressBar.progress = (progress * 100).toInt()
+        apiRequestProgressLabel.text = getString(
+            R.string.settings_api_request_progress_label,
+            hardcodedConsumedRequests,
+            limit,
+        )
+    }
+
+    private fun wireExclusiveEditMode() {
+        val allRows = listOf(
+            settingEmaAppId, settingEmaAppSecret, settingEmaSystemId, settingEmaEcuId,
+            settingSystemCapacity, settingHistoricDays, settingApiRequestLimit, settingBaseUrl,
+        )
+        allRows.forEach { row ->
+            val existing = row.onEditStateChanged
+            row.onEditStateChanged = { editing ->
+                if (editing) {
+                    val prev = activeEditRow
+                    activeEditRow = row
+                    if (prev !== row) prev?.cancelEdit()
+                } else {
+                    if (activeEditRow === row) activeEditRow = null
+                }
+                existing?.invoke(editing)
+            }
         }
     }
 
@@ -203,9 +269,14 @@ class SettingsFragment : Fragment() {
             repository.setBaseUrl(v)
             settingBaseUrl.value = repository.getBaseUrl()
         }
-        view.findViewById<View>(R.id.setting_base_url_reset).setOnClickListener {
+        val baseUrlResetBtn = view.findViewById<View>(R.id.setting_base_url_reset)
+        baseUrlResetBtn.setOnClickListener {
             repository.setBaseUrl(SettingsRepository.BASE_URL_DEFAULT)
             settingBaseUrl.value = repository.getBaseUrl()
+        }
+        settingBaseUrl.onEditStateChanged = { editing ->
+            baseUrlResetBtn.isEnabled = !editing
+            baseUrlResetBtn.alpha = if (editing) 0.38f else 1f
         }
     }
 
@@ -319,14 +390,20 @@ class SettingsFragment : Fragment() {
     private fun showPinDialog(title: String, onPin: (String) -> Unit) {
         val editText = EditText(requireContext()).apply {
             inputType = InputType.TYPE_CLASS_NUMBER
+            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE
             hint = getString(R.string.settings_pin_hint)
         }
-        AlertDialog.Builder(requireContext())
+        val dialog = AlertDialog.Builder(requireContext())
             .setTitle(title)
             .setView(editText)
             .setPositiveButton(android.R.string.ok) { _, _ -> onPin(editText.text.toString()) }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
+        editText.setOnEditorActionListener { _, _, _ ->
+            dialog.dismiss()
+            onPin(editText.text.toString())
+            true
+        }
     }
 
     private fun showFactoryResetDialog() {
@@ -347,15 +424,15 @@ class SettingsFragment : Fragment() {
         settingEmaSystemId.value = repository.getEmaSystemId()
         settingEmaEcuId.value = repository.getEmaEcuId()
         val cap = repository.getSystemCapacity()
-        settingSystemCapacity.value =
-            if (cap == -1f) "" else "$cap${getString(R.string.settings_system_capacity_suffix)}"
-        val days = repository.getHistoricDataDays()
-        settingHistoricDays.value =
-            if (days == -1) "" else "$days${getString(R.string.settings_historic_days_suffix)}"
+        settingSystemCapacity.value = if (cap == -1f) "" else "$cap"
+        settingHistoricDays.value = "${repository.getHistoricDataDays()}"
+        settingApiRequestLimit.value = "${repository.getApiRequestLimit()}"
+        updateApiRequestProgress()
         notificationsSwitch.isChecked = repository.getNotificationsEnabled()
         settingBaseUrl.value = repository.getBaseUrl()
         updateLanguageDisplay()
         updateDisplayModeDisplay()
+        checkConfigurationAndUpdateNav()
     }
 
     private fun handleImport(uri: Uri) {
@@ -407,17 +484,19 @@ class SettingsFragment : Fragment() {
         view?.let { Snackbar.make(it, message, Snackbar.LENGTH_LONG).show() }
     }
 
-    private fun checkConfigurationAndUpdateNav() {
-        if (!repository.isConfigured()) return
+    internal fun checkConfigurationAndUpdateNav() {
         val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.bottom_nav)
             ?: return
+        val configured = repository.isConfigured()
         val menu = bottomNav.menu
         for (i in 0 until menu.size()) {
-            menu.getItem(i).isEnabled = true
+            val item = menu.getItem(i)
+            item.isEnabled = configured || item.itemId == R.id.settingsFragment
         }
     }
 
     private fun isValidUrl(url: String): Boolean {
+        if (url.length > SettingsRepository.BASE_URL_MAX_LENGTH) return false
         return try {
             val parsed = java.net.URL(url)
             parsed.protocol.isNotEmpty() && parsed.host.isNotEmpty()

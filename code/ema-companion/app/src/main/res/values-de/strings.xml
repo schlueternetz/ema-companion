@@ -7,6 +7,7 @@
     <string name="settings_section_solar_array">Solaranlagen-Einstellungen</string>
     <string name="settings_section_app">App-Einstellungen</string>
     <string name="settings_section_configuration">Konfiguration</string>
+    <string name="settings_section_api">API-Einstellungen</string>
 
     <!-- Language -->
     <string name="settings_language_label">Sprache</string>
@@ -27,7 +28,7 @@
 
     <!-- Historic data days -->
     <string name="settings_historic_days_label">Verlaufszeitraum (Tage)</string>
-    <string name="settings_historic_days_suffix"> Tage</string>
+    <string name="settings_historic_days_suffix">Tage</string>
     <string name="settings_historic_days_error">Bitte eine Zahl zwischen 1 und 90 eingeben</string>
 
     <!-- EMA App ID -->
@@ -48,12 +49,20 @@
 
     <!-- System Capacity -->
     <string name="settings_system_capacity_label">Systemleistung</string>
-    <string name="settings_system_capacity_suffix"> kW</string>
-    <string name="settings_system_capacity_error">Bitte eine positive Zahl bis 999,99 mit höchstens 2 Dezimalstellen eingeben</string>
+    <string name="settings_system_capacity_suffix">kW</string>
+    <string name="settings_system_capacity_error">Bitte eine positive Zahl bis 2.000 mit höchstens 2 Dezimalstellen eingeben</string>
+
+    <!-- API Request Limit -->
+    <string name="settings_api_request_limit_label">API-Anfragelimit</string>
+    <string name="settings_api_request_limit_suffix">Anf./Monat</string>
+    <string name="settings_api_request_limit_description">Max. EMA-API-Aufrufe pro Monat</string>
+    <string name="settings_api_request_limit_error">Bitte eine Zahl zwischen 1 und 2.678.400 eingeben</string>
+    <string name="settings_api_request_limit_reset_description">API-Anfragelimit auf Standard zurücksetzen</string>
+    <string name="settings_api_request_progress_label">%1$d / %2$d Anfragen diesen Monat</string>
 
     <!-- Base URL -->
     <string name="settings_base_url_label">Basis-URL</string>
-    <string name="settings_base_url_error">Bitte eine gültige URL eingeben</string>
+    <string name="settings_base_url_error">Bitte eine gültige URL eingeben (max. 2.048 Zeichen)</string>
     <string name="settings_base_url_reset_description">Basis-URL auf Standard zurücksetzen</string>
 
     <!-- Import / Export / Factory Reset -->

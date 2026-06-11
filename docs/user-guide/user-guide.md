@@ -8,7 +8,7 @@ EMA Companion is an Android app for APsystems solar array owners. It is designed
 
 Install EMA Companion on your Android phone or tablet (Android 12 or later required). Open it from your home screen or app drawer by tapping the **EMA Companion** icon.
 
-**First launch:** The app opens directly to the **Settings** screen and the Home navigation item is disabled. You must enter your EMA API credentials, system capacity, and historic data days before the rest of the app becomes accessible.
+**First launch:** The app opens directly to the **Settings** screen and the Home navigation item is disabled. You must enter your EMA API credentials and system capacity before the rest of the app becomes accessible.
 
 Once the required fields are saved, the bottom navigation bar unlocks and you can freely switch between screens.
 
@@ -35,7 +35,7 @@ The Settings screen is scrollable and organised into three sections.
 
 #### Solar Array Settings
 
-These fields connect EMA Companion to your APsystems account and solar array. All five fields are required — any field that has not yet been filled in shows **Required** as a hint. All fields use an inline edit pattern: tap the **Edit** (pencil) icon next to a field, enter a value, then tap the **Save** (check) icon. Tap **Cancel** to discard the change.
+These fields connect EMA Companion to your APsystems account and solar array. All five fields are required — any field that has not yet been filled in shows **Required** as a hint. All fields use an inline edit pattern: tap the **Edit** (pencil) icon next to a field, enter a value, then tap the **Save** (check) icon or press Enter on the keyboard. Tap **Cancel** to discard the change. Only one field can be in edit mode at a time — opening a second field automatically closes the first.
 
 | Field | Format | Notes |
 |---|---|---|
@@ -43,7 +43,7 @@ These fields connect EMA Companion to your APsystems account and solar array. Al
 | **EMA App Secret** | 12 alphanumeric characters | Required; displayed masked (only last 4 characters visible); field clears when you enter edit mode |
 | **EMA System ID** | 16 alphanumeric characters | Required; stored in uppercase |
 | **EMA ECU ID** | 12 digits | Required; numeric keyboard |
-| **System Capacity** | Positive number up to 999.99 | Required; displayed with a " kW" suffix; decimal keyboard |
+| **System Capacity** | Positive number up to 2,000 | Required; displayed with a "kW" suffix outside the input; decimal keyboard; up to 2 decimal places |
 
 If you enter a value that doesn't meet the format rules, an error message appears below the field and the Save button does nothing until the input is corrected.
 
@@ -54,20 +54,21 @@ If you enter a value that doesn't meet the format rules, an error message appear
 | **Language** | Dialog | Tap to choose: System (device default), English, or German. Takes effect immediately. |
 | **Display Mode** | Dialog | Tap to choose: System (follows OS dark/light mode), Light, or Dark. Takes effect immediately and is applied on every app start. |
 | **Notifications Enabled** | Toggle | Enables or disables app notifications. On by default. Takes effect immediately — no Save step required. |
-| **Historic Data Days** | Editable row | Required; number of days of production history to retain (1–90). Displayed with a " days" suffix; numeric keyboard. |
+| **Historic Data Days** | Editable row | Number of days of production history to retain (1–90). Defaults to 30. Displayed with a "days" suffix; numeric keyboard. |
 
-#### Configuration
+#### API Settings
 
 | Control | Description |
 |---|---|
-| **Base URL** | The API endpoint used to reach the EMA service. Defaults to `https://api.apsystemsema.com:9282/user/api/v2/`. Tap the reset icon (↺) beside the field to restore the default without typing. |
+| **API Request Limit** | Maximum number of EMA API calls permitted per month (1–2,678,400). Defaults to 1,000. Displayed with a "req/month" suffix outside the input; numeric keyboard. Tap the reset icon (↺) to restore the default. The reset icon is disabled while the field is in edit mode. A progress bar below the field shows how many of this month's requests have been consumed, with a label showing the exact count (e.g. "800 / 1000 requests this month"). |
+| **Base URL** | The API endpoint used to reach the EMA service. Defaults to `https://api.apsystemsema.com:9282/user/api/v2/`. Must be a valid URL up to 2,048 characters. Tap the reset icon (↺) beside the field to restore the default without typing. |
 | **Import Settings** | Opens the system file picker to select a JSON settings file. If the file is plain JSON all recognised fields are merged into the current settings. If the file is encrypted you are prompted for the 4-digit PIN that was set during export. |
 | **Export Settings** | Saves all settings to a file named `ema-companion-settings.json` in a location you choose. A dialog first asks whether to export without encryption or to encrypt with a 4-digit PIN. |
 | **Factory Reset** | Permanently deletes all settings and any locally stored data. A confirmation dialog appears before anything is deleted. Tap **Reset** to confirm or **Cancel** to abort. |
 
 ## Import and Export
 
-Settings can be transferred between devices or backed up using the Import and Export buttons in the **Configuration** section.
+Settings can be transferred between devices or backed up using the Import and Export buttons in the **API Settings** section.
 
 **Exporting:**
 1. Tap **Export Settings**.

@@ -36,7 +36,7 @@ class SettingRowView @JvmOverloads constructor(
     var value: String = ""
         set(value) {
             field = value
-            valueView.text = maskedDisplay(value)
+            valueView.text = buildDisplayText(value)
             updateRequiredHint()
         }
 
@@ -52,6 +52,8 @@ class SettingRowView @JvmOverloads constructor(
 
     var onSave: (String) -> Unit = {}
 
+    var onEditStateChanged: ((Boolean) -> Unit)? = null
+
     var isRequired: Boolean = false
         set(value) {
             field = value
@@ -61,7 +63,8 @@ class SettingRowView @JvmOverloads constructor(
     var suffix: String = ""
         set(value) {
             field = value
-            inputLayout.suffixText = value
+            inputLayout.suffixText = if (value.isNotEmpty()) " $value" else ""
+            valueView.text = buildDisplayText(this.value)
         }
 
     var keyboardType: Int = InputType.TYPE_CLASS_TEXT
@@ -86,11 +89,12 @@ class SettingRowView @JvmOverloads constructor(
         editButton.setOnClickListener { enterEditMode() }
         saveButton.setOnClickListener { attemptSave() }
         cancelButton.setOnClickListener { cancelEdit() }
+        editText.setOnEditorActionListener { _, _, _ -> attemptSave(); true }
     }
 
     private fun enterEditMode() {
         savedDisplayValue = value
-        if (isMasked) editText.setText("") else editText.setText(value.removeSuffix(suffix))
+        editText.setText(if (isMasked) "" else value)
         editText.setSelection(editText.text?.length ?: 0)
         valueView.visibility = View.GONE
         editButton.visibility = View.GONE
@@ -98,6 +102,7 @@ class SettingRowView @JvmOverloads constructor(
         saveButton.visibility = View.VISIBLE
         cancelButton.visibility = View.VISIBLE
         errorView.visibility = View.GONE
+        onEditStateChanged?.invoke(true)
     }
 
     private fun attemptSave() {
@@ -113,7 +118,7 @@ class SettingRowView @JvmOverloads constructor(
         exitEditMode()
     }
 
-    private fun cancelEdit() {
+    fun cancelEdit() {
         value = savedDisplayValue
         exitEditMode()
     }
@@ -125,6 +130,7 @@ class SettingRowView @JvmOverloads constructor(
         valueView.visibility = View.VISIBLE
         editButton.visibility = View.VISIBLE
         errorView.visibility = View.GONE
+        onEditStateChanged?.invoke(false)
     }
 
     private fun updateRequiredHint() {
@@ -133,6 +139,11 @@ class SettingRowView @JvmOverloads constructor(
         } else {
             null
         }
+    }
+
+    private fun buildDisplayText(raw: String): String {
+        val displayed = maskedDisplay(raw)
+        return if (suffix.isNotEmpty() && displayed.isNotEmpty()) "$displayed $suffix" else displayed
     }
 
     private fun maskedDisplay(raw: String): String {

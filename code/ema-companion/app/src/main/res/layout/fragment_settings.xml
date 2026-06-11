@@ -154,7 +154,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Configuration -->
+        <!-- API Settings -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -172,8 +172,46 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:text="@string/settings_section_configuration"
+                    android:text="@string/settings_section_api"
                     android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+                <!-- API Request Limit row with reset button -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.schlueternetz.emacompanion.feature.settings.SettingRowView
+                        android:id="@+id/setting_api_request_limit"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <ImageButton
+                        android:id="@+id/setting_api_request_limit_reset"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/settings_api_request_limit_reset_description"
+                        android:src="@drawable/ic_reset"
+                        app:tint="?attr/colorOnSurface" />
+
+                </LinearLayout>
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/api_request_progress_bar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
+                    app:trackCornerRadius="4dp" />
+
+                <TextView
+                    android:id="@+id/api_request_progress_label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:textAppearance="?attr/textAppearanceBodySmall" />
 
                 <!-- Base URL row with reset button -->
                 <LinearLayout

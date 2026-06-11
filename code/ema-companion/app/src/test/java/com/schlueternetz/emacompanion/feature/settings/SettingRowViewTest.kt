@@ -148,9 +148,18 @@ class SettingRowViewTest {
     }
 
     @Test
+    fun suffix_displayedWithSpaceInViewMode() {
+        view.suffix = "kW"
+        view.value = "9.72"
+
+        val valueView = view.findViewById<TextView>(R.id.setting_value)
+        assertEquals("9.72 kW", valueView.text.toString())
+    }
+
+    @Test
     fun suffix_strippedFromEditTextWhenEditing() {
-        view.suffix = " kW"
-        view.value = "9.72 kW"
+        view.suffix = "kW"
+        view.value = "9.72"
 
         view.findViewById<ImageButton>(R.id.setting_edit_button).performClick()
 
@@ -160,13 +169,59 @@ class SettingRowViewTest {
 
     @Test
     fun suffix_shownOnInputLayoutWhenEditing() {
-        view.suffix = " kW"
-        view.value = "9.72 kW"
+        view.suffix = "kW"
+        view.value = "9.72"
 
         view.findViewById<ImageButton>(R.id.setting_edit_button).performClick()
 
         val inputLayout = view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.setting_input_layout)
         assertEquals(" kW", inputLayout.suffixText)
+    }
+
+    @Test
+    fun onEditStateChanged_invokedWithTrue_onEditButtonClick() {
+        var editState: Boolean? = null
+        view.onEditStateChanged = { editState = it }
+        view.findViewById<ImageButton>(R.id.setting_edit_button).performClick()
+        assertEquals(true, editState)
+    }
+
+    @Test
+    fun onEditStateChanged_invokedWithFalse_onCancelButton() {
+        var editState: Boolean? = null
+        view.onEditStateChanged = { editState = it }
+        view.findViewById<ImageButton>(R.id.setting_edit_button).performClick()
+        view.findViewById<ImageButton>(R.id.setting_cancel_button).performClick()
+        assertEquals(false, editState)
+    }
+
+    @Test
+    fun onEditStateChanged_invokedWithFalse_onSuccessfulSave() {
+        var editState: Boolean? = null
+        view.onEditStateChanged = { editState = it }
+        view.validator = { true }
+        view.onSave = {}
+        view.findViewById<ImageButton>(R.id.setting_edit_button).performClick()
+        view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.setting_edit_text)
+            .setText("new value")
+        view.findViewById<ImageButton>(R.id.setting_save_button).performClick()
+        assertEquals(false, editState)
+    }
+
+    @Test
+    fun imeAction_triggersAttemptSave() {
+        var saved = ""
+        view.onSave = { saved = it }
+        view.validator = { true }
+
+        view.findViewById<ImageButton>(R.id.setting_edit_button).performClick()
+        val editText = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.setting_edit_text)
+        editText.setText("typed value")
+        editText.onEditorAction(android.view.inputmethod.EditorInfo.IME_ACTION_DONE)
+
+        assertEquals("typed value", saved)
+        val valueView = view.findViewById<TextView>(R.id.setting_value)
+        assertEquals(View.VISIBLE, valueView.visibility)
     }
 
     @Test

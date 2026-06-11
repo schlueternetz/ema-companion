@@ -1,4 +1,4 @@
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Settings can be imported from a JSON file
 The app SHALL allow the user to import all settings from a JSON file selected via the system file picker. All 11 settings SHALL be included: `emaAppId`, `emaAppSecret`, `emaSystemId`, `emaEcuId`, `systemCapacity`, `historicDataDays`, `apiRequestLimit`, `language`, `displayMode`, `notificationsEnabled`, `baseUrl`. Import is a merge: fields present in the JSON overwrite the stored value; absent fields are left unchanged. The Import button SHALL be in the "API Settings" section.

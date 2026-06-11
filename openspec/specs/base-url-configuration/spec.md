@@ -1,14 +1,14 @@
 ## Requirements
 
 ### Requirement: Base URL is configurable
-The app SHALL provide an editable field for the API Base URL. The field SHALL accept any non-empty string that is a syntactically valid URL (scheme + host at minimum). The default value SHALL be `https://api.apsystemsema.com:9282/user/api/v2/`. The field SHALL be grouped under the "Configuration" section.
+The app SHALL provide an editable field for the API Base URL. The field SHALL accept any non-empty string that is a syntactically valid URL (scheme + host at minimum) and at most 2,048 characters long. The default value SHALL be `https://api.apsystemsema.com:9282/user/api/v2/`. The field SHALL be grouped under the "API Settings" section.
 
 #### Scenario: Valid URL is accepted and saved
 - **WHEN** the user enters a valid URL string and taps Save
 - **THEN** the value SHALL be stored and displayed in the field
 
 #### Scenario: Invalid URL is rejected
-- **WHEN** the user enters an empty string or a string that is not a valid URL
+- **WHEN** the user enters an empty string, a string that is not a valid URL, or a string longer than 2,048 characters
 - **THEN** the Save action SHALL be disabled and an inline error message SHALL be displayed
 
 #### Scenario: Field shows the production URL when never configured

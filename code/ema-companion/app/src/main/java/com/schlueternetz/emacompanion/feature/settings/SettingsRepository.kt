@@ -19,12 +19,18 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         const val EMA_ECU_ID_KEY = "emaEcuId"
         const val SYSTEM_CAPACITY_KEY = "systemCapacity"
         const val HISTORIC_DATA_DAYS_KEY = "historicDataDays"
+        const val API_REQUEST_LIMIT_KEY = "apiRequestLimit"
         const val NOTIFICATIONS_ENABLED_KEY = "notificationsEnabled"
         const val BASE_URL_KEY = "baseUrl"
         const val DISPLAY_MODE_KEY = "displayMode"
 
         const val BASE_URL_DEFAULT = "https://api.apsystemsema.com:9282/user/api/v2/"
         const val DISPLAY_MODE_DEFAULT = "system"
+        const val API_REQUEST_LIMIT_DEFAULT = 1000
+        const val HISTORIC_DATA_DAYS_DEFAULT = 30
+        const val API_REQUEST_LIMIT_MAX_PER_MONTH = 1 * 60 * 60 * 24 * 31  // 1 req/sec * 60s * 60m * 24h * 31d = 2,678,400
+        const val SYSTEM_CAPACITY_MAX_KW = 2_000f  // 2,000 kW
+        const val BASE_URL_MAX_LENGTH = 2048
 
         fun create(context: Context): SettingsRepository {
             return try {
@@ -88,10 +94,16 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         prefs.edit().putFloat(SYSTEM_CAPACITY_KEY, value).apply()
     }
 
-    fun getHistoricDataDays(): Int = prefs.getInt(HISTORIC_DATA_DAYS_KEY, -1)
+    fun getHistoricDataDays(): Int = prefs.getInt(HISTORIC_DATA_DAYS_KEY, HISTORIC_DATA_DAYS_DEFAULT)
 
     fun setHistoricDataDays(value: Int) {
         prefs.edit().putInt(HISTORIC_DATA_DAYS_KEY, value).apply()
+    }
+
+    fun getApiRequestLimit(): Int = prefs.getInt(API_REQUEST_LIMIT_KEY, API_REQUEST_LIMIT_DEFAULT)
+
+    fun setApiRequestLimit(value: Int) {
+        prefs.edit().putInt(API_REQUEST_LIMIT_KEY, value).apply()
     }
 
     fun getNotificationsEnabled(): Boolean = prefs.getBoolean(NOTIFICATIONS_ENABLED_KEY, true)
@@ -121,8 +133,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             getEmaAppSecret().isNotEmpty() &&
             getEmaSystemId().isNotEmpty() &&
             getEmaEcuId().isNotEmpty() &&
-            getSystemCapacity() != -1f &&
-            getHistoricDataDays() != -1
+            getSystemCapacity() != -1f
     }
 
     fun exportToJson(): String {
@@ -134,6 +145,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             put(EMA_ECU_ID_KEY, getEmaEcuId())
             put(SYSTEM_CAPACITY_KEY, getSystemCapacity().toDouble())
             put(HISTORIC_DATA_DAYS_KEY, getHistoricDataDays())
+            put(API_REQUEST_LIMIT_KEY, getApiRequestLimit())
             put(NOTIFICATIONS_ENABLED_KEY, getNotificationsEnabled())
             put(BASE_URL_KEY, getBaseUrl())
             put(DISPLAY_MODE_KEY, getDisplayMode())
@@ -154,6 +166,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         if (obj.has(EMA_ECU_ID_KEY)) edit.putString(EMA_ECU_ID_KEY, obj.getString(EMA_ECU_ID_KEY))
         if (obj.has(SYSTEM_CAPACITY_KEY)) edit.putFloat(SYSTEM_CAPACITY_KEY, obj.getDouble(SYSTEM_CAPACITY_KEY).toFloat())
         if (obj.has(HISTORIC_DATA_DAYS_KEY)) edit.putInt(HISTORIC_DATA_DAYS_KEY, obj.getInt(HISTORIC_DATA_DAYS_KEY))
+        if (obj.has(API_REQUEST_LIMIT_KEY)) edit.putInt(API_REQUEST_LIMIT_KEY, obj.getInt(API_REQUEST_LIMIT_KEY))
         if (obj.has(NOTIFICATIONS_ENABLED_KEY)) edit.putBoolean(NOTIFICATIONS_ENABLED_KEY, obj.getBoolean(NOTIFICATIONS_ENABLED_KEY))
         if (obj.has(BASE_URL_KEY)) edit.putString(BASE_URL_KEY, obj.getString(BASE_URL_KEY))
         if (obj.has(DISPLAY_MODE_KEY)) edit.putString(DISPLAY_MODE_KEY, obj.getString(DISPLAY_MODE_KEY))
