@@ -8,45 +8,82 @@ EMA Companion is an Android app for APsystems solar array owners. It is designed
 
 Install EMA Companion on your Android phone or tablet (Android 12 or later required). Open it from your home screen or app drawer by tapping the **EMA Companion** icon.
 
-When the app opens, the **Home** screen is shown and the bottom navigation bar is visible at all times.
+**First launch:** The app opens directly to the **Settings** screen and the Home navigation item is disabled. You must enter your EMA API credentials and system capacity before the rest of the app becomes accessible.
+
+Once the required fields are saved, the bottom navigation bar unlocks and you can freely switch between screens.
 
 ## Navigation
 
 A bottom navigation bar runs across the bottom of every screen with two destinations:
 
 - **Home** — the main dashboard (currently a placeholder)
-- **Settings** — app preferences
+- **Settings** — app preferences and configuration
 
-Tap either item to switch screens. Pressing the system Back button while on the Home screen exits the app.
+When the app is not fully configured, only **Settings** is reachable. All other items are re-enabled automatically once configuration is complete.
 
 ## Screens
 
 ### Home
 
-> **Early development**: The Home screen is currently a placeholder displaying "Hello World!" while production features are being built.
+> **Early development:** The Home screen is currently a placeholder displaying "Hello World!" while production features are being built.
 
 Once development is complete, this screen will be the central dashboard for your solar production data.
 
 ### Settings
 
-The Settings screen contains user-configurable preferences.
+The Settings screen is scrollable and organised into three sections.
 
-#### Language
+#### Solar Array Settings
 
-The **Language** row shows the currently active language. Tap it to open a dialog with three options:
+These fields connect EMA Companion to your APsystems account and solar array. All fields use an inline edit pattern: tap the **Edit** (pencil) icon next to a field, enter a value, then tap the **Save** (check) icon. Tap **Cancel** to discard the change.
 
-| Option   | Effect                                                  |
-|----------|---------------------------------------------------------|
-| System   | Follows the device system language (default)            |
-| English  | Displays all app text in English                        |
-| German   | Displays all app text in German                         |
+| Field | Format | Notes |
+|---|---|---|
+| **EMA App ID** | 32 alphanumeric characters | Stored in lowercase |
+| **EMA App Secret** | 12 alphanumeric characters | Displayed masked (only last 4 characters visible); field clears when you enter edit mode |
+| **EMA System ID** | 16 alphanumeric characters | Stored in uppercase |
+| **EMA ECU ID** | 12 digits | Numeric keyboard |
+| **System Capacity** | Positive number up to 999.99 | Displayed with a " kW" suffix; decimal keyboard |
 
-The selected language takes effect immediately and is remembered across app restarts. To return to following the device language, select **System**.
+If you enter a value that doesn't meet the format rules, an error message appears below the field and the Save button does nothing until the input is corrected.
+
+#### App Settings
+
+| Setting | Type | Details |
+|---|---|---|
+| **Language** | Dialog | Tap to choose: System (device default), English, or German. Takes effect immediately. |
+| **Display Mode** | Dialog | Tap to choose: System (follows OS dark/light mode), Light, or Dark. Takes effect immediately and is applied on every app start. |
+| **Notifications Enabled** | Toggle | Enables or disables app notifications. On by default. Takes effect immediately — no Save step required. |
+| **Historic Data Days** | Editable row | Number of days of production history to retain (1–90). Displayed with a " days" suffix; numeric keyboard. |
+
+#### Configuration
+
+| Control | Description |
+|---|---|
+| **Base URL** | The API endpoint used to reach the EMA service. Defaults to `https://api.apsystemsema.com:9282/user/api/v2/`. Tap the reset icon (↺) beside the field to restore the default without typing. |
+| **Import Settings** | Opens the system file picker to select a JSON settings file. If the file is plain JSON all recognised fields are merged into the current settings. If the file is encrypted you are prompted for the 4-digit PIN that was set during export. |
+| **Export Settings** | Saves all settings to a file named `ema-companion-settings.json` in a location you choose. A dialog first asks whether to export without encryption or to encrypt with a 4-digit PIN. |
+| **Factory Reset** | Permanently deletes all settings and any locally stored data. A confirmation dialog appears before anything is deleted. Tap **Reset** to confirm or **Cancel** to abort. |
+
+## Import and Export
+
+Settings can be transferred between devices or backed up using the Import and Export buttons in the **Configuration** section.
+
+**Exporting:**
+1. Tap **Export Settings**.
+2. Choose **No encryption** for a plain JSON file, or **Encrypt with PIN** and enter a 4-digit PIN.
+3. The system file picker opens — choose a folder and confirm. The file is saved as `ema-companion-settings.json`.
+
+**Importing:**
+1. Tap **Import Settings** and select a previously exported file.
+2. If the file is plain JSON, settings are merged immediately.
+3. If the file is encrypted, you are prompted for the PIN. Entering the wrong PIN shows an error and leaves all settings unchanged.
+4. Only the fields present in the file are updated; any fields not in the file keep their current values.
 
 ## What's Coming
 
 Features planned for future releases:
 
-- Production statistics and graphs
+- Production statistics and graphs on the Home screen
 - Home screen widgets showing live output
 - Notifications for solar array alerts

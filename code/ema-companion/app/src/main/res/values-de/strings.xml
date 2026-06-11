@@ -2,9 +2,86 @@
     <string name="placeholder_hello">Hallo Welt!</string>
     <string name="nav_home">Startseite</string>
     <string name="nav_settings">Einstellungen</string>
+
+    <!-- Settings section headers -->
+    <string name="settings_section_solar_array">Solaranlagen-Einstellungen</string>
+    <string name="settings_section_app">App-Einstellungen</string>
+    <string name="settings_section_configuration">Konfiguration</string>
+
+    <!-- Language -->
     <string name="settings_language_label">Sprache</string>
     <string name="language_option_system">System</string>
     <string name="language_option_english">Englisch</string>
     <string name="language_option_german">Deutsch</string>
     <string name="settings_language_dialog_title">Sprache auswählen</string>
+
+    <!-- Display mode -->
+    <string name="settings_display_mode_label">Anzeigemodus</string>
+    <string name="display_mode_option_system">System</string>
+    <string name="display_mode_option_light">Hell</string>
+    <string name="display_mode_option_dark">Dunkel</string>
+    <string name="settings_display_mode_dialog_title">Anzeigemodus auswählen</string>
+
+    <!-- Notifications -->
+    <string name="settings_notifications_label">Benachrichtigungen aktiviert</string>
+
+    <!-- Historic data days -->
+    <string name="settings_historic_days_label">Verlaufszeitraum (Tage)</string>
+    <string name="settings_historic_days_suffix"> Tage</string>
+    <string name="settings_historic_days_error">Bitte eine Zahl zwischen 1 und 90 eingeben</string>
+
+    <!-- EMA App ID -->
+    <string name="settings_ema_app_id_label">EMA App-ID</string>
+    <string name="settings_ema_app_id_error">Muss genau 32 alphanumerische Zeichen haben</string>
+
+    <!-- EMA App Secret -->
+    <string name="settings_ema_app_secret_label">EMA App-Geheimnis</string>
+    <string name="settings_ema_app_secret_error">Muss genau 12 alphanumerische Zeichen haben</string>
+
+    <!-- EMA System ID -->
+    <string name="settings_ema_system_id_label">EMA System-ID</string>
+    <string name="settings_ema_system_id_error">Muss genau 16 alphanumerische Zeichen haben</string>
+
+    <!-- EMA ECU ID -->
+    <string name="settings_ema_ecu_id_label">EMA ECU-ID</string>
+    <string name="settings_ema_ecu_id_error">Muss genau 12 Ziffern haben</string>
+
+    <!-- System Capacity -->
+    <string name="settings_system_capacity_label">Systemleistung</string>
+    <string name="settings_system_capacity_suffix"> kW</string>
+    <string name="settings_system_capacity_error">Bitte eine positive Zahl bis 999,99 mit höchstens 2 Dezimalstellen eingeben</string>
+
+    <!-- Base URL -->
+    <string name="settings_base_url_label">Basis-URL</string>
+    <string name="settings_base_url_error">Bitte eine gültige URL eingeben</string>
+    <string name="settings_base_url_reset_description">Basis-URL auf Standard zurücksetzen</string>
+
+    <!-- Import / Export / Factory Reset -->
+    <string name="settings_import_button">Einstellungen importieren</string>
+    <string name="settings_export_button">Einstellungen exportieren</string>
+    <string name="settings_factory_reset_button">Werksreset</string>
+
+    <string name="settings_export_dialog_title">Einstellungen exportieren</string>
+    <string name="settings_export_no_encryption">Ohne Verschlüsselung</string>
+    <string name="settings_export_encrypt_with_pin">Mit PIN verschlüsseln</string>
+
+    <string name="settings_pin_dialog_title_export">4-stellige PIN für Export eingeben</string>
+    <string name="settings_pin_dialog_title_import">4-stellige PIN zum Entschlüsseln eingeben</string>
+    <string name="settings_pin_hint">PIN</string>
+
+    <string name="settings_factory_reset_dialog_title">Werksreset</string>
+    <string name="settings_factory_reset_dialog_message">Dadurch werden alle Einstellungen und lokal gespeicherte Daten dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="settings_factory_reset_confirm">Zurücksetzen</string>
+    <string name="settings_factory_reset_cancel">Abbrechen</string>
+
+    <string name="settings_import_error_wrong_pin">Falsche PIN – Datei konnte nicht entschlüsselt werden</string>
+    <string name="settings_import_error_unreadable">Die ausgewählte Datei konnte nicht gelesen oder verarbeitet werden</string>
+    <string name="settings_export_error">Die Datei konnte nicht geschrieben werden</string>
+    <string name="settings_export_success">Einstellungen erfolgreich exportiert</string>
+    <string name="settings_import_success">Einstellungen erfolgreich importiert</string>
+
+    <!-- SettingRowView buttons -->
+    <string name="setting_row_edit_button_description">Bearbeiten</string>
+    <string name="setting_row_save_button_description">Speichern</string>
+    <string name="setting_row_cancel_button_description">Abbrechen</string>
 </resources>

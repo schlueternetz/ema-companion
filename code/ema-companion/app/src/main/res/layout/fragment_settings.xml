@@ -1,34 +1,236 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/settings_language_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:contentDescription="@string/settings_language_label"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingVertical="12dp">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <TextView
-            android:id="@+id/settings_language_label"
-            android:layout_width="0dp"
+        <!-- Solar Array Settings -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/settings_language_label"
-            android:textAppearance="?attr/textAppearanceBodyLarge" />
+            android:layout_marginBottom="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp">
 
-        <TextView
-            android:id="@+id/settings_language_value"
-            android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/settings_section_solar_array"
+                    android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+                <com.schlueternetz.emacompanion.feature.settings.SettingRowView
+                    android:id="@+id/setting_ema_app_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <com.schlueternetz.emacompanion.feature.settings.SettingRowView
+                    android:id="@+id/setting_ema_app_secret"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <com.schlueternetz.emacompanion.feature.settings.SettingRowView
+                    android:id="@+id/setting_ema_system_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <com.schlueternetz.emacompanion.feature.settings.SettingRowView
+                    android:id="@+id/setting_ema_ecu_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <com.schlueternetz.emacompanion.feature.settings.SettingRowView
+                    android:id="@+id/setting_system_capacity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- App Settings -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceBodyMedium" />
+            android:layout_marginBottom="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/settings_section_app"
+                    android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+                <!-- Language row (click-to-dialog) -->
+                <LinearLayout
+                    android:id="@+id/settings_language_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:contentDescription="@string/settings_language_label"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:id="@+id/settings_language_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/settings_language_label"
+                        android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+                    <TextView
+                        android:id="@+id/settings_language_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+                </LinearLayout>
+
+                <!-- Display Mode row (click-to-dialog) -->
+                <LinearLayout
+                    android:id="@+id/settings_display_mode_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:contentDescription="@string/settings_display_mode_label"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/settings_display_mode_label"
+                        android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+                    <TextView
+                        android:id="@+id/settings_display_mode_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+                </LinearLayout>
+
+                <!-- Notifications toggle -->
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/settings_notifications_switch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:paddingVertical="12dp"
+                    android:text="@string/settings_notifications_label"
+                    android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+                <!-- Historic Data Days -->
+                <com.schlueternetz.emacompanion.feature.settings.SettingRowView
+                    android:id="@+id/setting_historic_days"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Configuration -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/settings_section_configuration"
+                    android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+                <!-- Base URL row with reset button -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.schlueternetz.emacompanion.feature.settings.SettingRowView
+                        android:id="@+id/setting_base_url"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <ImageButton
+                        android:id="@+id/setting_base_url_reset"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/settings_base_url_reset_description"
+                        android:src="@drawable/ic_reset"
+                        app:tint="?attr/colorOnSurface" />
+
+                </LinearLayout>
+
+                <!-- Import, Export, Factory Reset buttons -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/settings_import_button"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="48dp"
+                    android:text="@string/settings_import_button" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/settings_export_button"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="48dp"
+                    android:text="@string/settings_export_button" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/settings_factory_reset_button"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="48dp"
+                    android:text="@string/settings_factory_reset_button" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 
-</LinearLayout>
+</ScrollView>

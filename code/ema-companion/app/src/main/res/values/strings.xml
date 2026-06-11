@@ -3,9 +3,89 @@
     <string name="placeholder_hello">Hello World!</string>
     <string name="nav_home">Home</string>
     <string name="nav_settings">Settings</string>
+
+    <!-- Settings section headers -->
+    <string name="settings_section_solar_array">Solar Array Settings</string>
+    <string name="settings_section_app">App Settings</string>
+    <string name="settings_section_configuration">Configuration</string>
+
+    <!-- Language -->
     <string name="settings_language_label">Language</string>
     <string name="language_option_system">System</string>
     <string name="language_option_english">English</string>
     <string name="language_option_german">German</string>
     <string name="settings_language_dialog_title">Select Language</string>
+
+    <!-- Display mode -->
+    <string name="settings_display_mode_label">Display Mode</string>
+    <string name="display_mode_option_system">System</string>
+    <string name="display_mode_option_light">Light</string>
+    <string name="display_mode_option_dark">Dark</string>
+    <string name="settings_display_mode_dialog_title">Select Display Mode</string>
+
+    <!-- Notifications -->
+    <string name="settings_notifications_label">Notifications Enabled</string>
+
+    <!-- Historic data days -->
+    <string name="settings_historic_days_label">Historic Data Days</string>
+    <string name="settings_historic_days_suffix"> days</string>
+    <string name="settings_historic_days_error">Enter a number between 1 and 90</string>
+
+    <!-- EMA App ID -->
+    <string name="settings_ema_app_id_label">EMA App ID</string>
+    <string name="settings_ema_app_id_error">Must be exactly 32 alphanumeric characters</string>
+
+    <!-- EMA App Secret -->
+    <string name="settings_ema_app_secret_label">EMA App Secret</string>
+    <string name="settings_ema_app_secret_error">Must be exactly 12 alphanumeric characters</string>
+
+    <!-- EMA System ID -->
+    <string name="settings_ema_system_id_label">EMA System ID</string>
+    <string name="settings_ema_system_id_error">Must be exactly 16 alphanumeric characters</string>
+
+    <!-- EMA ECU ID -->
+    <string name="settings_ema_ecu_id_label">EMA ECU ID</string>
+    <string name="settings_ema_ecu_id_error">Must be exactly 12 digits</string>
+
+    <!-- System Capacity -->
+    <string name="settings_system_capacity_label">System Capacity</string>
+    <string name="settings_system_capacity_suffix"> kW</string>
+    <string name="settings_system_capacity_error">Enter a positive number up to 999.99 with at most 2 decimal places</string>
+
+    <!-- Base URL -->
+    <string name="settings_base_url_label">Base URL</string>
+    <string name="settings_base_url_error">Enter a valid URL</string>
+    <string name="settings_base_url_reset_description">Reset Base URL to default</string>
+
+    <!-- Import / Export / Factory Reset -->
+    <string name="settings_import_button">Import Settings</string>
+    <string name="settings_export_button">Export Settings</string>
+    <string name="settings_factory_reset_button">Factory Reset</string>
+
+    <string name="settings_export_dialog_title">Export Settings</string>
+    <string name="settings_export_no_encryption">No encryption</string>
+    <string name="settings_export_encrypt_with_pin">Encrypt with PIN</string>
+
+    <string name="settings_pin_dialog_title_export">Enter 4-digit PIN for export</string>
+    <string name="settings_pin_dialog_title_import">Enter 4-digit PIN to decrypt</string>
+    <string name="settings_pin_hint">PIN</string>
+
+    <string name="settings_factory_reset_dialog_title">Factory Reset</string>
+    <string name="settings_factory_reset_dialog_message">This will permanently delete all settings and locally stored data. This action cannot be undone.</string>
+    <string name="settings_factory_reset_confirm">Reset</string>
+    <string name="settings_factory_reset_cancel">Cancel</string>
+
+    <string name="settings_import_error_wrong_pin">Wrong PIN — could not decrypt file</string>
+    <string name="settings_import_error_unreadable">Could not read or parse the selected file</string>
+    <string name="settings_export_error">Could not write the file</string>
+    <string name="settings_export_success">Settings exported successfully</string>
+    <string name="settings_import_success">Settings imported successfully</string>
+
+    <!-- SettingRowView buttons -->
+    <string name="setting_row_edit_button_description">Edit</string>
+    <string name="setting_row_save_button_description">Save</string>
+    <string name="setting_row_cancel_button_description">Cancel</string>
+
+    <!-- Suggested filename -->
+    <string name="settings_export_filename" translatable="false">ema-companion-settings.json</string>
 </resources>

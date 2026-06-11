@@ -2,6 +2,26 @@
 This file is for the AI to keep track of lessons learned and avoid making the same mistakes again.
 It is never authored by a human.
 
+## 2026-06-11: implement-settings — full settings screen implementation
+
+### What Went Well
+* Grouping 47 tasks into 8 coherent implementation chunks (Repository → Crypto → Custom View → Layout → Fragment → MainActivity → Tests → Lint) made the AI-TDD cycle efficient and kept each Green phase small
+* Adding `isConfigured()` to the repository before writing `SettingsFragment` and `MainActivity` prevented all compile failures — always implement dependencies before consumers
+* Writing string resources before the layouts that reference them avoided "symbol not found" compile errors on the first test run
+* Deferring `write-user-guide` until all UI changes were complete produced a single accurate guide instead of multiple partial ones
+* Using `java.util.Base64` instead of `android.util.Base64` in `SettingsCrypto` keeps the class testable with plain JUnit4 — no Robolectric overhead needed for pure crypto logic
+
+### What Didn't Work (Obstacles & Roadblocks)
+* `android.util.Base64` is not mocked in plain JUnit4 (non-Robolectric) tests — using it in a utility class caused `RuntimeException: Method not mocked` failures
+* `SecretKeySpec` lives in `javax.crypto.spec`, not `javax.crypto` — the wrong import compiled silently until test execution
+* The existing `mainActivity_bottomNavStartsOnHome` test broke when unconfigured-state navigation was added, without an obvious error message
+
+### ⚠️ Mistakes to Avoid Next Time
+* **Never use `android.util.Base64` in non-UI utility classes** — use `java.util.Base64` (available from API 26, fine for minSdk 31). Reserve `android.util.Base64` only for code that already requires Robolectric for other reasons
+* `SecretKeySpec` import is `javax.crypto.spec.SecretKeySpec`, not `javax.crypto.SecretKeySpec` — double-check the `spec` subpackage for all JCE parameter/key-spec classes
+* When adding conditional navigation in `MainActivity.onCreate()`, immediately update any existing tests that assume the default start destination — they will fail without an obvious connection to the new behaviour
+* The `write-user-guide` hook fires on **every** UX file write during a session. Acknowledge and defer; only invoke the skill once when all UI changes for the session are complete
+
 ## 2026-06-08: main-navigation-and-settings implementation
 
 ### What Went Well
