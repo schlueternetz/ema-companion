@@ -1,11 +1,20 @@
 ## Requirements
 
-### Requirement: Settings screen accessible from bottom navigation
-The app SHALL provide a Settings screen reachable via the bottom navigation bar. The Settings screen SHALL display all user-configurable app preferences.
+### Requirement: Settings screen displays all user-configurable preferences grouped by section
+The app SHALL provide a Settings screen reachable via the bottom navigation bar. The Settings screen SHALL display all user-configurable app preferences organized into three labeled sections:
 
-#### Scenario: Settings screen displays available preferences
+**Solar Array Settings** — EMA App ID, EMA App Secret, EMA System ID, EMA ECU ID, System Capacity
+
+**App Settings** — Language, Display Mode, Notifications Enabled, Historic Data Days
+
+**Configuration** — Base URL, Import Settings button, Export Settings button, Factory Reset button
+
+#### Scenario: Settings screen displays all sections and fields
 - **WHEN** the user navigates to the Settings screen
-- **THEN** the Settings screen SHALL display at least the language preference option
+- **THEN** the screen SHALL display three labeled sections: "Solar Array Settings", "App Settings", and "Configuration"
+- **AND** "App Settings" SHALL contain: Language, Display Mode, Notifications Enabled, Historic Data Days
+- **AND** "Solar Array Settings" SHALL contain: EMA App ID, EMA App Secret, EMA System ID, EMA ECU ID, System Capacity
+- **AND** "Configuration" SHALL contain: Base URL (with reset-to-default action), Import Settings, Export Settings, Factory Reset
 
 ### Requirement: Settings persisted with encryption
 All user-configurable settings SHALL be persisted using `EncryptedSharedPreferences` so that values survive app restarts. Settings SHALL be readable and writable only within the app process.
