@@ -38,6 +38,7 @@ class MainActivityTest {
             .putString("emaSystemId", "CCCCCCCCCCCCCCCC")
             .putString("emaEcuId", "123456789012")
             .putFloat("systemCapacity", 4.5f)
+            .putInt("historicDataDays", 30)
             .apply()
     }
 

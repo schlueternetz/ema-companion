@@ -81,6 +81,7 @@
     <string name="settings_import_success">Einstellungen erfolgreich importiert</string>
 
     <!-- SettingRowView buttons -->
+    <string name="setting_row_required_hint">Erforderlich</string>
     <string name="setting_row_edit_button_description">Bearbeiten</string>
     <string name="setting_row_save_button_description">Speichern</string>
     <string name="setting_row_cancel_button_description">Abbrechen</string>

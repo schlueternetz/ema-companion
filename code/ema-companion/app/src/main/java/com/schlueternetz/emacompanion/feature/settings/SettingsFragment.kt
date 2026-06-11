@@ -86,6 +86,7 @@ class SettingsFragment : Fragment() {
 
     private fun wireEmaAppId() {
         settingEmaAppId.label = getString(R.string.settings_ema_app_id_label)
+        settingEmaAppId.isRequired = true
         settingEmaAppId.value = repository.getEmaAppId()
         settingEmaAppId.errorMessage = getString(R.string.settings_ema_app_id_error)
         settingEmaAppId.validator = { it.matches(Regex("[a-zA-Z0-9]{32}")) }
@@ -98,6 +99,7 @@ class SettingsFragment : Fragment() {
 
     private fun wireEmaAppSecret() {
         settingEmaAppSecret.label = getString(R.string.settings_ema_app_secret_label)
+        settingEmaAppSecret.isRequired = true
         settingEmaAppSecret.isMasked = true
         settingEmaAppSecret.value = repository.getEmaAppSecret()
         settingEmaAppSecret.errorMessage = getString(R.string.settings_ema_app_secret_error)
@@ -111,6 +113,7 @@ class SettingsFragment : Fragment() {
 
     private fun wireEmaSystemId() {
         settingEmaSystemId.label = getString(R.string.settings_ema_system_id_label)
+        settingEmaSystemId.isRequired = true
         settingEmaSystemId.value = repository.getEmaSystemId()
         settingEmaSystemId.errorMessage = getString(R.string.settings_ema_system_id_error)
         settingEmaSystemId.validator = { it.matches(Regex("[a-zA-Z0-9]{16}")) }
@@ -123,6 +126,7 @@ class SettingsFragment : Fragment() {
 
     private fun wireEmaEcuId() {
         settingEmaEcuId.label = getString(R.string.settings_ema_ecu_id_label)
+        settingEmaEcuId.isRequired = true
         settingEmaEcuId.value = repository.getEmaEcuId()
         settingEmaEcuId.keyboardType = InputType.TYPE_CLASS_NUMBER
         settingEmaEcuId.errorMessage = getString(R.string.settings_ema_ecu_id_error)
@@ -137,6 +141,8 @@ class SettingsFragment : Fragment() {
     private fun wireSystemCapacity() {
         val suffix = getString(R.string.settings_system_capacity_suffix)
         settingSystemCapacity.label = getString(R.string.settings_system_capacity_label)
+        settingSystemCapacity.isRequired = true
+        settingSystemCapacity.suffix = suffix
         val cap = repository.getSystemCapacity()
         settingSystemCapacity.value = if (cap == -1f) "" else "$cap$suffix"
         settingSystemCapacity.keyboardType =
@@ -156,6 +162,7 @@ class SettingsFragment : Fragment() {
     private fun wireHistoricDays() {
         val suffix = getString(R.string.settings_historic_days_suffix)
         settingHistoricDays.label = getString(R.string.settings_historic_days_label)
+        settingHistoricDays.isRequired = true
         val days = repository.getHistoricDataDays()
         settingHistoricDays.value = if (days == -1) "" else "$days$suffix"
         settingHistoricDays.keyboardType = InputType.TYPE_CLASS_NUMBER
@@ -165,6 +172,7 @@ class SettingsFragment : Fragment() {
             repository.setHistoricDataDays(v.toInt())
             val stored = repository.getHistoricDataDays()
             settingHistoricDays.value = "$stored$suffix"
+            checkConfigurationAndUpdateNav()
         }
     }
 

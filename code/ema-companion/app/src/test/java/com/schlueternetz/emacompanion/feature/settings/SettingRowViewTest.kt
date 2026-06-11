@@ -111,6 +111,65 @@ class SettingRowViewTest {
     }
 
     @Test
+    fun isRequired_emptyValue_showsRequiredHint() {
+        view.isRequired = true
+        view.value = ""
+
+        val valueView = view.findViewById<TextView>(R.id.setting_value)
+        assertEquals("Required", valueView.hint?.toString())
+    }
+
+    @Test
+    fun isRequired_nonEmptyValue_hintIsEmpty() {
+        view.isRequired = true
+        view.value = "some value"
+
+        val valueView = view.findViewById<TextView>(R.id.setting_value)
+        assertTrue(valueView.hint.isNullOrEmpty())
+    }
+
+    @Test
+    fun notRequired_emptyValue_noHint() {
+        view.isRequired = false
+        view.value = ""
+
+        val valueView = view.findViewById<TextView>(R.id.setting_value)
+        assertTrue(valueView.hint.isNullOrEmpty())
+    }
+
+    @Test
+    fun isRequired_valueSetAfterRequired_hintClears() {
+        view.isRequired = true
+        view.value = ""
+        view.value = "saved value"
+
+        val valueView = view.findViewById<TextView>(R.id.setting_value)
+        assertTrue(valueView.hint.isNullOrEmpty())
+    }
+
+    @Test
+    fun suffix_strippedFromEditTextWhenEditing() {
+        view.suffix = " kW"
+        view.value = "9.72 kW"
+
+        view.findViewById<ImageButton>(R.id.setting_edit_button).performClick()
+
+        val editText = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.setting_edit_text)
+        assertEquals("9.72", editText.text.toString())
+    }
+
+    @Test
+    fun suffix_shownOnInputLayoutWhenEditing() {
+        view.suffix = " kW"
+        view.value = "9.72 kW"
+
+        view.findViewById<ImageButton>(R.id.setting_edit_button).performClick()
+
+        val inputLayout = view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.setting_input_layout)
+        assertEquals(" kW", inputLayout.suffixText)
+    }
+
+    @Test
     fun hasNoAccessibilityErrors() {
         // Measure and layout so ATF can inspect dimensions
         view.measure(

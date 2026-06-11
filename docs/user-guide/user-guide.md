@@ -8,7 +8,7 @@ EMA Companion is an Android app for APsystems solar array owners. It is designed
 
 Install EMA Companion on your Android phone or tablet (Android 12 or later required). Open it from your home screen or app drawer by tapping the **EMA Companion** icon.
 
-**First launch:** The app opens directly to the **Settings** screen and the Home navigation item is disabled. You must enter your EMA API credentials and system capacity before the rest of the app becomes accessible.
+**First launch:** The app opens directly to the **Settings** screen and the Home navigation item is disabled. You must enter your EMA API credentials, system capacity, and historic data days before the rest of the app becomes accessible.
 
 Once the required fields are saved, the bottom navigation bar unlocks and you can freely switch between screens.
 
@@ -35,15 +35,15 @@ The Settings screen is scrollable and organised into three sections.
 
 #### Solar Array Settings
 
-These fields connect EMA Companion to your APsystems account and solar array. All fields use an inline edit pattern: tap the **Edit** (pencil) icon next to a field, enter a value, then tap the **Save** (check) icon. Tap **Cancel** to discard the change.
+These fields connect EMA Companion to your APsystems account and solar array. All five fields are required — any field that has not yet been filled in shows **Required** as a hint. All fields use an inline edit pattern: tap the **Edit** (pencil) icon next to a field, enter a value, then tap the **Save** (check) icon. Tap **Cancel** to discard the change.
 
 | Field | Format | Notes |
 |---|---|---|
-| **EMA App ID** | 32 alphanumeric characters | Stored in lowercase |
-| **EMA App Secret** | 12 alphanumeric characters | Displayed masked (only last 4 characters visible); field clears when you enter edit mode |
-| **EMA System ID** | 16 alphanumeric characters | Stored in uppercase |
-| **EMA ECU ID** | 12 digits | Numeric keyboard |
-| **System Capacity** | Positive number up to 999.99 | Displayed with a " kW" suffix; decimal keyboard |
+| **EMA App ID** | 32 alphanumeric characters | Required; stored in lowercase |
+| **EMA App Secret** | 12 alphanumeric characters | Required; displayed masked (only last 4 characters visible); field clears when you enter edit mode |
+| **EMA System ID** | 16 alphanumeric characters | Required; stored in uppercase |
+| **EMA ECU ID** | 12 digits | Required; numeric keyboard |
+| **System Capacity** | Positive number up to 999.99 | Required; displayed with a " kW" suffix; decimal keyboard |
 
 If you enter a value that doesn't meet the format rules, an error message appears below the field and the Save button does nothing until the input is corrected.
 
@@ -54,7 +54,7 @@ If you enter a value that doesn't meet the format rules, an error message appear
 | **Language** | Dialog | Tap to choose: System (device default), English, or German. Takes effect immediately. |
 | **Display Mode** | Dialog | Tap to choose: System (follows OS dark/light mode), Light, or Dark. Takes effect immediately and is applied on every app start. |
 | **Notifications Enabled** | Toggle | Enables or disables app notifications. On by default. Takes effect immediately — no Save step required. |
-| **Historic Data Days** | Editable row | Number of days of production history to retain (1–90). Displayed with a " days" suffix; numeric keyboard. |
+| **Historic Data Days** | Editable row | Required; number of days of production history to retain (1–90). Displayed with a " days" suffix; numeric keyboard. |
 
 #### Configuration
 

@@ -176,6 +176,7 @@ class SettingsRepositoryTest {
         repo.setEmaSystemId("CCCCCCCCCCCCCCCC")
         repo.setEmaEcuId("123456789012")
         repo.setSystemCapacity(4.5f)
+        repo.setHistoricDataDays(30)
         assertEquals(true, repo.isConfigured())
     }
 
@@ -221,6 +222,17 @@ class SettingsRepositoryTest {
         repo.setEmaAppSecret("bbbbbbbbbbbb")
         repo.setEmaSystemId("CCCCCCCCCCCCCCCC")
         repo.setEmaEcuId("123456789012")
+        repo.setHistoricDataDays(30)
+        assertEquals(false, repo.isConfigured())
+    }
+
+    @Test
+    fun isConfigured_returnsFalse_whenHistoricDaysIsSentinel() {
+        repo.setEmaAppId("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        repo.setEmaAppSecret("bbbbbbbbbbbb")
+        repo.setEmaSystemId("CCCCCCCCCCCCCCCC")
+        repo.setEmaEcuId("123456789012")
+        repo.setSystemCapacity(4.5f)
         assertEquals(false, repo.isConfigured())
     }
 

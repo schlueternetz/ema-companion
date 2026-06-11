@@ -121,7 +121,8 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             getEmaAppSecret().isNotEmpty() &&
             getEmaSystemId().isNotEmpty() &&
             getEmaEcuId().isNotEmpty() &&
-            getSystemCapacity() != -1f
+            getSystemCapacity() != -1f &&
+            getHistoricDataDays() != -1
     }
 
     fun exportToJson(): String {

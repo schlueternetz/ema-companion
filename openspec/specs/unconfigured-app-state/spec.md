@@ -1,7 +1,7 @@
 ## Requirements
 
 ### Requirement: App navigates to Settings when required fields are missing
-The app SHALL consider itself unconfigured when any of the following fields are absent or empty: EMA App ID, EMA App Secret, EMA System ID, EMA ECU ID, System Capacity. When unconfigured, the app SHALL open directly to the Settings screen on launch and SHALL disable all bottom navigation items except Settings.
+The app SHALL consider itself unconfigured when any of the following fields are absent or empty: EMA App ID, EMA App Secret, EMA System ID, EMA ECU ID, System Capacity, Historic Data Days. When unconfigured, the app SHALL open directly to the Settings screen on launch and SHALL disable all bottom navigation items except Settings.
 
 #### Scenario: Unconfigured app opens to Settings on launch
 - **WHEN** the app is launched and one or more required fields are not set
@@ -16,3 +16,20 @@ The app SHALL consider itself unconfigured when any of the following fields are 
 - **WHEN** the app is launched and all required fields hold valid values
 - **THEN** the app SHALL open to its default start destination (not forced to Settings)
 - **AND** all bottom navigation items SHALL be enabled
+
+### Requirement: Required-but-empty fields display a "Required" indicator
+While the app is unconfigured, each required field that has no saved value SHALL display a "Required" hint in its value area, making it visible to the user without entering edit mode. The required fields are: EMA App ID, EMA App Secret, EMA System ID, EMA ECU ID, System Capacity, and Historic Data Days.
+
+#### Scenario: Empty required field shows Required hint
+- **WHEN** the app is unconfigured and the user views the Settings screen
+- **THEN** each required field that has no saved value SHALL display "Required" as a hint in the value area
+- **AND** fields that already have a saved value SHALL NOT display the hint
+
+#### Scenario: Required hint clears after field is saved
+- **WHEN** the user saves a valid value for a required field
+- **THEN** the "Required" hint for that field SHALL no longer be visible
+- **AND** the field SHALL display the saved value instead
+
+#### Scenario: Required hint does not appear for optional fields
+- **WHEN** the user views the Settings screen in any state
+- **THEN** fields that are not required (Base URL, etc.) SHALL NOT display a "Required" hint

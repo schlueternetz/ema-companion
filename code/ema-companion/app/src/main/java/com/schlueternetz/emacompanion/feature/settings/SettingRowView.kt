@@ -37,6 +37,7 @@ class SettingRowView @JvmOverloads constructor(
         set(value) {
             field = value
             valueView.text = maskedDisplay(value)
+            updateRequiredHint()
         }
 
     var isMasked: Boolean = false
@@ -50,6 +51,18 @@ class SettingRowView @JvmOverloads constructor(
     var validator: (String) -> Boolean = { true }
 
     var onSave: (String) -> Unit = {}
+
+    var isRequired: Boolean = false
+        set(value) {
+            field = value
+            updateRequiredHint()
+        }
+
+    var suffix: String = ""
+        set(value) {
+            field = value
+            inputLayout.suffixText = value
+        }
 
     var keyboardType: Int = InputType.TYPE_CLASS_TEXT
         set(value) {
@@ -77,7 +90,7 @@ class SettingRowView @JvmOverloads constructor(
 
     private fun enterEditMode() {
         savedDisplayValue = value
-        if (isMasked) editText.setText("") else editText.setText(value)
+        if (isMasked) editText.setText("") else editText.setText(value.removeSuffix(suffix))
         editText.setSelection(editText.text?.length ?: 0)
         valueView.visibility = View.GONE
         editButton.visibility = View.GONE
@@ -112,6 +125,14 @@ class SettingRowView @JvmOverloads constructor(
         valueView.visibility = View.VISIBLE
         editButton.visibility = View.VISIBLE
         errorView.visibility = View.GONE
+    }
+
+    private fun updateRequiredHint() {
+        valueView.hint = if (isRequired && value.isEmpty()) {
+            context.getString(R.string.setting_row_required_hint)
+        } else {
+            null
+        }
     }
 
     private fun maskedDisplay(raw: String): String {
