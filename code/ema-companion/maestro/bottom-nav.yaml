@@ -1,0 +1,23 @@
+# Critical flow: bottom-nav reachability (ADR-002).
+# Verifies the three bottom-nav destinations and that the User Guide is
+# reachable even when the app is unconfigured (Home stays disabled).
+appId: com.schlueternetz.emacompanion
+---
+- launchApp:
+    clearState: true
+
+# Unconfigured app opens on Settings.
+- assertVisible: "Settings"
+
+# All three bottom-nav items are present.
+- assertVisible: "Home"
+- assertVisible: "User Guide"
+
+# User Guide is reachable without configuring the app.
+- tapOn: "User Guide"
+- assertVisible:
+    text: "Overview"
+
+# Navigate back to Settings (always rightmost, always enabled).
+- tapOn: "Settings"
+- assertVisible: "Settings"

@@ -41,9 +41,9 @@ Markwon keeps rendering in a native `TextView` and integrates with Material text
 
 The Navigation Component's back stack handles all back-navigation automatically — no custom stack management needed.
 
-### Image loading: custom `AsyncDrawableLoader` for assets
+### Image loading: Markwon `FileSchemeHandler` + relative-path rewrite
 
-Markwon's default image plugin loads from network or data URIs; it does not read from `assets/` out of the box. A small custom `AsyncDrawableLoader` implementation intercepts relative image paths, resolves them against the current file's parent folder (derived from `assetPath`), and loads them via `AssetManager`. This keeps the image paths in the Markdown files simple (e.g. `![screenshot](screenshots/home.png)`) and works for any base folder, including test fixtures.
+> **Correction (implementation):** The original plan called for a bespoke `AsyncDrawableLoader` (~50 lines). This proved unnecessary — Markwon ships `FileSchemeHandler.createWithAssets(assets)`, which already loads `file:///android_asset/...` URLs from the `AssetManager` (threading, bounds, decoding handled). The fragment registers that handler on `ImagesPlugin` and rewrites relative image destinations (`![alt](name.png)`) to `file:///android_asset/<folder>/name.png` before rendering, where `<folder>` is derived from `assetPath`'s parent. Absolute URLs (`http(s)://`, `file://`) are left untouched via a scheme-detecting negative lookahead. This keeps Markdown image paths simple and uses Markwon's tested code instead of a custom loader.
 
 ### Asset sync: Gradle `Copy` task (entire folder) wired to `preBuild`
 
@@ -57,12 +57,14 @@ A `tasks.register<Copy>` block in `app/build.gradle.kts` copies the entire `docs
 
 Consistent with ADR-004 (feature-first packaging). `UserGuideFragment` and its custom Markwon helpers live here.
 
-### Test fixtures: `src/test/assets/feature/userguide/`
+### Test fixtures: `src/debug/assets/feature/userguide/`
 
-Robolectric with `isIncludeAndroidResources = true` merges `src/test/assets/` into the test context alongside `src/main/assets/`, but test assets are never included in the production APK. Fixtures go in a feature-specific folder that mirrors the source package structure and cannot collide with production assets:
+> **Correction (implementation):** The original plan placed fixtures in `src/test/assets/` on the assumption that `isIncludeAndroidResources = true` merges them into the Robolectric context. This is **false** — Robolectric reads `android_merged_assets`, which AGP populates from the **debug variant** merge (`src/main` + `src/debug`), not `src/test`. Fixtures in `src/test/assets/` are invisible to `AssetManager.open()` and the fragment silently fell back to its error text. Fixtures therefore live in `src/debug/assets/`, which Robolectric can read and which is **excluded from the release APK** (release merges `src/main` + `src/release` only).
+
+Fixtures go in a feature-specific folder that mirrors the source package structure and cannot collide with production assets (production navigation only ever resolves paths under `user-guide/`):
 
 ```
-src/test/assets/feature/userguide/
+src/debug/assets/feature/userguide/
   index.md          # references linked-page.md and test-image.png
   linked-page.md    # a second page to verify back-navigation
   test-image.png    # a tiny valid PNG to verify image loading
@@ -72,7 +74,7 @@ This also clarifies the `assetPath` contract: the argument is a path relative to
 
 ## Risks / Trade-offs
 
-- **Asset image loader complexity** — The custom `AsyncDrawableLoader` adds ~50 lines but is self-contained. If the Markwon image module's API changes, only this class needs updating. → Pin Markwon version in `libs.versions.toml`.
+- **Image loading via path rewrite** — Relative image destinations are rewritten to `file:///android_asset/...` and loaded by Markwon's `FileSchemeHandler` (no custom loader). If the Markwon image module's API changes, only the rewrite + handler registration in `UserGuideFragment` needs updating. → Pin Markwon version in `libs.versions.toml`.
 - **Real-doc tests depend on copy task** — Tests that use the real `user-guide.md` (e.g. smoke test that something loads) require `preBuild` to have run first. → Use test fixtures for behaviour tests; reserve real-doc tests for a single existence check that gives a clear error if the copy hasn't run.
 - **Relative path resolution for deep pages** — If `user-guide.md` links to `topics/setup.md` and that file links back to `../user-guide.md`, the resolver must normalise paths correctly. → Use `java.net.URI` relative resolution, which handles `../` correctly.
 - **Large image assets** — The APK size grows with each image added to the guide. → Acceptable for a documentation folder; flag if size becomes a concern.

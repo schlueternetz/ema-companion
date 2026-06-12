@@ -496,7 +496,9 @@ class SettingsFragment : Fragment() {
         val menu = bottomNav.menu
         for (i in 0 until menu.size()) {
             val item = menu.getItem(i)
-            item.isEnabled = configured || item.itemId == R.id.settingsFragment
+            item.isEnabled = configured ||
+                item.itemId == R.id.settingsFragment ||
+                item.itemId == R.id.userGuideFragment
         }
     }
 

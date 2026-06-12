@@ -3,6 +3,7 @@
     <string name="placeholder_hello">Hello World!</string>
     <string name="nav_home">Home</string>
     <string name="nav_settings">Settings</string>
+    <string name="nav_user_guide">User Guide</string>
 
     <!-- Settings section headers -->
     <string name="settings_section_solar_array">Solar Array Settings</string>

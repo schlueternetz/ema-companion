@@ -4,19 +4,16 @@ description: Writes a summary of lessons learned to a log file so it avoids maki
 allowed-tools: Read Write
 ---
 
-After making code or documentation changes, write a summary of lessons learned to @ai/lessons-learned.md so it avoids making the same mistakes again. 
-Keep it short and focused on actionable insights. Keep the file under 10k tokens and clean up if required, keeping the most relevant insights. 
-Use the following format to structure your summary:
+After making code or documentation changes, write a summary of lessons learned to @ai/lessons-learned.md so it avoids making the same mistakes again.
 
-## {Date}: {Short title of the lesson}
-### What Went Well
-* <!-- What accelerated development? (e.g., "New linter caught bugs early") -->
-* <!-- What architecture choice felt right? -->
+Write in caveman style: short, direct, no fluff. One line per bullet — just the fact. No full sentences, no "we", no "I", no trailing explanations unless critical. Keep the file under 5k tokens; trim oldest/least useful entries if needed.
 
-### What Didn't Work (Obstacles & Roadblocks)
-* <!-- What wasted time? (e.g., "Mismatched environment variables took 2 hours to debug") -->
-* <!-- What technical debt did we encounter? -->
+## {Date}: {Short title}
+### Went Well
+* <!-- what worked, one line -->
 
-### ⚠️ Mistakes to Avoid Next Time
-* <!-- Crucial anti-patterns discovered (e.g., "Do not use X library with Y framework because...") -->
-* <!-- Missing steps omitted during local testing -->
+### Didn't Work
+* <!-- what wasted time, one line -->
+
+### Avoid
+* <!-- anti-pattern + why, one line -->

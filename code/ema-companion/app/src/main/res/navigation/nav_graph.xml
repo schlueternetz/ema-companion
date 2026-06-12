@@ -14,4 +14,14 @@
         android:name="com.schlueternetz.emacompanion.feature.settings.SettingsFragment"
         android:label="@string/nav_settings" />
 
+    <fragment
+        android:id="@+id/userGuideFragment"
+        android:name="com.schlueternetz.emacompanion.feature.userguide.UserGuideFragment"
+        android:label="@string/nav_user_guide">
+        <argument
+            android:name="assetPath"
+            app:argType="string"
+            android:defaultValue="user-guide/user-guide.md" />
+    </fragment>
+
 </navigation>

@@ -2,6 +2,7 @@
     <string name="placeholder_hello">Hallo Welt!</string>
     <string name="nav_home">Startseite</string>
     <string name="nav_settings">Einstellungen</string>
+    <string name="nav_user_guide">Benutzerhandbuch</string>
 
     <!-- Settings section headers -->
     <string name="settings_section_solar_array">Solaranlagen-Einstellungen</string>

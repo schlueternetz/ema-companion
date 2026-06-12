@@ -3,6 +3,13 @@ plugins {
     alias(libs.plugins.ktlint)
 }
 
+val repoRoot = rootDir.parentFile.parentFile
+tasks.register<Copy>("copyUserGuideAssets") {
+    from(repoRoot.resolve("docs/user-guide"))
+    into(layout.projectDirectory.dir("src/main/assets/user-guide"))
+}
+tasks.named("preBuild") { dependsOn("copyUserGuideAssets") }
+
 android {
     namespace = "com.schlueternetz.emacompanion"
     compileSdk {
@@ -51,7 +58,11 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.security.crypto)
+    implementation(libs.markwon.core)
+    implementation(libs.markwon.image)
+    implementation(libs.markwon.ext.tables)
     testImplementation(libs.junit)
+    testImplementation(libs.androidx.navigation.testing)
     testImplementation(libs.robolectric)
     testImplementation(libs.accessibility.test.framework)
     testImplementation(libs.androidx.espresso.accessibility)

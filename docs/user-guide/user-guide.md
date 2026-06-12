@@ -4,6 +4,8 @@
 
 EMA Companion is an Android app for APsystems solar array owners. It is designed to work alongside the existing EMA app — not replace it — and will add features such as detailed production statistics and graphs, home screen widgets, and alert notifications.
 
+![EMA Companion system context: the owner uses both the EMA app and EMA Companion on their Android device; both retrieve data from the EMA API, which in turn reads from the solar array.](system-context.png)
+
 ## Getting Started
 
 Install EMA Companion on your Android phone or tablet (Android 12 or later required). Open it from your home screen or app drawer by tapping the **EMA Companion** icon.
@@ -14,12 +16,13 @@ Once the required fields are saved, the bottom navigation bar unlocks and you ca
 
 ## Navigation
 
-A bottom navigation bar runs across the bottom of every screen with two destinations:
+A bottom navigation bar runs across the bottom of every screen with three destinations:
 
 - **Home** — the main dashboard (currently a placeholder)
-- **Settings** — app preferences and configuration
+- **User Guide** — this guide, viewable inside the app
+- **Settings** — app preferences and configuration (always the rightmost item)
 
-When the app is not fully configured, only **Settings** is reachable. All other items are re-enabled automatically once configuration is complete.
+When the app is not fully configured, only **Settings** and **User Guide** are reachable. The **Home** item (and any future screens) are re-enabled automatically once configuration is complete.
 
 ## Screens
 
@@ -28,6 +31,12 @@ When the app is not fully configured, only **Settings** is reachable. All other 
 > **Early development:** The Home screen is currently a placeholder displaying "Hello World!" while production features are being built.
 
 Once development is complete, this screen will be the central dashboard for your solar production data.
+
+### User Guide
+
+The **User Guide** screen shows this guide inside the app, so help is always at hand — even before you have configured your credentials. It is available from the moment you first open the app.
+
+The guide is formatted text with headings, tables, and images, and you can scroll through it. Where a page links to another section, tap the link to open that page; use your device's **Back** gesture or button to return to the previous page. Links to external websites open in your browser. The guide is available in English.
 
 ### Settings
 
@@ -78,13 +87,20 @@ If you enter a value that doesn't meet the format rules, an error message appear
 |---|---|
 | **API Request Limit** | Maximum number of EMA API calls permitted per month (1–2,678,400). Defaults to 1,000. Displayed with a "req/month" suffix outside the input; numeric keyboard. Tap the reset icon (↺) to restore the default. The reset icon is disabled while the field is in edit mode. A progress bar below the field shows how many of this month's requests have been consumed, with a label showing the exact count (e.g. "800 / 1000 requests this month"). |
 | **Base URL** | The API endpoint used to reach the EMA service. Defaults to `https://api.apsystemsema.com:9282/user/api/v2/`. Must be a valid URL up to 2,048 characters. Tap the reset icon (↺) beside the field to restore the default without typing. |
+
+#### Configuration
+
+These actions apply to **all** settings on the page, not just the API settings.
+
+| Control | Description |
+|---|---|
 | **Import Settings** | Opens the system file picker to select a JSON settings file. If the file is plain JSON all recognised fields are merged into the current settings. If the file is encrypted you are prompted for the 4-digit PIN that was set during export. |
 | **Export Settings** | Saves all settings to a file named `ema-companion-settings.json` in a location you choose. A dialog first asks whether to export without encryption or to encrypt with a 4-digit PIN. |
 | **Factory Reset** | Permanently deletes all settings and any locally stored data. A confirmation dialog appears before anything is deleted. Tap **Reset** to confirm or **Cancel** to abort. |
 
 ## Import and Export
 
-Settings can be transferred between devices or backed up using the Import and Export buttons in the **API Settings** section.
+Settings can be transferred between devices or backed up using the Import and Export buttons in the **Configuration** section.
 
 **Exporting:**
 1. Tap **Export Settings**.

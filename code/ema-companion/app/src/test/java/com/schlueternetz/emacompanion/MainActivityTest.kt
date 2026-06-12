@@ -93,12 +93,13 @@ class MainActivityTest {
         val activity = Robolectric.buildActivity(MainActivity::class.java).create().get()
         val bottomNav = activity.findViewById<BottomNavigationView>(R.id.bottom_nav)
         val menu = bottomNav.menu
+        val alwaysEnabled = setOf(R.id.settingsFragment, R.id.userGuideFragment)
         for (i in 0 until menu.size()) {
             val item = menu.getItem(i)
-            if (item.itemId == R.id.settingsFragment) {
-                assertTrue("Settings item should be enabled", item.isEnabled)
+            if (item.itemId in alwaysEnabled) {
+                assertTrue("${item.title} should be enabled when unconfigured", item.isEnabled)
             } else {
-                assertFalse("Non-settings item ${item.title} should be disabled", item.isEnabled)
+                assertFalse("${item.title} should be disabled when unconfigured", item.isEnabled)
             }
         }
     }
@@ -166,6 +167,26 @@ class MainActivityTest {
         NavigationUI.onNavDestinationSelected(homeItem, navController)
 
         assertEquals("Tapping Home should navigate to homeFragment", R.id.homeFragment, navController.currentDestination?.id)
+    }
+
+    @Test
+    fun mainActivity_unconfigured_userGuideNavItemIsEnabled() {
+        val activity = Robolectric.buildActivity(MainActivity::class.java).create().get()
+        val bottomNav = activity.findViewById<BottomNavigationView>(R.id.bottom_nav)
+        assertTrue(
+            "User Guide nav item should be enabled even when unconfigured",
+            bottomNav.menu.findItem(R.id.userGuideFragment).isEnabled,
+        )
+    }
+
+    @Test
+    fun mainActivity_unconfigured_homeNavItemIsDisabled() {
+        val activity = Robolectric.buildActivity(MainActivity::class.java).create().get()
+        val bottomNav = activity.findViewById<BottomNavigationView>(R.id.bottom_nav)
+        assertFalse(
+            "Home nav item should be disabled when unconfigured",
+            bottomNav.menu.findItem(R.id.homeFragment).isEnabled,
+        )
     }
 
     @Test

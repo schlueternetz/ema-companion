@@ -3,7 +3,6 @@ package com.schlueternetz.emacompanion
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -42,21 +41,15 @@ class MainActivity : AppCompatActivity() {
         bottomNav.setupWithNavController(navController)
 
         if (!configured) {
-            disableNonSettingsNavItems(bottomNav, navController)
+            applyUnconfiguredNavState(bottomNav)
         }
     }
 
-    private fun disableNonSettingsNavItems(
-        bottomNav: BottomNavigationView,
-        navController: NavController,
-    ) {
+    private fun applyUnconfiguredNavState(bottomNav: BottomNavigationView) {
         val menu = bottomNav.menu
-        val settingsId = navController.graph.findNode(R.id.settingsFragment)?.id
         for (i in 0 until menu.size()) {
             val item = menu.getItem(i)
-            if (item.itemId != settingsId) {
-                item.isEnabled = false
-            }
+            item.isEnabled = item.itemId == R.id.settingsFragment || item.itemId == R.id.userGuideFragment
         }
     }
 }

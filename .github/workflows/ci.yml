@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+# A newer push to the same ref supersedes an in-progress run — don't burn
+# Actions minutes (and an emulator) on commits that are already stale.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: code/ema-companion
+
+jobs:
+  unit:
+    name: Unit + Robolectric + ktlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Unit + Robolectric tests and ktlint
+        run: ./gradlew testDebugUnitTest ktlintCheck
+
+  e2e:
+    name: Maestro E2E (emulator)
+    needs: unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # Hardware acceleration for the Android emulator (ubuntu-latest has KVM).
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+        working-directory: .
+
+      - name: Install Maestro
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+        working-directory: .
+
+      # Boots an API-33 emulator (matches the Lenovo_Tab_11_Plus AVD / test sdk),
+      # installs the debug APK, then runs the Maestro flows black-box.
+      - name: Run Maestro flows
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: x86_64
+          target: google_apis
+          profile: pixel_tablet
+          working-directory: code/ema-companion
+          script: |
+            ./gradlew installDebug
+            maestro test maestro/

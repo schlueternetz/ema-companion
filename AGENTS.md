@@ -4,6 +4,7 @@ This file provides guidance to AI coding agents when working in this repository.
 
 ## Project
 Load @README.md for general project information.
+Load @ai/lessons-learned.md and apply past lessons before starting any task.
 
 ## Stack
 

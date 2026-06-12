@@ -60,21 +60,25 @@ Integration tests require the mock service to be running and are slower than uni
 
 ### Layer 4 — Maestro E2E flows
 
-Location: `maestro/` (project root, YAML flows)
+Location: `code/ema-companion/maestro/` (alongside the Gradle project, YAML flows — all app code and resources live under `code/`)
 
 [Maestro](https://maestro.mobile.dev/) is a free, open-source mobile UI testing CLI. Flows run against a live emulator as a black box — no app code changes or compilation needed.
 
 Use for a small set of critical user journeys:
 - App launches and displays the Home screen
-- Navigation between Home and Settings
+- Navigation between Home, User Guide, and Settings (`maestro/bottom-nav.yaml`)
 - Language change takes effect immediately
 
 Do not use Maestro for exhaustive UI coverage. ViewModel unit tests + manual testing cover the remainder. Espresso is not used.
+
+**Execution:**
+- **Locally**, on demand, via the `/qa` skill (build → install → `maestro test`) at commit-time checkpoints. This is the primary E2E trigger for solo, straight-to-`main` work.
+- **In CI** (`.github/workflows/ci.yml`) on every `push` to `main`: a fast `unit` job (`testDebugUnitTest` + `ktlintCheck`) always runs; an `e2e` job runs `needs: unit` (only if unit is green) on an API-33 emulator via `reactivecircus/android-emulator-runner`. The Android emulator runs on `ubuntu-latest` (Linux, 1× minute rate — no macOS 10× cost). Per-push E2E is viable here because commit volume is low; if it grows, path-filter the `e2e` job to `app/**` + `maestro/**` or move it to a nightly `schedule:`.
 
 ## Consequences
 
 - The emulator is only required for Maestro flows — all other automated tests run on the JVM
 - `./gradlew testDebugUnitTest` covers layers 1 and 2 and is the primary fast-feedback loop
 - Integration tests require the mock API service running locally; document startup in the service's README
-- Maestro flows are run manually before merging changes that touch navigation or critical UI paths; CI integration is optional (Maestro Cloud is a paid service)
+- Maestro flows run locally via `/qa` and in CI on every push to `main` (see Layer 4 "Execution"); the self-hosted emulator path avoids Maestro Cloud's paid tier
 - All implementation follows AI-TDD (see [ADR-001](001-coding-standards.md)); the test layer for each task is chosen according to this strategy
