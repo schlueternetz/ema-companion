@@ -1,5 +1,25 @@
 # AI Lessons Learned
 
+## 2026-06-11: settings-field-hints — Robolectric + appcompat AlertDialog
+
+### What Went Well
+* Adding `hintText: String?` as an optional property directly on `SettingRowView` was clean and minimal — no new classes, no breaking changes, existing usages unaffected
+* 4 of 5 hint-related tests (visibility and edit-mode behaviour) passed immediately after implementation with no iteration needed
+* ktlint passed first try; no style issues from the new property or import
+
+### What Didn't Work (Obstacles & Roadblocks)
+* `ShadowAlertDialog.getLatestAlertDialog()` returns **null** for dialogs built with `androidx.appcompat.app.AlertDialog.Builder` — Robolectric's static tracking in `ShadowAlertDialog` does not capture appcompat dialogs even though appcompat extends the platform class
+* `is android.app.AlertDialog` and `as android.app.AlertDialog` both **fail** in Robolectric for `androidx.appcompat.app.AlertDialog` instances — the class-loader instrumentation breaks normal Java instanceof semantics for appcompat library classes
+* `AlertDialog.Builder(ApplicationProvider.getApplicationContext())` produces a dialog that is never shown in Robolectric (ShadowDialog also returns null) — Application context cannot host a dialog window
+
+### ⚠️ Mistakes to Avoid Next Time
+* **Do not use `ShadowAlertDialog.getLatestAlertDialog()`** for appcompat dialogs — always use `ShadowDialog.getLatestDialog()` and cast to `androidx.appcompat.app.AlertDialog` (not `android.app.AlertDialog`)
+* **Do not use Application context for AlertDialog tests** — use `Robolectric.buildActivity(AppCompatActivity::class.java).setup().get()` and set the theme on the activity before creating any view that will show a dialog
+* **To read dialog message text in Robolectric**, use `dialog.window?.decorView?.findViewById<TextView>(android.R.id.message)` — the Robolectric shadow message APIs are unreliable for appcompat dialogs
+* When adding `hintText` (or similar dialog-triggering properties), set `label` **before** `hintText` in `SettingsFragment` wire methods — the click listener captures `label` at the time `hintText` is set, so label must already be populated
+
+---
+
 ## 2026-06-11: import-unlocks-nav bug — orphaned back stack
 
 ### What Went Well

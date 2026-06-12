@@ -98,6 +98,7 @@ class SettingsFragment : Fragment() {
     private fun wireEmaAppId() {
         settingEmaAppId.label = getString(R.string.settings_ema_app_id_label)
         settingEmaAppId.isRequired = true
+        settingEmaAppId.hintText = getString(R.string.settings_ema_app_id_hint)
         settingEmaAppId.value = repository.getEmaAppId()
         settingEmaAppId.errorMessage = getString(R.string.settings_ema_app_id_error)
         settingEmaAppId.validator = { it.matches(Regex("[a-zA-Z0-9]{32}")) }
@@ -112,6 +113,7 @@ class SettingsFragment : Fragment() {
         settingEmaAppSecret.label = getString(R.string.settings_ema_app_secret_label)
         settingEmaAppSecret.isRequired = true
         settingEmaAppSecret.isMasked = true
+        settingEmaAppSecret.hintText = getString(R.string.settings_ema_app_secret_hint)
         settingEmaAppSecret.value = repository.getEmaAppSecret()
         settingEmaAppSecret.errorMessage = getString(R.string.settings_ema_app_secret_error)
         settingEmaAppSecret.validator = { it.matches(Regex("[a-zA-Z0-9]{12}")) }
@@ -125,6 +127,7 @@ class SettingsFragment : Fragment() {
     private fun wireEmaSystemId() {
         settingEmaSystemId.label = getString(R.string.settings_ema_system_id_label)
         settingEmaSystemId.isRequired = true
+        settingEmaSystemId.hintText = getString(R.string.settings_ema_system_id_hint)
         settingEmaSystemId.value = repository.getEmaSystemId()
         settingEmaSystemId.errorMessage = getString(R.string.settings_ema_system_id_error)
         settingEmaSystemId.validator = { it.matches(Regex("[a-zA-Z0-9]{16}")) }
@@ -138,6 +141,7 @@ class SettingsFragment : Fragment() {
     private fun wireEmaEcuId() {
         settingEmaEcuId.label = getString(R.string.settings_ema_ecu_id_label)
         settingEmaEcuId.isRequired = true
+        settingEmaEcuId.hintText = getString(R.string.settings_ema_ecu_id_hint)
         settingEmaEcuId.value = repository.getEmaEcuId()
         settingEmaEcuId.keyboardType = InputType.TYPE_CLASS_NUMBER
         settingEmaEcuId.errorMessage = getString(R.string.settings_ema_ecu_id_error)
@@ -152,6 +156,7 @@ class SettingsFragment : Fragment() {
     private fun wireSystemCapacity() {
         settingSystemCapacity.label = getString(R.string.settings_system_capacity_label)
         settingSystemCapacity.isRequired = true
+        settingSystemCapacity.hintText = getString(R.string.settings_system_capacity_hint)
         settingSystemCapacity.suffix = getString(R.string.settings_system_capacity_suffix)
         val cap = repository.getSystemCapacity()
         settingSystemCapacity.value = if (cap == -1f) "" else "$cap"

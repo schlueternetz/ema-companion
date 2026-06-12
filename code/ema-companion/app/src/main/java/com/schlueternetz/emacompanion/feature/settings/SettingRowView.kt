@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.schlueternetz.emacompanion.R
@@ -20,6 +21,7 @@ class SettingRowView @JvmOverloads constructor(
 
     private val labelView: TextView
     private val valueView: TextView
+    private val infoButton: ImageButton
     private val editButton: ImageButton
     private val saveButton: ImageButton
     private val cancelButton: ImageButton
@@ -73,12 +75,28 @@ class SettingRowView @JvmOverloads constructor(
             editText.inputType = value
         }
 
+    var hintText: String? = null
+        set(value) {
+            field = value
+            infoButton.visibility = if (value != null) View.VISIBLE else View.GONE
+            infoButton.setOnClickListener {
+                if (value != null) {
+                    AlertDialog.Builder(context)
+                        .setTitle(label)
+                        .setMessage(value)
+                        .setPositiveButton(android.R.string.ok) { d, _ -> d.dismiss() }
+                        .show()
+                }
+            }
+        }
+
     private var savedDisplayValue: String = ""
 
     init {
         LayoutInflater.from(context).inflate(R.layout.view_setting_row, this, true)
         labelView = findViewById(R.id.setting_label)
         valueView = findViewById(R.id.setting_value)
+        infoButton = findViewById(R.id.setting_info_button)
         editButton = findViewById(R.id.setting_edit_button)
         saveButton = findViewById(R.id.setting_save_button)
         cancelButton = findViewById(R.id.setting_cancel_button)
@@ -97,6 +115,7 @@ class SettingRowView @JvmOverloads constructor(
         editText.setText(if (isMasked) "" else value)
         editText.setSelection(editText.text?.length ?: 0)
         valueView.visibility = View.GONE
+        infoButton.visibility = View.GONE
         editButton.visibility = View.GONE
         inputLayout.visibility = View.VISIBLE
         saveButton.visibility = View.VISIBLE
@@ -128,6 +147,7 @@ class SettingRowView @JvmOverloads constructor(
         saveButton.visibility = View.GONE
         cancelButton.visibility = View.GONE
         valueView.visibility = View.VISIBLE
+        infoButton.visibility = if (hintText != null) View.VISIBLE else View.GONE
         editButton.visibility = View.VISIBLE
         errorView.visibility = View.GONE
         onEditStateChanged?.invoke(false)

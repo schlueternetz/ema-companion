@@ -9,6 +9,7 @@ import com.google.android.apps.common.testing.accessibility.framework.Accessibil
 import com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator
 import com.schlueternetz.emacompanion.R
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -222,6 +223,60 @@ class SettingRowViewTest {
         assertEquals("typed value", saved)
         val valueView = view.findViewById<TextView>(R.id.setting_value)
         assertEquals(View.VISIBLE, valueView.visibility)
+    }
+
+    @Test
+    fun hintText_null_infoButtonIsGone() {
+        view.hintText = null
+        val infoButton = view.findViewById<ImageButton>(R.id.setting_info_button)
+        assertEquals(View.GONE, infoButton.visibility)
+    }
+
+    @Test
+    fun hintText_set_infoButtonIsVisible() {
+        view.hintText = "Find this in Settings → ECU"
+        val infoButton = view.findViewById<ImageButton>(R.id.setting_info_button)
+        assertEquals(View.VISIBLE, infoButton.visibility)
+    }
+
+    @Test
+    fun hintText_infoButtonClick_showsDialogWithLabelAndHint() {
+        // AlertDialog.Builder requires Activity context; use buildActivity for this test
+        val activity = org.robolectric.Robolectric
+            .buildActivity(androidx.appcompat.app.AppCompatActivity::class.java)
+            .setup()
+            .get()
+        activity.setTheme(R.style.Theme_EMACompanion)
+        val activityView = SettingRowView(activity)
+        activityView.label = "EMA ECU ID"
+        activityView.hintText = "Find this in Settings → ECU"
+
+        activityView.findViewById<ImageButton>(R.id.setting_info_button).performClick()
+
+        // Robolectric tracks appcompat AlertDialog via ShadowDialog (not ShadowAlertDialog)
+        val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
+            as androidx.appcompat.app.AlertDialog
+        assertTrue(dialog.isShowing)
+        val messageView = dialog.window?.decorView
+            ?.findViewById<TextView>(android.R.id.message)
+        assertEquals("Find this in Settings → ECU", messageView?.text?.toString())
+    }
+
+    @Test
+    fun hintText_infoButtonHiddenDuringEditMode() {
+        view.hintText = "Some hint"
+        view.findViewById<ImageButton>(R.id.setting_edit_button).performClick()
+        val infoButton = view.findViewById<ImageButton>(R.id.setting_info_button)
+        assertEquals(View.GONE, infoButton.visibility)
+    }
+
+    @Test
+    fun hintText_infoButtonRestoredAfterCancelEdit() {
+        view.hintText = "Some hint"
+        view.findViewById<ImageButton>(R.id.setting_edit_button).performClick()
+        view.findViewById<ImageButton>(R.id.setting_cancel_button).performClick()
+        val infoButton = view.findViewById<ImageButton>(R.id.setting_info_button)
+        assertEquals(View.VISIBLE, infoButton.visibility)
     }
 
     @Test

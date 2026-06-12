@@ -32,6 +32,16 @@
                 tools:text="Value" />
 
             <ImageButton
+                android:id="@+id/setting_info_button"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/setting_row_info_button_description"
+                android:src="@drawable/ic_info"
+                android:visibility="gone"
+                app:tint="?attr/colorOnSurface" />
+
+            <ImageButton
                 android:id="@+id/setting_edit_button"
                 android:layout_width="48dp"
                 android:layout_height="48dp"

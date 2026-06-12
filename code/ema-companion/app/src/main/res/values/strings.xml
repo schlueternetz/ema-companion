@@ -35,23 +35,28 @@
     <!-- EMA App ID -->
     <string name="settings_ema_app_id_label">EMA App ID</string>
     <string name="settings_ema_app_id_error">Must be exactly 32 alphanumeric characters</string>
+    <string name="settings_ema_app_id_hint">The APP ID generated in Settings → OpenAPI Service → Developer Authorization in the EMA app.\n\nNote: OpenAPI access must be enabled first in Settings → OpenAPI Service.</string>
 
     <!-- EMA App Secret -->
     <string name="settings_ema_app_secret_label">EMA App Secret</string>
     <string name="settings_ema_app_secret_error">Must be exactly 12 alphanumeric characters</string>
+    <string name="settings_ema_app_secret_hint">The APP Secret generated in Settings → OpenAPI Service → Developer Authorization in the EMA app.</string>
 
     <!-- EMA System ID -->
     <string name="settings_ema_system_id_label">EMA System ID</string>
     <string name="settings_ema_system_id_error">Must be exactly 16 alphanumeric characters</string>
+    <string name="settings_ema_system_id_hint">The sid value found in Settings → Account Details in the EMA app.</string>
 
     <!-- EMA ECU ID -->
     <string name="settings_ema_ecu_id_label">EMA ECU ID</string>
     <string name="settings_ema_ecu_id_error">Must be exactly 12 digits</string>
+    <string name="settings_ema_ecu_id_hint">The ECU ID value found in Settings → ECU in the EMA app.</string>
 
     <!-- System Capacity -->
     <string name="settings_system_capacity_label">System Capacity</string>
     <string name="settings_system_capacity_suffix">kW</string>
     <string name="settings_system_capacity_error">Enter a positive number up to 2,000 with at most 2 decimal places</string>
+    <string name="settings_system_capacity_hint">The Capacity value shown on the Home screen in the EMA app.</string>
 
     <!-- API Request Limit -->
     <string name="settings_api_request_limit_label">API Request Limit</string>
@@ -95,6 +100,7 @@
     <string name="setting_row_edit_button_description">Edit</string>
     <string name="setting_row_save_button_description">Save</string>
     <string name="setting_row_cancel_button_description">Cancel</string>
+    <string name="setting_row_info_button_description">Info</string>
 
     <!-- Suggested filename -->
     <string name="settings_export_filename" translatable="false">ema-companion-settings.json</string>

@@ -34,23 +34,28 @@
     <!-- EMA App ID -->
     <string name="settings_ema_app_id_label">EMA App-ID</string>
     <string name="settings_ema_app_id_error">Muss genau 32 alphanumerische Zeichen haben</string>
+    <string name="settings_ema_app_id_hint">Die APP ID, die in Einstellungen → OpenAPI-Dienst → Entwickler-Autorisierung in der EMA-App generiert wird.\n\nHinweis: Der OpenAPI-Zugang muss zuerst unter Einstellungen → OpenAPI-Dienst aktiviert werden.</string>
 
     <!-- EMA App Secret -->
     <string name="settings_ema_app_secret_label">EMA App-Geheimnis</string>
     <string name="settings_ema_app_secret_error">Muss genau 12 alphanumerische Zeichen haben</string>
+    <string name="settings_ema_app_secret_hint">Das APP Secret, das in Einstellungen → OpenAPI-Dienst → Entwickler-Autorisierung in der EMA-App generiert wird.</string>
 
     <!-- EMA System ID -->
     <string name="settings_ema_system_id_label">EMA System-ID</string>
     <string name="settings_ema_system_id_error">Muss genau 16 alphanumerische Zeichen haben</string>
+    <string name="settings_ema_system_id_hint">Der sid-Wert unter Einstellungen → Kontodetails in der EMA-App.</string>
 
     <!-- EMA ECU ID -->
     <string name="settings_ema_ecu_id_label">EMA ECU-ID</string>
     <string name="settings_ema_ecu_id_error">Muss genau 12 Ziffern haben</string>
+    <string name="settings_ema_ecu_id_hint">Die ECU-ID unter Einstellungen → ECU in der EMA-App.</string>
 
     <!-- System Capacity -->
     <string name="settings_system_capacity_label">Systemleistung</string>
     <string name="settings_system_capacity_suffix">kW</string>
     <string name="settings_system_capacity_error">Bitte eine positive Zahl bis 2.000 mit höchstens 2 Dezimalstellen eingeben</string>
+    <string name="settings_system_capacity_hint">Der Kapazitätswert auf dem Startbildschirm der EMA-App.</string>
 
     <!-- API Request Limit -->
     <string name="settings_api_request_limit_label">API-Anfragelimit</string>
@@ -94,4 +99,5 @@
     <string name="setting_row_edit_button_description">Bearbeiten</string>
     <string name="setting_row_save_button_description">Speichern</string>
     <string name="setting_row_cancel_button_description">Abbrechen</string>
+    <string name="setting_row_info_button_description">Info</string>
 </resources>

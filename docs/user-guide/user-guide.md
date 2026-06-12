@@ -37,6 +37,8 @@ The Settings screen is scrollable and organised into three sections.
 
 These fields connect EMA Companion to your APsystems account and solar array. All five fields are required — any field that has not yet been filled in shows **Required** as a hint. All fields use an inline edit pattern: tap the **Edit** (pencil) icon next to a field, enter a value, then tap the **Save** (check) icon or press Enter on the keyboard. Tap **Cancel** to discard the change. Only one field can be in edit mode at a time — opening a second field automatically closes the first.
 
+Each field has an **Info** (ⓘ) button. Tap it to see a description of exactly where to find that value in the EMA app. The info button is hidden while a field is in edit mode.
+
 | Field | Format | Notes |
 |---|---|---|
 | **EMA App ID** | 32 alphanumeric characters | Required; stored in lowercase |
@@ -46,6 +48,20 @@ These fields connect EMA Companion to your APsystems account and solar array. Al
 | **System Capacity** | Positive number up to 2,000 | Required; displayed with a "kW" suffix outside the input; decimal keyboard; up to 2 decimal places |
 
 If you enter a value that doesn't meet the format rules, an error message appears below the field and the Save button does nothing until the input is corrected.
+
+##### Where to find these values in the EMA app
+
+> **Prerequisite:** The App ID and App Secret only appear in the EMA app after OpenAPI access has been enabled. Go to **Settings → OpenAPI Service** in the EMA app and enable it before looking for the Developer Authorization settings.
+
+| Field | Where to find it |
+|---|---|
+| **EMA App ID** | **Settings → OpenAPI Service → Developer Authorization** — the APP ID shown there |
+| **EMA App Secret** | **Settings → OpenAPI Service → Developer Authorization** — the APP Secret shown there |
+| **EMA System ID** | **Settings → Account Details** — the `sid` value |
+| **EMA ECU ID** | **Settings → ECU** — the ECU ID value |
+| **System Capacity** | **Home screen** — the Capacity value displayed there |
+
+> **Important:** If the EMA API is not used for 6 consecutive months, APsystems may automatically revoke API access. If EMA Companion stops retrieving data, open the EMA app and verify that OpenAPI access is still enabled under **Settings → OpenAPI Service**.
 
 #### App Settings
 
