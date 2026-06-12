@@ -1,5 +1,17 @@
 {
   "enabledMcpjsonServers": ["github"],
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew *)",
+      "Bash(adb *)",
+      "Bash(emulator *)",
+      "Bash(git *)",
+      "PowerShell(./gradlew *)",
+      "PowerShell(adb *)",
+      "PowerShell(emulator *)",
+      "PowerShell(git *)"
+    ]
+  },
   "hooks": {
     "PostToolUse": [
       {

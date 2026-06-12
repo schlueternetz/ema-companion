@@ -80,10 +80,11 @@ class SettingRowView @JvmOverloads constructor(
             field = value
             infoButton.visibility = if (value != null) View.VISIBLE else View.GONE
             infoButton.setOnClickListener {
-                if (value != null) {
+                val hint = field
+                if (hint != null) {
                     AlertDialog.Builder(context)
                         .setTitle(label)
-                        .setMessage(value)
+                        .setMessage(hint)
                         .setPositiveButton(android.R.string.ok) { d, _ -> d.dismiss() }
                         .show()
                 }

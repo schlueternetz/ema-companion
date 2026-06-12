@@ -43,3 +43,4 @@ Key decisions are documented in [`docs/adr/`](adr/):
 | [ADR-002](adr/002-testing-strategy.md) | Testing Strategy |
 | [ADR-003](adr/003-platform-localization-accessibility.md) | Platform Support, Localization, and Accessibility |
 | [ADR-004](adr/004-package-and-code-organization.md) | Package and Code Organization |
+| [ADR-005](adr/005-in-app-markdown-rendering.md) | In-App Markdown Rendering |
