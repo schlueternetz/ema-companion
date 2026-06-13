@@ -36,7 +36,7 @@
 
 ## 6. Verification
 
-- [ ] 6.1 Manually verify the User Guide screen on the `Lenovo_Tab_11_Plus` AVD (portrait and landscape) — confirm text wraps correctly, images scale sensibly, and scrolling is smooth (ADR-003). **Pending — requires a live emulator + visual inspection; left for the user to run (`./gradlew installDebug` then open User Guide).**
+- [x] 6.1 Manually verify the User Guide screen on the `Lenovo_Tab_11_Plus` AVD (portrait and landscape) — confirm text wraps correctly, images scale sensibly, and scrolling is smooth (ADR-003). Verified manually on the emulator (portrait + landscape) — looks good.
 - [x] 6.2 Create the Maestro navigation flow `code/ema-companion/maestro/bottom-nav.yaml` covering all three bottom-nav destinations, including User Guide reachability while unconfigured (ADR-002). Folder created from scratch (none existed). Requires a live emulator to execute (`maestro test code/ema-companion/maestro/bottom-nav.yaml`).
 
 ## 7. Documentation
