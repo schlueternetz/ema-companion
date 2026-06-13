@@ -1,5 +1,19 @@
 # AI Lessons Learned
 
+## 2026-06-12: settings import didn't apply theme/language
+
+### Went Well
+* Display-mode test asserted `AppCompatDelegate.getDefaultNightMode()` directly — synchronous and reliable in Robolectric
+
+### Didn't Work
+* `refreshAllDisplayedValues()` (import + factory-reset path) only updated labels (`updateLanguageDisplay`/`updateDisplayModeDisplay`); it never called `applyDisplayMode`/`applyLanguage`, so the effect was deferred until the next edit triggered a recreate
+* Asserting `AppCompatDelegate.getApplicationLocales()` at `@Config(sdk=[33])` → always empty: on Tiramisu+ it reads the framework `LocaleManager` (unbacked in Robolectric); below 33 AppCompat's backport storage reflects `setApplicationLocales`
+
+### Avoid
+* After import/factory-reset, apply persisted theme AND locale, not just their labels
+* Robolectric per-app-locale assertions: pin the test to `@Config(sdk = [32])` (or lower) so `getApplicationLocales()` reads AppCompat backport storage, not the framework service
+* `setDefaultNightMode` is synchronous in Robolectric; `setApplicationLocales` is not at API 33+
+
 ## 2026-06-12: Maestro flow + CI (locale & wrapper)
 
 ### Went Well

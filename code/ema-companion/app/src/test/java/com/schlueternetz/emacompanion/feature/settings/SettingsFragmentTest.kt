@@ -1,6 +1,7 @@
 package com.schlueternetz.emacompanion.feature.settings
 
 import android.content.Context
+import android.os.Looper
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
@@ -20,6 +21,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -79,6 +81,41 @@ class SettingsFragmentTest {
             val repo = SettingsRepository(prefs)
             fragment.applyLanguage("en", repo)
             assertEquals("en", repo.getLanguage())
+        }
+    }
+
+    @Test
+    fun refresh_appliesImportedDisplayModeImmediately() {
+        // Imported settings set display mode to dark.
+        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit().putString("displayMode", "dark").apply()
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            // Simulate a prior manual override that differs from the imported value.
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            // The post-import refresh must apply the imported theme, not just its label.
+            fragment.refreshAllDisplayedValues()
+            assertEquals(AppCompatDelegate.MODE_NIGHT_YES, AppCompatDelegate.getDefaultNightMode())
+        }
+    }
+
+    @Test
+    // Pinned below API 33: on Tiramisu+ getApplicationLocales() reads the framework
+    // LocaleManager (unbacked in Robolectric); below it AppCompat's backport storage
+    // reflects setApplicationLocales reliably. The production code path is identical.
+    @Config(sdk = [32])
+    fun refresh_appliesImportedLanguageImmediately() {
+        // Imported settings set language to German.
+        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit().putString("language", "de").apply()
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            // Simulate current locale being the system default.
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
+            shadowOf(Looper.getMainLooper()).idle()
+            fragment.refreshAllDisplayedValues()
+            shadowOf(Looper.getMainLooper()).idle()
+            assertEquals("de", AppCompatDelegate.getApplicationLocales().toLanguageTags())
         }
     }
 

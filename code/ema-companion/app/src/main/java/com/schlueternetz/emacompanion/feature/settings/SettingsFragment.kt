@@ -423,7 +423,7 @@ class SettingsFragment : Fragment() {
             .show()
     }
 
-    private fun refreshAllDisplayedValues() {
+    internal fun refreshAllDisplayedValues() {
         settingEmaAppId.value = repository.getEmaAppId()
         settingEmaAppSecret.value = repository.getEmaAppSecret()
         settingEmaSystemId.value = repository.getEmaSystemId()
@@ -437,6 +437,11 @@ class SettingsFragment : Fragment() {
         settingBaseUrl.value = repository.getBaseUrl()
         updateLanguageDisplay()
         updateDisplayModeDisplay()
+        // Apply the persisted theme and language, not just their labels. After an import
+        // or factory reset the stored value changes but the effect would otherwise be
+        // deferred until the next setting edit triggered an Activity recreate.
+        applyDisplayMode(repository.getDisplayMode())
+        applyLanguage(repository.getLanguage(), repository)
         checkConfigurationAndUpdateNav()
     }
 
