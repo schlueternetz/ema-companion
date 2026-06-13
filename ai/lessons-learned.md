@@ -1,5 +1,23 @@
 # AI Lessons Learned
 
+## 2026-06-12: Maestro flow + CI (locale & wrapper)
+
+### Went Well
+* Reproduced the Maestro failure locally via `adb` (clear state → launch → `uiautomator dump` + screencap) without Maestro installed — screenshot revealed the emulator was German
+* Installed Maestro locally (`curl get.maestro.mobile.dev | bash`, set `ANDROID_HOME`) and ran the flow to confirm GREEN before spending a CI cycle
+
+### Didn't Work
+* Maestro flow asserted English labels (`"Settings"`, `"Home"`) — fails on the German emulator (`Einstellungen`/`Startseite`). Nav labels are localized; ids are not
+* `assertVisible: "EMA Companion User Guide"` — Markwon renders the whole guide into ONE TextView; Maestro regex-matches the element's entire text blob, so a title substring never matches
+* `adb exec-out cat /sdcard/...` returned empty in git-bash — MSYS rewrote `/sdcard/...` to `C:/Program Files/Git/sdcard/...`
+* CI failed at first step: `gradle-wrapper.jar` was gitignored (root `.gitignore`) so the wrapper couldn't run on a clean checkout
+
+### Avoid
+* Maestro selectors → match `id:` (resource-id, locale-independent), not visible text. Confirmed ids: `homeFragment`/`userGuideFragment`/`settingsFragment`, content view `user_guide_content`
+* For a single-TextView Markdown screen, assert the **view id**, not rendered text
+* Prefix adb device-path commands with `MSYS_NO_PATHCONV=1` (or use `//sdcard/...`) in git-bash
+* `gradle-wrapper.jar` MUST be committed (build tool, not bundled in the APK) — never gitignore it
+
 ## 2026-06-12: in-app-user-guide (Markwon + Robolectric assets)
 
 ### Went Well

@@ -1,23 +1,35 @@
 # Critical flow: bottom-nav reachability (ADR-002).
 # Verifies the three bottom-nav destinations and that the User Guide is
 # reachable even when the app is unconfigured (Home stays disabled).
+#
+# Selectors use resource IDs, not visible labels: the nav labels are
+# localized (e.g. German "Einstellungen"/"Benutzerhandbuch") so matching
+# on English text fails on a non-English device. The guide *content* is
+# English-only by design, so its title is a safe locale-independent anchor.
 appId: com.schlueternetz.emacompanion
 ---
 - launchApp:
     clearState: true
 
-# Unconfigured app opens on Settings.
-- assertVisible: "Settings"
-
-# All three bottom-nav items are present.
-- assertVisible: "Home"
-- assertVisible: "User Guide"
-
-# User Guide is reachable without configuring the app.
-- tapOn: "User Guide"
+# All three bottom-nav destinations are present (unconfigured app starts on Settings).
 - assertVisible:
-    text: "Overview"
+    id: "homeFragment"
+- assertVisible:
+    id: "userGuideFragment"
+- assertVisible:
+    id: "settingsFragment"
 
-# Navigate back to Settings (always rightmost, always enabled).
-- tapOn: "Settings"
-- assertVisible: "Settings"
+# User Guide is reachable without configuring the app. The whole guide renders
+# into one TextView (id: user_guide_content), so assert that view — matching the
+# title as text would fail (Maestro regex-matches the element's entire text blob).
+- tapOn:
+    id: "userGuideFragment"
+- assertVisible:
+    id: "user_guide_content"
+
+# Settings is reachable again (always rightmost). The guide content view being
+# gone proves we navigated away.
+- tapOn:
+    id: "settingsFragment"
+- assertNotVisible:
+    id: "user_guide_content"
