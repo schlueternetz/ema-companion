@@ -1,12 +1,14 @@
 package com.schlueternetz.emacompanion.feature.userguide
 
 import android.content.Intent
+import android.content.res.AssetManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.os.ConfigurationCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.schlueternetz.emacompanion.R
@@ -29,10 +31,12 @@ class UserGuideFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val assetPath = arguments?.getString("assetPath") ?: "user-guide/user-guide.md"
+        val assets = requireContext().assets
+        val requestedPath = arguments?.getString("assetPath") ?: "user-guide/user-guide.md"
+        val language = ConfigurationCompat.getLocales(resources.configuration)[0]?.language ?: "en"
+        val assetPath = localizeAssetPath(requestedPath, language, assets)
         val folder = assetPath.substringBeforeLast('/', missingDelimiterValue = "")
 
-        val assets = requireContext().assets
         val markdown = try {
             assets.open(assetPath).bufferedReader().readText()
         } catch (e: Exception) {
@@ -69,6 +73,18 @@ class UserGuideFragment : Fragment() {
 
         val textView = view.findViewById<TextView>(R.id.user_guide_content)
         markwon.setMarkdown(textView, processed)
+    }
+
+    // When the locale is German and a "<name>-de.md" sibling exists, load it; otherwise
+    // keep the requested English file. Link resolution is unchanged — only the file read
+    // at load time is localized, with graceful English fallback.
+    private fun localizeAssetPath(path: String, language: String, assets: AssetManager): String {
+        if (language != "de" || !path.endsWith(".md")) return path
+        val localized = path.removeSuffix(".md") + "-de.md"
+        val dir = localized.substringBeforeLast('/', missingDelimiterValue = "")
+        val name = localized.substringAfterLast('/')
+        val exists = (assets.list(dir) ?: emptyArray()).contains(name)
+        return if (exists) localized else path
     }
 
     private fun rewriteRelativeImages(markdown: String, folder: String): String =

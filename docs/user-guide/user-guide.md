@@ -36,7 +36,7 @@ Once development is complete, this screen will be the central dashboard for your
 
 The **User Guide** screen shows this guide inside the app, so help is always at hand — even before you have configured your credentials. It is available from the moment you first open the app.
 
-The guide is formatted text with headings, tables, and images, and you can scroll through it. Where a page links to another section, tap the link to open that page; use your device's **Back** gesture or button to return to the previous page. Links to external websites open in your browser. The guide is available in English.
+The guide is formatted text with headings, tables, and images, and you can scroll through it. Where a page links to another section, tap the link to open that page; use your device's **Back** gesture or button to return to the previous page. Links to external websites open in your browser. The guide follows your app language: it is shown in German when the app is set to German, and in English otherwise.
 
 ### Settings
 

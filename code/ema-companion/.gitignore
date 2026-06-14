@@ -13,4 +13,9 @@
 .externalNativeBuild
 .cxx
 local.properties
-app/src/main/assets/user-guide/
+# User guide assets: English files are copied here from docs/ at build time (preBuild) —
+# derived, ignored. The German files are in-app-only generated originals (not in docs/,
+# not on GitHub) and ARE committed so builds stay reproducible without running the skill.
+/app/src/main/assets/user-guide/*
+!/app/src/main/assets/user-guide/*-de.md
+!/app/src/main/assets/user-guide/*-de.png

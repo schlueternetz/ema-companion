@@ -1,5 +1,25 @@
 # AI Lessons Learned
 
+## 2026-06-13: localize-user-guide (German in-app only)
+
+### Went Well
+* gitignore negation to commit generated files in a gitignored dir: `/app/src/main/assets/user-guide/*` then `!*-de.md` / `!*-de.png` — `git add -n` confirms only `-de` files stage
+* `npx -p @mermaid-js/mermaid-cli@11.15.0 mmdc -i x.mmd -o x.png` works with no global install; pin version → byte-stable PNG (EN re-render produced identical 38737 bytes, zero churn)
+* locale detection via `ConfigurationCompat.getLocales(resources.configuration)[0].language` — reliable at runtime, test with `@Config(qualifiers = "de")` (no `getApplicationLocales()` pitfall)
+* fragment swaps to `-de.md` sibling only at read time → link-resolution/navigation tests stay green under default locale
+* translated guide using real `values-de/strings.xml` UI labels (Einstellungen, Werksreset…), not ad-hoc German
+
+### Didn't Work
+* first put German in `docs/user-guide/` → wrong: `docs/` renders on GitHub; user wanted German in-app only → moved `-de` files to `app/src/main/assets/user-guide/` mid-task
+* `.gitignore` can't use `../` parent paths — `docs/` ignores must go in the repo-root `.gitignore`, not `code/ema-companion/.gitignore`
+* Edit tool needs a fresh `Read` in the current session even for files shown in the system prompt (SKILL.md, AGENTS.md)
+
+### Avoid
+* Don't commit generated translations in `docs/` if they shouldn't hit GitHub — commit them where consumed (app assets) via gitignore negation
+* Never translate mermaid ids — only quoted label strings (`Person(owner, "...")`: translate the `"..."`, keep `owner`); leaked id breaks render
+* `mmdc` renders raster PNG — never "translate the image"; translate the `.mmd` source and re-render
+* `*-de.mmd` is a throwaway intermediate — render then discard; never commit (regenerate from EN each time)
+
 ## 2026-06-12: settings import didn't apply theme/language
 
 ### Went Well

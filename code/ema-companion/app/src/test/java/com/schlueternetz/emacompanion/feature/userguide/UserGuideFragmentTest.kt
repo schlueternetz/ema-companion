@@ -113,6 +113,46 @@ class UserGuideFragmentTest {
     }
 
     @Test
+    @Config(sdk = [33], qualifiers = "de")
+    fun userGuideFragment_germanLocaleLoadsLocalizedAsset() {
+        val scenario = launchFragmentInContainer<UserGuideFragment>(
+            fragmentArgs = bundleOf("assetPath" to "feature/userguide/index.md"),
+            themeResId = R.style.Theme_EMACompanion,
+        )
+        scenario.onFragment { fragment ->
+            val tv = fragment.requireView().findViewById<TextView>(R.id.user_guide_content)
+            // index-de.md exists alongside index.md, so the German locale must load it.
+            assertTrue(
+                "German locale should load index-de.md, got: '${tv.text}'",
+                tv.text.contains("Anleitung"),
+            )
+            AccessibilityValidator()
+                .setThrowExceptionFor(AccessibilityCheckResult.AccessibilityCheckResultType.ERROR)
+                .check(fragment.requireView())
+        }
+    }
+
+    @Test
+    @Config(sdk = [33], qualifiers = "de")
+    fun userGuideFragment_germanLocaleFallsBackToEnglishWhenNoLocalizedAsset() {
+        val scenario = launchFragmentInContainer<UserGuideFragment>(
+            fragmentArgs = bundleOf("assetPath" to "feature/userguide/linked-page.md"),
+            themeResId = R.style.Theme_EMACompanion,
+        )
+        scenario.onFragment { fragment ->
+            val tv = fragment.requireView().findViewById<TextView>(R.id.user_guide_content)
+            // No linked-page-de.md exists, so the German locale must fall back to the English file.
+            assertTrue(
+                "Should fall back to English linked-page.md, got: '${tv.text}'",
+                tv.text.contains("You followed a link"),
+            )
+            AccessibilityValidator()
+                .setThrowExceptionFor(AccessibilityCheckResult.AccessibilityCheckResultType.ERROR)
+                .check(fragment.requireView())
+        }
+    }
+
+    @Test
     fun userGuideFragment_imageInFixtureLoadsWithoutThrowing() {
         val scenario = launchFragmentInContainer<UserGuideFragment>(
             fragmentArgs = bundleOf("assetPath" to "feature/userguide/index.md"),

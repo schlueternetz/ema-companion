@@ -51,6 +51,7 @@ Architecture decisions are documented in [`docs/adr/`](docs/adr/). Read the rele
 
 **User guide**:
 - After completing any UI (frontend) change — layouts, activities, fragments, menus, or navigation — invoke the `write-user-guide` skill to update `docs/user-guide/user-guide.md`
+- The English files in `docs/user-guide/` are the single source of truth (and the only version on GitHub). German is **in-app only**: `write-user-guide` generates `user-guide-de.md` and `system-context-de.png` into `code/ema-companion/app/src/main/assets/user-guide/` (committed there via a `.gitignore` negation, never in `docs/`). Edit English only and re-run the skill; never hand-edit a `*-de.*` file. The `*-de.mmd` intermediate is transient (gitignored).
 
 **Hooks** (`.claude/settings.json` — fire automatically, but know they exist):
 - **UX file written** (`PostToolUse` on Edit/Write): fires when layout, Activity, Fragment, strings, menu, or navigation files change — injects a reminder to invoke `write-user-guide`
