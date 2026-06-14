@@ -1,5 +1,25 @@
 # AI Lessons Learned
 
+## 2026-06-14: maestro CI flake — `homeFragment is visible` (cold emulator)
+
+### Went Well
+* Read `.github/workflows/ci.yml` gave the decisive facts: CI = API 33 `pixel_tablet`, `maestro test maestro/`, latest Maestro pulled per-run (turned out same 2.6.1 — version ruled out)
+* The stash-the-fix A/B test was the turning point: reverting my change and seeing the ORIGINAL code PASS proved my "fix" was the regression, not the cure
+* Dumping rendered `text=` (not just resource-ids) surfaced the real blocker: a system `Application Not Responding: com.google.android.apps.nexuslauncher` dialog ("Pixel Launcher reagiert nicht") covering the app — the German text is the *emulator* locale, not the app
+* `extendedWaitUntil { visible: id: settingsFragment; timeout: 60000 }` after `launchApp` makes the first assertion wait for the app to reach foreground instead of racing startup
+
+### Didn't Work
+* Edge-to-edge theory (API 35+ enforces it, bottom nav under system bar) was a RED HERRING. Adding `ViewCompat.setOnApplyWindowInsetsListener` on the root made it WORSE — blank screen via Maestro launch (content laid out off-screen, inverted bounds `Rect(84,2074-468,2063)`). Original layout renders the bottom nav fine on API 36
+* Trusting a `grep -c bottom_nav` presence count — the node can be PRESENT in the tree but laid out off-screen (Maestro correctly reports it not visible). Must check actual `bounds=`, not just presence
+* `adb root` on the `google_apis_playstore` image → "cannot run as root in production builds"; can't change system locale via setprop without a rootable (`google_apis`, not playstore) image
+* Running two emulators + Gradle builds concurrently ANR'd the launcher → false "failures". Single emulator, let it settle (launcher focus = `NexusLauncherActivity`) before trusting a Maestro result
+
+### Avoid
+* Don't theorize a layout/code cause for a Maestro failure before reproducing on a COLD emulator — warm runs passed 3×, cold first-launch failed; the bug was startup timing, not code (`git log` confirmed no layout change)
+* Don't add window-inset handling speculatively to "fix" edge-to-edge unless you've SEEN the nav clipped — verify with a real screenshot first
+* When a Maestro `assertVisible` flakes right after `launchApp` on CI, suspect app/emulator readiness; gate with `extendedWaitUntil` on a stable element rather than bumping per-assert timeouts
+* `MSYS_NO_PATHCONV=1` for `adb shell ... /sdcard/...`; pull dumps to a path under the project (`./x.xml`), not `/tmp` (not visible to win adb)
+
 ## 2026-06-13: localize-user-guide (German in-app only)
 
 ### Went Well

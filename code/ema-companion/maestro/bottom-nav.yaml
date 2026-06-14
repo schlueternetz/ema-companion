@@ -11,6 +11,15 @@ appId: com.schlueternetz.emacompanion
 - launchApp:
     clearState: true
 
+# On a freshly-booted CI emulator the app window can take a while to reach the
+# foreground after a clear-state launch (the system itself may still be settling
+# right after boot). Wait for the bottom nav to be up before asserting individual
+# items, so the first assertion doesn't race app/emulator startup and flake.
+- extendedWaitUntil:
+    visible:
+      id: "settingsFragment"
+    timeout: 60000
+
 # All three bottom-nav destinations are present (unconfigured app starts on Settings).
 - assertVisible:
     id: "homeFragment"
