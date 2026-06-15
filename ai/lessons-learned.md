@@ -1,5 +1,29 @@
 # AI Lessons Learned
 
+## 2026-06-14: ema-api-stub (new standalone Ktor mock app)
+
+### Went Well
+* Standalone Gradle project under `code/ema-api-stub/` (NOT a module of the Android build) — reused app's `gradlew`+wrapper jar, own `settings.gradle.kts`; isolates JVM/server toolchain from AGP
+* Record/replay design: per-ECU JSON scenario file, ordered `interactions[]` (request matcher + response), per-ECU cursor, strict sequential match → loud HTTP 409 diagnostic on mismatch
+* `RequestMatcher` partial match (only listed `pathParams`/`query` asserted, rest wildcard) → pin `eid`+`energy_level`, leave `sid` open
+* `JsonElement` response body served verbatim via `body.toString()` (valid compact JSON) — avoids `encodeToString` serializer-inference errors
+* Ktor `testApplication {}` + fresh `MatchingEngine(loadDefault())` per test = cursor isolation without a reset call; integration coverage with no real socket
+* Verified real CIO server with `./gradlew run` + curl (testApplication uses a test engine, not CIO — boot bugs hide otherwise)
+* ktlint log showed `runKtlintCheckOverMainSourceSet`/`TestSourceSet` → confirmed it actually lints `.kt` (past pitfall: linting zero files)
+
+### Didn't Work
+* C: drive 100% full (system-wide, not just Gradle's 3.8G home) → builds AND shell pipes died ("No space left on device" even from `tail`, since git-bash `/tmp` is on C:)
+* KGP 2.1.0 does NOT support Gradle 9.x (wrapper is 9.4.1) → used Kotlin 2.2.0
+* `.properties` file eats single backslash → `-Djava.io.tmpdir=D:\gradle-tmp` parsed as `D:gradle-tmp`; use forward slashes `D:/gradle-tmp`
+* Ktor 3 routing: `io.ktor.server.routing.get(path){}` as FQN call → "Unresolved reference 'get'"; must `import ...routing.get` and call unqualified (extension on Route)
+* `pkill`/curl-shutdown didn't stop the bg `./gradlew run` server on Windows → killed via PowerShell `Get-NetTCPConnection -LocalPort N | Stop-Process`
+
+### Avoid
+* On C:-full Windows box: redirect Gradle off C: → `GRADLE_USER_HOME=/d/gradle-home` + `TMPDIR/TMP/TEMP=/d/gradle-tmp` + `org.gradle.jvmargs ... -Djava.io.tmpdir=D:/gradle-tmp` in the D: home's `gradle.properties`; keep machine-specific tmpdir OUT of the committed project `gradle.properties`
+* Don't pipe big Gradle output through `| tail` when C:/tmp is full — redirect to a file on D: then read it
+* Pick Kotlin version by Gradle-version support matrix, not latest-by-habit (KGP↔Gradle compat is strict)
+* Bundled-scenario default load uses classpath `getResource("scenarios")`→`File` (works under `gradlew run`/tests, exploded resources) — a fat-jar would break dir listing (out of scope, documented)
+
 ## 2026-06-14: maestro CI flake — `homeFragment is visible` (cold emulator)
 
 ### Went Well
