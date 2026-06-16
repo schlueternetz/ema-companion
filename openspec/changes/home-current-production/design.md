@@ -36,10 +36,12 @@ Rationale: the manual's signing (last-segment, ms timestamp) is error-prone; iso
 
 **Alternative considered:** HttpURLConnection (no new dep). Rejected — manual header/threading/error plumbing is more code and harder to test than an OkHttp `Interceptor`; "best practices" was explicitly requested.
 
-### D2: OkHttp + signing interceptor; kotlinx-coroutines
-Add OkHttp and kotlinx-coroutines-android to the version catalog. Signing is an OkHttp `Interceptor` that derives the last path segment from the outgoing request and adds the `X-CA-*` headers — so every call is signed uniformly. Fetches run on `Dispatchers.IO` via `viewLifecycleOwner.lifecycleScope`.
+### D2: OkHttp + inline signing; kotlinx-coroutines
+Add OkHttp and kotlinx-coroutines-android to the version catalog. The client signs **inline** (in `OkHttpEmaApiClient`, not an `Interceptor`): it builds the request, derives the last path segment from the outgoing request URL, computes the five `X-CA-*` headers via the pure `EmaRequestSigner`, and adds them. Inline signing is chosen over an interceptor so the **exact** signed request (headers included) can be captured for the API log; the segment is read from the built URL rather than passed by hand so the signature can't silently drift from the path. Fetches run on `Dispatchers.IO` via `viewLifecycleOwner.lifecycleScope`. The `OkHttpClient` is a process-wide singleton (reused thread/connection pool).
 
 **Alternative considered:** Retrofit. Rejected for one endpoint — Retrofit's value is many typed endpoints; OkHttp + manual parse is leaner here and still extensible.
+
+**Alternative considered:** signing `Interceptor`. Rejected — capturing the exact signed request for the log is simpler when signing happens inline where the request is built.
 
 ### D3: Throttle + counter + logging live in a repository, not the Fragment
 Add `ProductionRepository` (in `core/api/`) orchestrating: check throttle (persisted `lastFetchEpochMs`) → if due, call client → on issue, increment counter + append log → cache + return snapshot. The 10-min window, monthly counter, and last-fetch timestamp are persisted in the API context's own stores (`ApiUsageRepository` / `ApiCallLogRepository`, see D5–D6), **not** in `SettingsRepository`, so throttle and count survive restarts and Home recreation. Home only renders state and calls `repository.refresh()`.

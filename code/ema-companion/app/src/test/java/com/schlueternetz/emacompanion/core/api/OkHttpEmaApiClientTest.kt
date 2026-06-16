@@ -78,8 +78,18 @@ class OkHttpEmaApiClientTest {
     }
 
     @Test
-    fun emptyPower_returnsApiError() = runBlocking {
+    fun emptyPower_returnsZeroProduction() = runBlocking {
+        // No samples (e.g. night / before dawn) is "not producing", i.e. 0 W — a successful
+        // read, not an error: the solar owner must not see a red error status every evening.
         server.enqueue(MockResponse().setBody("""{"code":0,"data":{"power":[]}}"""))
+        val fetch = client().getCurrentProduction()
+        assertEquals(ApiResult.Success(ProductionSnapshot(0)), fetch.result)
+    }
+
+    @Test
+    fun missingPowerArray_returnsApiError() = runBlocking {
+        // code 0 but no power array at all is an unexpected shape, not "0 W" — keep it an error.
+        server.enqueue(MockResponse().setBody("""{"code":0,"data":{}}"""))
         val fetch = client().getCurrentProduction()
         assertTrue(fetch.result is ApiResult.ApiError)
     }

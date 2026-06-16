@@ -1,6 +1,8 @@
 package com.schlueternetz.emacompanion.core.api
 
+import android.util.Log
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,7 +21,7 @@ import java.time.LocalDate
  */
 class OkHttpEmaApiClient(
     private val settings: SettingsRepository,
-    private val httpClient: OkHttpClient = OkHttpClient(),
+    private val httpClient: OkHttpClient = sharedClient,
     private val clock: () -> Long = { System.currentTimeMillis() },
     private val today: () -> String = { LocalDate.now().toString() },
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -45,7 +47,7 @@ class OkHttpEmaApiClient(
             appId = settings.getEmaAppId(),
             appSecret = settings.getEmaAppSecret(),
             clock = clock,
-        ).sign(method = "GET", lastPathSegment = eid)
+        ).sign(method = "GET", lastPathSegment = EmaRequestSigner.lastPathSegment(url.encodedPath))
 
         val request = Request.Builder()
             .url(url)
@@ -70,10 +72,16 @@ class OkHttpEmaApiClient(
             }
         } catch (e: IOException) {
             ProductionFetch(ApiResult.NetworkError, endpoint, clock() - start, requestText, "")
+        } catch (e: CancellationException) {
+            // The fetch was cancelled (e.g. Home left mid-request) — let cancellation propagate
+            // instead of disguising it as a network error and breaking structured concurrency.
+            throw e
         } catch (e: Exception) {
             // A background fetch must never crash the app. Any other failure executing the
             // request (e.g. a SecurityException when a permission is missing) degrades to a
-            // network error so Home shows the banner instead of the process dying.
+            // network error so Home shows the banner instead of the process dying — but log it
+            // so a genuine bug is not silently disguised as "network down".
+            Log.w(TAG, "Unexpected error during EMA fetch; treating as network error", e)
             ProductionFetch(ApiResult.NetworkError, endpoint, clock() - start, requestText, "")
         }
     }
@@ -88,7 +96,10 @@ class OkHttpEmaApiClient(
         val code = json.optInt("code", -1)
         if (code != 0) return ApiResult.ApiError(code = code)
         val power = json.optJSONObject("data")?.optJSONArray("power")
-        if (power == null || power.length() == 0) return ApiResult.ApiError(code = NO_DATA_CODE)
+            ?: return ApiResult.ApiError() // code 0 but the response shape is unexpected
+        // An empty power array is a valid "not producing right now" (e.g. night or before
+        // dawn) — that is 0 W, a successful read, not a fetch error.
+        if (power.length() == 0) return ApiResult.Success(ProductionSnapshot(0))
         return ApiResult.Success(ProductionSnapshot(power.getInt(power.length() - 1)))
     }
 
@@ -102,7 +113,14 @@ class OkHttpEmaApiClient(
     }
 
     companion object {
-        /** EMA "no data" business code (manual §4); used when the power array is empty. */
-        const val NO_DATA_CODE = 1001
+        private const val TAG = "OkHttpEmaApiClient"
+
+        /**
+         * Process-wide shared client. OkHttp is designed to be used as a singleton — sharing one
+         * instance reuses its thread pool and connection pool, so repeated fetches reuse the
+         * kept-alive TLS connection instead of paying for a fresh handshake (a real cost on
+         * older devices, and wasteful when Home is recreated on every tab switch).
+         */
+        private val sharedClient: OkHttpClient by lazy { OkHttpClient() }
     }
 }

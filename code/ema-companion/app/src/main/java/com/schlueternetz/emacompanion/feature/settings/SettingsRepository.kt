@@ -32,14 +32,27 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         const val SYSTEM_CAPACITY_MAX_KW = 2_000f  // 2,000 kW
         const val BASE_URL_MAX_LENGTH = 2048
 
+        @Volatile
+        private var cached: SettingsRepository? = null
+
+        @Volatile
+        private var cachedAppContext: Context? = null
+
+        // Cache the instance per application context so the keystore-backed
+        // EncryptedSharedPreferences (MasterKeys + crypto init) is built once, not on every
+        // Activity/Fragment creation — that work runs on the main thread and is a noticeable
+        // cost on older devices, repeated on every tab switch. Keyed on the application context
+        // so each Robolectric test (fresh Application per test) gets a fresh instance.
         fun create(context: Context): SettingsRepository {
-            return try {
+            val appContext = context.applicationContext
+            cached?.takeIf { cachedAppContext === appContext }?.let { return it }
+            val instance = try {
                 val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
                 SettingsRepository(
                     EncryptedSharedPreferences.create(
                         "ema_companion_settings",
                         masterKeyAlias,
-                        context,
+                        appContext,
                         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
                     ),
@@ -48,9 +61,12 @@ class SettingsRepository(private val prefs: SharedPreferences) {
                 // Keystore unavailable (e.g., corrupted store or test environment);
                 // fall back to plain SharedPreferences so the app remains functional.
                 SettingsRepository(
-                    context.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE),
+                    appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE),
                 )
             }
+            cached = instance
+            cachedAppContext = appContext
+            return instance
         }
     }
 
