@@ -197,6 +197,7 @@ class SettingsFragment : Fragment() {
         settingEmaAppId.onSave = { v ->
             repository.setEmaAppId(v.lowercase())
             settingEmaAppId.value = repository.getEmaAppId()
+            invalidateApiThrottle()
             checkConfigurationAndUpdateNav()
         }
     }
@@ -212,6 +213,7 @@ class SettingsFragment : Fragment() {
         settingEmaAppSecret.onSave = { v ->
             repository.setEmaAppSecret(v.lowercase())
             settingEmaAppSecret.value = repository.getEmaAppSecret()
+            invalidateApiThrottle()
             checkConfigurationAndUpdateNav()
         }
     }
@@ -226,6 +228,7 @@ class SettingsFragment : Fragment() {
         settingEmaSystemId.onSave = { v ->
             repository.setEmaSystemId(v.uppercase())
             settingEmaSystemId.value = repository.getEmaSystemId()
+            invalidateApiThrottle()
             checkConfigurationAndUpdateNav()
         }
     }
@@ -241,6 +244,7 @@ class SettingsFragment : Fragment() {
         settingEmaEcuId.onSave = { v ->
             repository.setEmaEcuId(v)
             settingEmaEcuId.value = repository.getEmaEcuId()
+            invalidateApiThrottle()
             checkConfigurationAndUpdateNav()
         }
     }
@@ -307,6 +311,14 @@ class SettingsFragment : Fragment() {
         }
     }
 
+    // A changed connection setting (credentials or base URL) means the next Home fetch should run
+    // immediately with the new config, not wait out a throttle started by a prior attempt. Clearing
+    // the stale error avoids showing the old failure until that fetch completes.
+    private fun invalidateApiThrottle() {
+        usageRepository.setLastFetchEpochMs(0)
+        usageRepository.setLastError(null)
+    }
+
     private fun updateApiRequestProgress() {
         val consumedRequests = usageRepository.getRequestCount()
         val limit = repository.getApiRequestLimit()
@@ -365,11 +377,13 @@ class SettingsFragment : Fragment() {
         settingBaseUrl.onSave = { v ->
             repository.setBaseUrl(v)
             settingBaseUrl.value = repository.getBaseUrl()
+            invalidateApiThrottle()
         }
         val baseUrlResetBtn = view.findViewById<View>(R.id.setting_base_url_reset)
         baseUrlResetBtn.setOnClickListener {
             repository.setBaseUrl(SettingsRepository.BASE_URL_DEFAULT)
             settingBaseUrl.value = repository.getBaseUrl()
+            invalidateApiThrottle()
         }
         settingBaseUrl.onEditStateChanged = { editing ->
             baseUrlResetBtn.isEnabled = !editing

@@ -350,6 +350,22 @@ class SettingsFragmentTest {
     }
 
     @Test
+    fun changingCredential_resetsThrottleAndClearsError() {
+        appContext.getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE).edit()
+            .putLong("lastFetchEpochMs", 12345L)
+            .putString("lastFetchError", "API")
+            .apply()
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val row = fragment.requireView().findViewById<SettingRowView>(R.id.setting_ema_app_id)
+            row.onSave.invoke("a".repeat(32))
+        }
+        val usage = appContext.getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
+        assertEquals(0L, usage.getLong("lastFetchEpochMs", -1L))
+        assertEquals(null, usage.getString("lastFetchError", null))
+    }
+
+    @Test
     fun factoryReset_clearsApiUsageAndLogs() {
         seedUsageCount(50)
         seedLogs(

@@ -4,8 +4,11 @@
     <string name="nav_user_guide">Benutzerhandbuch</string>
 
     <!-- Home -->
-    <string name="home_current_production">Aktuelle Produktion: %1$s %2$s</string>
-    <string name="home_network_error_banner">Netzwerkproblem – letzter bekannter Wert wird angezeigt</string>
+    <string name="home_current_production_title">Aktuelle Produktion</string>
+    <string name="home_production_updated">Aktualisiert %1$s</string>
+    <string name="home_status_network_error">Netzwerkproblem – keine Aktualisierung</string>
+    <string name="home_status_auth_error">Authentifizierung fehlgeschlagen – API-Zugangsdaten prüfen</string>
+    <string name="home_status_api_error">Produktionsdaten konnten nicht aktualisiert werden</string>
 
     <!-- Settings section headers -->
     <string name="settings_section_solar_array">Solaranlagen-Einstellungen</string>

@@ -6,7 +6,6 @@ import com.schlueternetz.emacompanion.core.api.log.ApiCallLogRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -112,19 +111,31 @@ class ProductionRepositoryTest {
         now += 11 * 60 * 1000L
         client.fetch = ProductionFetch(ApiResult.NetworkError, "/ecu/energy", 1L, "GET", "")
         val state = repository.refresh()
-        assertTrue(state.networkError)
+        assertEquals(FetchError.NETWORK, state.error)
         assertEquals(ProductionSnapshot(8000), state.snapshot)
     }
 
     @Test
-    fun success_clearsBannerAfterNetworkError() = runBlocking {
+    fun apiError_setsBannerAndKeepsCachedSnapshot() = runBlocking {
+        val client = FakeClient(successFetch())
+        val repository = repo(client)
+        repository.refresh() // success, cached
+        now += 11 * 60 * 1000L
+        client.fetch = ProductionFetch(ApiResult.ApiError(code = 4000), "/ecu/energy", 1L, "GET", """{"code":4000}""")
+        val state = repository.refresh()
+        assertEquals(FetchError.API, state.error)
+        assertEquals(ProductionSnapshot(8000), state.snapshot)
+    }
+
+    @Test
+    fun success_clearsBannerAfterError() = runBlocking {
         val client = FakeClient(ProductionFetch(ApiResult.NetworkError, "/ecu/energy", 1L, "GET", ""))
         val repository = repo(client)
         repository.refresh() // network error
         now += 11 * 60 * 1000L
         client.fetch = successFetch()
         val state = repository.refresh()
-        assertFalse(state.networkError)
+        assertEquals(null, state.error)
         assertEquals(ProductionSnapshot(8000), state.snapshot)
     }
 
@@ -140,11 +151,87 @@ class ProductionRepositoryTest {
     }
 
     @Test
-    fun networkError_isCountedAndLoggedAsIssuedAttempt() = runBlocking {
+    fun networkError_isLoggedButNotCountedAndDoesNotThrottle() = runBlocking {
         val client = FakeClient(ProductionFetch(ApiResult.NetworkError, "/ecu/energy", 1L, "GET", ""))
         repo(client).refresh()
-        assertEquals(1, usage.getRequestCount())
+        // Never reached the API → not counted, throttle not started, but still logged.
+        assertEquals(0, usage.getRequestCount())
+        assertEquals(0L, usage.getLastFetchEpochMs())
         assertEquals(1, log.getAll().size)
         assertFalse(log.getAll()[0].success)
+    }
+
+    @Test
+    fun networkError_doesNotBlockNextAttempt() = runBlocking {
+        val client = FakeClient(ProductionFetch(ApiResult.NetworkError, "/ecu/energy", 1L, "GET", ""))
+        val repository = repo(client)
+        repository.refresh() // network failure — no throttle started
+        now += 1000L // only 1 second later, well inside the 10-minute window
+        repository.refresh()
+        assertEquals(2, client.calls) // retried immediately, not throttled
+    }
+
+    @Test
+    fun success_persistsValueTimestampForNextInstance() = runBlocking {
+        repo(FakeClient(successFetch(8000))).refresh() // success at `now`
+        val fetchedAt = now
+        now += 2 * 60 * 1000L // recreate within throttle window
+        val state = repo(FakeClient(successFetch(9999))).refresh()
+        assertEquals(fetchedAt, state.updatedAtEpochMs) // timestamp reconstructed from store
+        assertEquals(ProductionSnapshot(8000), state.snapshot)
+    }
+
+    @Test
+    fun errorAndValuePersistViaCurrentState() = runBlocking {
+        repo(FakeClient(successFetch(8000))).refresh() // success persists the value
+        now += 11 * 60 * 1000L
+        repo(FakeClient(ProductionFetch(ApiResult.ApiError(code = 4000), "/e", 1L, "GET", "{}"))).refresh()
+        // A recreated tile reconstructs value + error from persisted state, with no fetch.
+        val state = repo(FakeClient(successFetch(9999))).currentState()
+        assertEquals(FetchError.API, state.error)
+        assertEquals(ProductionSnapshot(8000), state.snapshot)
+    }
+
+    @Test
+    fun success_clearsPersistedErrorForNextInstance() = runBlocking {
+        repo(FakeClient(ProductionFetch(ApiResult.ApiError(code = 4000), "/e", 1L, "GET", "{}"))).refresh()
+        now += 11 * 60 * 1000L
+        repo(FakeClient(successFetch(8000))).refresh() // success clears the persisted error
+        now += 11 * 60 * 1000L
+        // A fresh instance must not resurrect the old banner.
+        val state = repo(FakeClient(successFetch(8000))).refresh()
+        assertEquals(null, state.error)
+    }
+
+    @Test
+    fun apiError_isNotCountedDoesNotThrottleAndRetries() = runBlocking {
+        val client = FakeClient(ProductionFetch(ApiResult.ApiError(code = 4000), "/ecu/energy", 1L, "GET", """{"code":4000}"""))
+        val repository = repo(client)
+        repository.refresh() // failure — not billed, not throttled
+        assertEquals(0, usage.getRequestCount())
+        assertEquals(0L, usage.getLastFetchEpochMs())
+        now += 1000L
+        repository.refresh() // retries immediately, even within the window
+        assertEquals(2, client.calls)
+    }
+
+    @Test
+    fun authError_isClassifiedAndNotCounted() = runBlocking {
+        val client = FakeClient(ProductionFetch(ApiResult.ApiError(code = 2001), "/e", 1L, "GET", """{"code":2001}"""))
+        val state = repo(client).refresh()
+        assertEquals(FetchError.AUTH, state.error)
+        assertEquals(0, usage.getRequestCount())
+        assertEquals(0L, usage.getLastFetchEpochMs())
+    }
+
+    @Test
+    fun onlySuccessCounts_failureThenSuccess() = runBlocking {
+        val client = FakeClient(ProductionFetch(ApiResult.ApiError(code = 4000), "/e", 1L, "GET", "{}"))
+        val repository = repo(client)
+        repository.refresh() // failure: count stays 0
+        now += 1000L
+        client.fetch = successFetch(8000)
+        repository.refresh() // success: counts once
+        assertEquals(1, usage.getRequestCount())
     }
 }

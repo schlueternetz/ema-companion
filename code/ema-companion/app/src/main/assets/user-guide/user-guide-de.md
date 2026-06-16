@@ -29,11 +29,13 @@ Wenn die App noch nicht vollständig konfiguriert ist, sind nur **Einstellungen*
 
 ### Startseite
 
-Der Startseiten-Bildschirm zeigt Ihre **aktuelle Produktion** als Zeile wie „Aktuelle Produktion: 8000 W" — der neueste Leistungswert Ihrer Solaranlage, in Watt.
+Der Startseiten-Bildschirm ist ein Dashboard aus **Kacheln**. Derzeit zeigt er eine einzelne Kachel **Aktuelle Produktion** mit dem neuesten Leistungswert Ihrer Solaranlage (z. B. „8000 W") und dem Zeitpunkt der letzten Aktualisierung. Weitere Kacheln werden in künftigen Versionen hinzugefügt.
 
-Ein neuer Wert wird abgerufen, wenn Sie die App öffnen und wann immer Sie zur Startseite zurückkehren, jedoch höchstens einmal alle 10 Minuten; dazwischen bleibt der zuletzt abgerufene Wert auf dem Bildschirm. Bis zum ersten erfolgreichen Abruf wird ein neutraler Platzhalter angezeigt („Aktuelle Produktion: — W").
+Ein neuer Wert wird abgerufen, wenn Sie die App öffnen und wann immer Sie zur Startseite zurückkehren. Sobald es funktioniert, sind erfolgreiche Abrufe auf einmal alle 10 Minuten begrenzt; dazwischen bleibt der zuletzt abgerufene Wert auf der Kachel. Bis zum ersten erfolgreichen Abruf wird ein neutraler Platzhalter angezeigt („— W").
 
-Wenn die App den EMA-Dienst nicht erreichen kann (zum Beispiel bei fehlender Netzwerkverbindung), erscheint oben auf dem Bildschirm ein Banner, das Sie über das Netzwerkproblem informiert. Der zuletzt bekannte Wert bleibt sichtbar, und das Banner verschwindet automatisch, sobald ein späterer Abruf erfolgreich ist.
+Wenn ein Abruf fehlschlägt, zeigt die Kachel unter dem Wert eine kurze Statuszeile (so sehen Sie genau, welche Daten betroffen sind) und behält den zuletzt bekannten Wert. Der Status unterscheidet die Ursache: ein **Netzwerkproblem** (die App konnte den EMA-Dienst nicht erreichen, z. B. keine Verbindung), eine **fehlgeschlagene Authentifizierung** (Ihre API-Zugangsdaten wurden abgelehnt – prüfen Sie sie in den Einstellungen) oder dass die **Produktionsdaten nicht aktualisiert werden konnten** (ein anderer Fehler, z. B. eine ungültige System-/ECU-ID oder ein Serverproblem). Der Status verschwindet automatisch, sobald ein späterer Abruf erfolgreich ist, und bleibt bei fortbestehendem Problem über Bildschirmwechsel hinweg sichtbar.
+
+Ein fehlgeschlagener Abruf unterliegt **nicht** der 10-Minuten-Grenze und zählt **nicht** zu Ihrem monatlichen Anfragelimit – er wird beim nächsten Öffnen oder Zurückkehren zur Startseite erneut versucht. Wenn Sie Ihre Zugangsdaten oder andere Verbindungseinstellungen korrigieren, versucht die App es sofort erneut, sobald Sie zur Startseite zurückkehren, ohne zu warten.
 
 ### Benutzerhandbuch
 
@@ -88,7 +90,7 @@ Wenn Sie einen Wert eingeben, der nicht den Formatregeln entspricht, erscheint u
 
 | Steuerelement | Beschreibung |
 |---|---|
-| **API-Anfragelimit** | Maximale Anzahl der pro Monat erlaubten EMA-API-Aufrufe (1–2.678.400). Standard ist 1.000. Wird mit dem Suffix „Anf./Monat" außerhalb des Eingabefelds angezeigt; numerische Tastatur. Tippen Sie auf das Zurücksetzen-Symbol (↺), um den Standard wiederherzustellen. Das Zurücksetzen-Symbol ist deaktiviert, während sich das Feld im Bearbeitungsmodus befindet. Ein Fortschrittsbalken unter dem Feld zeigt, wie viele Anfragen diesen Monats tatsächlich genutzt wurden, mit einer Beschriftung, die die genaue Anzahl angibt (z. B. „5 / 1000 Anfragen diesen Monat"). Die Anzahl ist die tatsächliche Zahl der in diesem Kalendermonat getätigten EMA-API-Anfragen und wird zu Beginn jedes Monats automatisch zurückgesetzt. |
+| **API-Anfragelimit** | Maximale Anzahl der pro Monat erlaubten EMA-API-Aufrufe (1–2.678.400). Standard ist 1.000. Wird mit dem Suffix „Anf./Monat" außerhalb des Eingabefelds angezeigt; numerische Tastatur. Tippen Sie auf das Zurücksetzen-Symbol (↺), um den Standard wiederherzustellen. Das Zurücksetzen-Symbol ist deaktiviert, während sich das Feld im Bearbeitungsmodus befindet. Ein Fortschrittsbalken unter dem Feld zeigt, wie viele Anfragen diesen Monats tatsächlich genutzt wurden, mit einer Beschriftung, die die genaue Anzahl angibt (z. B. „5 / 1000 Anfragen diesen Monat"). Die Anzahl ist die Zahl der **erfolgreichen** EMA-API-Abrufe in diesem Kalendermonat (fehlgeschlagene Anfragen werden nicht gezählt) und wird zu Beginn jedes Monats automatisch zurückgesetzt. |
 | **Basis-URL** | Der API-Endpunkt, über den der EMA-Dienst erreicht wird. Standard ist `https://api.apsystemsema.com:9282/user/api/v2/`. Muss eine gültige URL mit bis zu 2.048 Zeichen sein. Tippen Sie auf das Zurücksetzen-Symbol (↺) neben dem Feld, um den Standard ohne Tippen wiederherzustellen. |
 
 #### Protokolle

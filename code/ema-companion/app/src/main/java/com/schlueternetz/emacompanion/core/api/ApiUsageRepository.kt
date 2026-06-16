@@ -42,8 +42,21 @@ class ApiUsageRepository(
     /** The last successfully fetched production power in watts, or -1 if none yet. */
     fun getLastProductionWatts(): Int = prefs.getInt(KEY_LAST_PRODUCTION, -1)
 
-    fun setLastProductionWatts(value: Int) {
-        prefs.edit().putInt(KEY_LAST_PRODUCTION, value).apply()
+    /** When the last successful production value was fetched (epoch ms), or 0 if none yet. */
+    fun getLastProductionEpochMs(): Long = prefs.getLong(KEY_LAST_PRODUCTION_AT, 0L)
+
+    fun setLastProduction(watts: Int, epochMs: Long) {
+        prefs.edit().putInt(KEY_LAST_PRODUCTION, watts).putLong(KEY_LAST_PRODUCTION_AT, epochMs).apply()
+    }
+
+    /** The error of the last fetch (for the Home banner), or null if the last fetch succeeded / none yet. */
+    fun getLastError(): FetchError? =
+        prefs.getString(KEY_LAST_ERROR, null)?.let { runCatching { FetchError.valueOf(it) }.getOrNull() }
+
+    fun setLastError(error: FetchError?) {
+        prefs.edit().apply {
+            if (error == null) remove(KEY_LAST_ERROR) else putString(KEY_LAST_ERROR, error.name)
+        }.apply()
     }
 
     fun clear() {
@@ -56,6 +69,8 @@ class ApiUsageRepository(
         private const val KEY_COUNT = "apiRequestCount"
         private const val KEY_LAST_FETCH = "lastFetchEpochMs"
         private const val KEY_LAST_PRODUCTION = "lastProductionWatts"
+        private const val KEY_LAST_PRODUCTION_AT = "lastProductionEpochMs"
+        private const val KEY_LAST_ERROR = "lastFetchError"
 
         fun create(context: Context): ApiUsageRepository =
             ApiUsageRepository(context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE))

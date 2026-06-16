@@ -28,11 +28,13 @@ When the app is not fully configured, only **Settings** and **User Guide** are r
 
 ### Home
 
-The Home screen shows your **current production** as a line such as "Current Production: 8000 W" — the latest power reading from your solar array, in watts.
+The Home screen is a dashboard of **tiles**. Today it shows a single **Current Production** tile with the latest power reading from your solar array (e.g. "8000 W") and the time it was last updated. More tiles will be added in future releases.
 
-A fresh value is fetched when you open the app and whenever you return to the Home screen, but at most once every 10 minutes; in between, the last retrieved value stays on screen. Until the first successful reading, a neutral placeholder ("Current Production: — W") is shown.
+A fresh value is fetched when you open the app and whenever you return to the Home screen. Once it is working, successful readings are limited to once every 10 minutes; in between, the last retrieved value stays on the tile. Until the first successful reading, a neutral placeholder ("— W") is shown.
 
-If the app cannot reach the EMA service (for example, no network connection), a banner appears at the top of the screen informing you of the network issue. The last known value remains visible, and the banner clears automatically once a later fetch succeeds.
+If a refresh fails, the tile shows a short status line beneath the value (so you can see exactly which data is affected) and keeps the last known value. The status distinguishes the cause: a **network issue** (the app could not reach the EMA service, e.g. no connection), an **authentication failure** (your API credentials were rejected — check them in Settings), or that the **production data could not be updated** (another error, such as an invalid System/ECU ID or a server problem). The status clears automatically once a later fetch succeeds, and it stays visible across screen changes while the problem persists.
+
+A failed fetch is **not** subject to the 10-minute limit and does **not** count against your monthly request limit — it is retried the next time you open or return to Home. If you fix your credentials or other connection settings, the app retries immediately when you go back to Home rather than waiting.
 
 ### User Guide
 
@@ -87,7 +89,7 @@ If you enter a value that doesn't meet the format rules, an error message appear
 
 | Control | Description |
 |---|---|
-| **API Request Limit** | Maximum number of EMA API calls permitted per month (1–2,678,400). Defaults to 1,000. Displayed with a "req/month" suffix outside the input; numeric keyboard. Tap the reset icon (↺) to restore the default. The reset icon is disabled while the field is in edit mode. A progress bar below the field shows how many of this month's requests have actually been used, with a label showing the exact count (e.g. "5 / 1000 requests this month"). The count is the real number of EMA API requests made this calendar month and resets automatically at the start of each month. |
+| **API Request Limit** | Maximum number of EMA API calls permitted per month (1–2,678,400). Defaults to 1,000. Displayed with a "req/month" suffix outside the input; numeric keyboard. Tap the reset icon (↺) to restore the default. The reset icon is disabled while the field is in edit mode. A progress bar below the field shows how many of this month's requests have actually been used, with a label showing the exact count (e.g. "5 / 1000 requests this month"). The count is the number of **successful** EMA API reads made this calendar month (failed requests are not counted) and resets automatically at the start of each month. |
 | **Base URL** | The API endpoint used to reach the EMA service. Defaults to `https://api.apsystemsema.com:9282/user/api/v2/`. Must be a valid URL up to 2,048 characters. Tap the reset icon (↺) beside the field to restore the default without typing. |
 
 #### Logs

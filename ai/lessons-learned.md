@@ -15,11 +15,18 @@
 ### Didn't Work
 * First real network call crashed on device: `AndroidManifest.xml` lacked `<uses-permission android:name="android.permission.INTERNET"/>` → `SecurityException: missing INTERNET permission`. Robolectric/MockWebServer does NOT enforce INTERNET, so the integration test passed green — only a real emulator caught it
 * Client caught only `IOException`; the missing-permission `SecurityException` (a RuntimeException) escaped the IO coroutine and killed the whole app — a background fetch must catch broad `Exception` → degrade to NetworkError
+* Banner was wired to `NetworkError` only → bad credentials return an EMA `ApiError` (code 4000), so NO banner showed and stale value stayed; broadened banner to any failed fetch (NETWORK vs API), keep last value. Confirmed cause via on-device log: `run-as <pkg> cat /data/data/<pkg>/shared_prefs/ema_api_log.xml`
+* Count + throttle semantics settled on: ONLY a successful read (EMA code 0) counts toward the monthly limit and starts the 10-min throttle (billed on data access). EVERY failure (network/auth/param/server) is logged + shown but free + retried next trigger. Plus: changing a connection setting (creds/baseUrl) resets the throttle (`lastFetchEpochMs=0`) + clears persisted error → immediate retry on return to Home
+* EMA "bad credentials" often returns code 4000 (Request parameter exception), NOT a 2xxx auth code — invalid System/ECU IDs are params. Auth codes = 2000-2004 / 3000-3004. Don't assume a credential failure is an "auth" code; check the actual `code`
+* Flash-free tile: give the data source a synchronous `currentState()` (reconstructed from persisted store) for the initial `onViewCreated` render, then `refresh()` in `onResume` updates — don't render an empty `ProductionState()` first
 * `gradlew ktlintCheck` in app module wires ONLY `runKtlintCheckOverKotlinScripts` (.kts) — lints ZERO `.kt`; green proves nothing about Kotlin source
 * Hand-rebuilding standalone ktlint classpath from Gradle cache = deep rabbit hole: ktlint 1.0.1 needs kotlin-compiler-embeddable 1.9.x (2.2.x → `NoSuchFieldError HEADER_KEYWORD`), exactly one slf4j-api 2.0.x + logback 1.3.5 (extra/sources jars → NOPLogger cast crash)
 * `adb` not on PATH in the Bash tool
 
 ### Avoid
+* "Propose" means present design for review/approval BEFORE coding — got called out for editing files when the user asked for a proposal; stop at the proposal, implement only after approval
+* Transient in-memory UI state (banner/error) vanishes on fragment recreation (bottom-nav) → make displayed state a pure function of PERSISTED last-result (value + timestamp + error); seed it in the repo ctor so a recreated tile looks identical
+* Per-endpoint error belongs IN its tile (local status line, visible without tap), not a screen-level banner — scales as Home grows to multiple data tiles; build one tile well in a repeatable shape, don't build a generic dashboard framework before the 2nd endpoint exists
 * First networking feature → add `INTERNET` permission to the manifest AND deploy to a real emulator; Robolectric won't catch its absence
 * Don't reconstruct a parallel lint harness when the project gate is broken — trust `gradlew ktlintCheck`, match existing style manually, move on
 * Fragment that fetches in `onResume`: inject data source via companion seam + run client on `Dispatchers.Unconfined` in tests so it completes inline before assertions

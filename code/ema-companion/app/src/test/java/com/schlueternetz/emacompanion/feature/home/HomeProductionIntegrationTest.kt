@@ -91,7 +91,7 @@ class HomeProductionIntegrationTest {
 
         scenario.onFragment { fragment ->
             val text = fragment.requireView().findViewById<TextView>(R.id.text_current_production)
-            assertEquals("Current Production: 8000 W", text.text.toString())
+            assertEquals("8000 W", text.text.toString())
         }
         assertEquals(1, usage.getRequestCount())
         assertEquals(1, log.getAll().size)
