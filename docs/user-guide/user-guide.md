@@ -18,7 +18,7 @@ Once the required fields are saved, the bottom navigation bar unlocks and you ca
 
 A bottom navigation bar runs across the bottom of every screen with three destinations:
 
-- **Home** — the main dashboard (currently a placeholder)
+- **Home** — the main dashboard showing your current solar production
 - **User Guide** — this guide, viewable inside the app
 - **Settings** — app preferences and configuration (always the rightmost item)
 
@@ -28,9 +28,11 @@ When the app is not fully configured, only **Settings** and **User Guide** are r
 
 ### Home
 
-> **Early development:** The Home screen is currently a placeholder displaying "Hello World!" while production features are being built.
+The Home screen shows your **current production** as a line such as "Current Production: 8000 W" — the latest power reading from your solar array, in watts.
 
-Once development is complete, this screen will be the central dashboard for your solar production data.
+A fresh value is fetched when you open the app and whenever you return to the Home screen, but at most once every 10 minutes; in between, the last retrieved value stays on screen. Until the first successful reading, a neutral placeholder ("Current Production: — W") is shown.
+
+If the app cannot reach the EMA service (for example, no network connection), a banner appears at the top of the screen informing you of the network issue. The last known value remains visible, and the banner clears automatically once a later fetch succeeds.
 
 ### User Guide
 
@@ -85,8 +87,16 @@ If you enter a value that doesn't meet the format rules, an error message appear
 
 | Control | Description |
 |---|---|
-| **API Request Limit** | Maximum number of EMA API calls permitted per month (1–2,678,400). Defaults to 1,000. Displayed with a "req/month" suffix outside the input; numeric keyboard. Tap the reset icon (↺) to restore the default. The reset icon is disabled while the field is in edit mode. A progress bar below the field shows how many of this month's requests have been consumed, with a label showing the exact count (e.g. "800 / 1000 requests this month"). |
+| **API Request Limit** | Maximum number of EMA API calls permitted per month (1–2,678,400). Defaults to 1,000. Displayed with a "req/month" suffix outside the input; numeric keyboard. Tap the reset icon (↺) to restore the default. The reset icon is disabled while the field is in edit mode. A progress bar below the field shows how many of this month's requests have actually been used, with a label showing the exact count (e.g. "5 / 1000 requests this month"). The count is the real number of EMA API requests made this calendar month and resets automatically at the start of each month. |
 | **Base URL** | The API endpoint used to reach the EMA service. Defaults to `https://api.apsystemsema.com:9282/user/api/v2/`. Must be a valid URL up to 2,048 characters. Tap the reset icon (↺) beside the field to restore the default without typing. |
+
+#### Logs
+
+The **Logs** section records each EMA API call the app makes, newest first. Each row shows the time of the call, the endpoint, how long it took (in milliseconds), and whether it succeeded or failed. If no calls have been made yet, the section shows "No API calls recorded yet".
+
+Tap any entry to open a detail dialog showing the full request and response, formatted for readability. Sensitive values that are masked elsewhere in Settings (such as your App Secret) are never shown in full here — they remain masked in the log detail.
+
+The log keeps the 100 most recent calls; older entries are dropped automatically.
 
 #### Configuration
 
@@ -96,7 +106,7 @@ These actions apply to **all** settings on the page, not just the API settings.
 |---|---|
 | **Import Settings** | Opens the system file picker to select a JSON settings file. If the file is plain JSON all recognised fields are merged into the current settings. If the file is encrypted you are prompted for the 4-digit PIN that was set during export. |
 | **Export Settings** | Saves all settings to a file named `ema-companion-settings.json` in a location you choose. A dialog first asks whether to export without encryption or to encrypt with a 4-digit PIN. |
-| **Factory Reset** | Permanently deletes all settings and any locally stored data. A confirmation dialog appears before anything is deleted. Tap **Reset** to confirm or **Cancel** to abort. |
+| **Factory Reset** | Permanently deletes all settings and any locally stored data, including the API request count and the call logs. A confirmation dialog appears before anything is deleted. Tap **Reset** to confirm or **Cancel** to abort. |
 
 ## Import and Export
 

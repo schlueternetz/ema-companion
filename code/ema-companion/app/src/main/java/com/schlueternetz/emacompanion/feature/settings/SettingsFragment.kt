@@ -3,10 +3,12 @@ package com.schlueternetz.emacompanion.feature.settings
 import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,13 +21,21 @@ import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import com.schlueternetz.emacompanion.R
+import com.schlueternetz.emacompanion.core.api.ApiUsageRepository
+import com.schlueternetz.emacompanion.core.api.log.ApiCallLog
+import com.schlueternetz.emacompanion.core.api.log.ApiCallLogRepository
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.text.DateFormat
+import java.util.Date
 import javax.crypto.AEADBadTagException
 
 class SettingsFragment : Fragment() {
 
     private lateinit var repository: SettingsRepository
+    private lateinit var usageRepository: ApiUsageRepository
+    private lateinit var logRepository: ApiCallLogRepository
     private lateinit var languageValueView: TextView
     private lateinit var displayModeValueView: TextView
     private lateinit var notificationsSwitch: MaterialSwitch
@@ -39,6 +49,8 @@ class SettingsFragment : Fragment() {
     private lateinit var apiRequestProgressBar: LinearProgressIndicator
     private lateinit var apiRequestProgressLabel: TextView
     private lateinit var settingBaseUrl: SettingRowView
+    private lateinit var logsList: LinearLayout
+    private lateinit var logsEmptyState: View
 
     private var activeEditRow: SettingRowView? = null
 
@@ -65,6 +77,8 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         repository = SettingsRepository.create(requireContext())
+        usageRepository = ApiUsageRepository.create(requireContext())
+        logRepository = ApiCallLogRepository.create(requireContext())
 
         settingEmaAppId = view.findViewById(R.id.setting_ema_app_id)
         settingEmaAppSecret = view.findViewById(R.id.setting_ema_app_secret)
@@ -76,6 +90,8 @@ class SettingsFragment : Fragment() {
         apiRequestProgressBar = view.findViewById(R.id.api_request_progress_bar)
         apiRequestProgressLabel = view.findViewById(R.id.api_request_progress_label)
         settingBaseUrl = view.findViewById(R.id.setting_base_url)
+        logsList = view.findViewById(R.id.settings_logs_list)
+        logsEmptyState = view.findViewById(R.id.settings_logs_empty_state)
         languageValueView = view.findViewById(R.id.settings_language_value)
         displayModeValueView = view.findViewById(R.id.settings_display_mode_value)
         notificationsSwitch = view.findViewById(R.id.settings_notifications_switch)
@@ -93,6 +109,82 @@ class SettingsFragment : Fragment() {
         wireBaseUrl(view)
         wireImportExportReset(view)
         wireExclusiveEditMode()
+        refreshLogs()
+    }
+
+    private fun refreshLogs() {
+        val logs = logRepository.getAll()
+        logsList.removeAllViews()
+        if (logs.isEmpty()) {
+            logsEmptyState.visibility = View.VISIBLE
+            return
+        }
+        logsEmptyState.visibility = View.GONE
+        logs.forEach { logsList.addView(buildLogRow(it)) }
+    }
+
+    private fun buildLogRow(log: ApiCallLog): TextView {
+        val time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+            .format(Date(log.timestampMs))
+        val status = getString(
+            if (log.success) R.string.settings_logs_success else R.string.settings_logs_failure,
+        )
+        val summary = getString(
+            R.string.settings_logs_row_summary,
+            time,
+            log.endpoint,
+            log.durationMs,
+            status,
+        )
+        val verticalPadding = (12 * resources.displayMetrics.density).toInt()
+        val background = TypedValue().also {
+            requireContext().theme.resolveAttribute(android.R.attr.selectableItemBackground, it, true)
+        }.resourceId
+        return TextView(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            )
+            text = summary
+            contentDescription = summary
+            minHeight = (48 * resources.displayMetrics.density).toInt()
+            setPadding(0, verticalPadding, 0, verticalPadding)
+            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyMedium)
+            setBackgroundResource(background)
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { showLogDetail(log) }
+        }
+    }
+
+    private fun showLogDetail(log: ApiCallLog) {
+        val message = buildString {
+            append(getString(R.string.settings_logs_detail_request))
+            append("\n")
+            append(prettyPrint(log.requestText))
+            append("\n\n")
+            append(getString(R.string.settings_logs_detail_response))
+            append("\n")
+            append(prettyPrint(log.responseText))
+        }
+        AlertDialog.Builder(requireContext())
+            .setTitle(log.endpoint)
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+    }
+
+    private fun prettyPrint(text: String): String {
+        val trimmed = text.trim()
+        return try {
+            when {
+                trimmed.startsWith("{") -> JSONObject(trimmed).toString(2)
+                trimmed.startsWith("[") -> JSONArray(trimmed).toString(2)
+                else -> text
+            }
+        } catch (e: JSONException) {
+            text
+        }
     }
 
     private fun wireEmaAppId() {
@@ -216,13 +308,13 @@ class SettingsFragment : Fragment() {
     }
 
     private fun updateApiRequestProgress() {
-        val hardcodedConsumedRequests = 800
+        val consumedRequests = usageRepository.getRequestCount()
         val limit = repository.getApiRequestLimit()
-        val progress = if (limit <= 0) 0f else (hardcodedConsumedRequests.toFloat() / limit.toFloat()).coerceIn(0f, 1f)
+        val progress = if (limit <= 0) 0f else (consumedRequests.toFloat() / limit.toFloat()).coerceIn(0f, 1f)
         apiRequestProgressBar.progress = (progress * 100).toInt()
         apiRequestProgressLabel.text = getString(
             R.string.settings_api_request_progress_label,
-            hardcodedConsumedRequests,
+            consumedRequests,
             limit,
         )
     }
@@ -417,6 +509,8 @@ class SettingsFragment : Fragment() {
             .setMessage(R.string.settings_factory_reset_dialog_message)
             .setPositiveButton(R.string.settings_factory_reset_confirm) { _, _ ->
                 repository.clearAll()
+                usageRepository.clear()
+                logRepository.clear()
                 refreshAllDisplayedValues()
             }
             .setNegativeButton(R.string.settings_factory_reset_cancel, null)
@@ -433,6 +527,7 @@ class SettingsFragment : Fragment() {
         settingHistoricDays.value = "${repository.getHistoricDataDays()}"
         settingApiRequestLimit.value = "${repository.getApiRequestLimit()}"
         updateApiRequestProgress()
+        refreshLogs()
         notificationsSwitch.isChecked = repository.getNotificationsEnabled()
         settingBaseUrl.value = repository.getBaseUrl()
         updateLanguageDisplay()

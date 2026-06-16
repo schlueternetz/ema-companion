@@ -19,7 +19,7 @@ Sobald die erforderlichen Felder gespeichert sind, wird die untere Navigationsle
 
 Am unteren Rand jedes Bildschirms verläuft eine Navigationsleiste mit drei Zielen:
 
-- **Startseite** — das Haupt-Dashboard (derzeit ein Platzhalter)
+- **Startseite** — das Haupt-Dashboard, das Ihre aktuelle Solarproduktion anzeigt
 - **Benutzerhandbuch** — dieses Handbuch, innerhalb der App lesbar
 - **Einstellungen** — App-Voreinstellungen und Konfiguration (immer der äußerste rechte Eintrag)
 
@@ -29,9 +29,11 @@ Wenn die App noch nicht vollständig konfiguriert ist, sind nur **Einstellungen*
 
 ### Startseite
 
-> **Frühe Entwicklungsphase:** Der Startseiten-Bildschirm ist derzeit ein Platzhalter, der „Hallo Welt!" anzeigt, während die Produktionsfunktionen aufgebaut werden.
+Der Startseiten-Bildschirm zeigt Ihre **aktuelle Produktion** als Zeile wie „Aktuelle Produktion: 8000 W" — der neueste Leistungswert Ihrer Solaranlage, in Watt.
 
-Nach Abschluss der Entwicklung wird dieser Bildschirm das zentrale Dashboard für Ihre Solarproduktionsdaten sein.
+Ein neuer Wert wird abgerufen, wenn Sie die App öffnen und wann immer Sie zur Startseite zurückkehren, jedoch höchstens einmal alle 10 Minuten; dazwischen bleibt der zuletzt abgerufene Wert auf dem Bildschirm. Bis zum ersten erfolgreichen Abruf wird ein neutraler Platzhalter angezeigt („Aktuelle Produktion: — W").
+
+Wenn die App den EMA-Dienst nicht erreichen kann (zum Beispiel bei fehlender Netzwerkverbindung), erscheint oben auf dem Bildschirm ein Banner, das Sie über das Netzwerkproblem informiert. Der zuletzt bekannte Wert bleibt sichtbar, und das Banner verschwindet automatisch, sobald ein späterer Abruf erfolgreich ist.
 
 ### Benutzerhandbuch
 
@@ -86,8 +88,16 @@ Wenn Sie einen Wert eingeben, der nicht den Formatregeln entspricht, erscheint u
 
 | Steuerelement | Beschreibung |
 |---|---|
-| **API-Anfragelimit** | Maximale Anzahl der pro Monat erlaubten EMA-API-Aufrufe (1–2.678.400). Standard ist 1.000. Wird mit dem Suffix „Anf./Monat" außerhalb des Eingabefelds angezeigt; numerische Tastatur. Tippen Sie auf das Zurücksetzen-Symbol (↺), um den Standard wiederherzustellen. Das Zurücksetzen-Symbol ist deaktiviert, während sich das Feld im Bearbeitungsmodus befindet. Ein Fortschrittsbalken unter dem Feld zeigt, wie viele der Anfragen dieses Monats verbraucht wurden, mit einer Beschriftung, die die genaue Anzahl angibt (z. B. „800 / 1000 Anfragen diesen Monat"). |
+| **API-Anfragelimit** | Maximale Anzahl der pro Monat erlaubten EMA-API-Aufrufe (1–2.678.400). Standard ist 1.000. Wird mit dem Suffix „Anf./Monat" außerhalb des Eingabefelds angezeigt; numerische Tastatur. Tippen Sie auf das Zurücksetzen-Symbol (↺), um den Standard wiederherzustellen. Das Zurücksetzen-Symbol ist deaktiviert, während sich das Feld im Bearbeitungsmodus befindet. Ein Fortschrittsbalken unter dem Feld zeigt, wie viele Anfragen diesen Monats tatsächlich genutzt wurden, mit einer Beschriftung, die die genaue Anzahl angibt (z. B. „5 / 1000 Anfragen diesen Monat"). Die Anzahl ist die tatsächliche Zahl der in diesem Kalendermonat getätigten EMA-API-Anfragen und wird zu Beginn jedes Monats automatisch zurückgesetzt. |
 | **Basis-URL** | Der API-Endpunkt, über den der EMA-Dienst erreicht wird. Standard ist `https://api.apsystemsema.com:9282/user/api/v2/`. Muss eine gültige URL mit bis zu 2.048 Zeichen sein. Tippen Sie auf das Zurücksetzen-Symbol (↺) neben dem Feld, um den Standard ohne Tippen wiederherzustellen. |
+
+#### Protokolle
+
+Der Abschnitt **Protokolle** zeichnet jeden EMA-API-Aufruf der App auf, den neuesten zuerst. Jede Zeile zeigt den Zeitpunkt des Aufrufs, den Endpunkt, die Dauer (in Millisekunden) und ob er erfolgreich war oder fehlgeschlagen ist. Wurden noch keine Aufrufe getätigt, zeigt der Abschnitt „Noch keine API-Aufrufe aufgezeichnet" an.
+
+Tippen Sie auf einen Eintrag, um einen Detaildialog mit der vollständigen Anfrage und Antwort zu öffnen, übersichtlich formatiert. Sensible Werte, die anderswo in den Einstellungen maskiert sind (wie Ihr App-Geheimnis), werden auch hier niemals vollständig angezeigt — sie bleiben im Protokolldetail maskiert.
+
+Das Protokoll behält die 100 neuesten Aufrufe; ältere Einträge werden automatisch entfernt.
 
 #### Konfiguration
 
@@ -97,7 +107,7 @@ Diese Aktionen gelten für **alle** Einstellungen der Seite, nicht nur für die 
 |---|---|
 | **Einstellungen importieren** | Öffnet die Dateiauswahl des Systems, um eine JSON-Einstellungsdatei auszuwählen. Wenn die Datei reines JSON ist, werden alle erkannten Felder in die aktuellen Einstellungen übernommen. Wenn die Datei verschlüsselt ist, werden Sie nach der 4-stelligen PIN gefragt, die beim Export festgelegt wurde. |
 | **Einstellungen exportieren** | Speichert alle Einstellungen in einer Datei namens `ema-companion-settings.json` an einem von Ihnen gewählten Ort. Ein Dialog fragt zunächst, ob ohne Verschlüsselung exportiert oder mit einer 4-stelligen PIN verschlüsselt werden soll. |
-| **Werksreset** | Löscht dauerhaft alle Einstellungen und alle lokal gespeicherten Daten. Vor dem Löschen erscheint ein Bestätigungsdialog. Tippen Sie zum Bestätigen auf **Zurücksetzen** oder auf **Abbrechen**, um abzubrechen. |
+| **Werksreset** | Löscht dauerhaft alle Einstellungen und alle lokal gespeicherten Daten, einschließlich der API-Anfragezählung und der Aufrufprotokolle. Vor dem Löschen erscheint ein Bestätigungsdialog. Tippen Sie zum Bestätigen auf **Zurücksetzen** oder auf **Abbrechen**, um abzubrechen. |
 
 ## Import und Export
 

@@ -37,6 +37,26 @@ class SettingsFragmentTest {
         // Clear settings between tests
         appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit().clear().apply()
+        appContext.getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
+            .edit().clear().apply()
+        appContext.getSharedPreferences("ema_api_log", Context.MODE_PRIVATE)
+            .edit().clear().apply()
+    }
+
+    private fun seedLogs(json: String) {
+        appContext.getSharedPreferences("ema_api_log", Context.MODE_PRIVATE)
+            .edit().putString("log", json).apply()
+    }
+
+    private fun dialogMessage(dialog: androidx.appcompat.app.AlertDialog): String =
+        dialog.window?.decorView?.findViewById<TextView>(android.R.id.message)?.text?.toString() ?: ""
+
+    private fun seedUsageCount(count: Int) {
+        appContext.getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
+            .edit()
+            .putString("apiRequestCountMonth", java.time.YearMonth.now().toString())
+            .putInt("apiRequestCount", count)
+            .apply()
     }
 
     @Test
@@ -251,6 +271,7 @@ class SettingsFragmentTest {
 
     @Test
     fun progressBar_showsConsumedRatio() {
+        seedUsageCount(800)
         appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit().putInt("apiRequestLimit", 1000).apply()
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
@@ -263,13 +284,29 @@ class SettingsFragmentTest {
     }
 
     @Test
-    fun progressBar_showsDefaultProgress_whenLimitNotExplicitlySet() {
+    fun progressBar_showsZeroProgress_whenNoRequestsMade() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
             val bar = fragment.requireView()
                 .findViewById<LinearProgressIndicator>(R.id.api_request_progress_bar)
-            // consumed=800, default limit=1000 → 80%
-            assertEquals(80, bar.progress)
+            // No requests recorded yet → consumed=0 → 0%
+            assertEquals(0, bar.progress)
+        }
+    }
+
+    @Test
+    fun progressBar_usesPersistedCount_notHardcodedValue() {
+        seedUsageCount(123)
+        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit().putInt("apiRequestLimit", 1000).apply()
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val bar = fragment.requireView()
+                .findViewById<LinearProgressIndicator>(R.id.api_request_progress_bar)
+            // consumed=123, limit=1000 → 12%
+            assertEquals(12, bar.progress)
+            val label = fragment.requireView().findViewById<TextView>(R.id.api_request_progress_label)
+            assertTrue("Label should mention the real count 123", label.text.toString().contains("123"))
         }
     }
 
@@ -298,6 +335,7 @@ class SettingsFragmentTest {
 
     @Test
     fun progressBarLabel_showsConsumedAndLimit() {
+        seedUsageCount(800)
         appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit().putInt("apiRequestLimit", 1000).apply()
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
@@ -309,6 +347,30 @@ class SettingsFragmentTest {
             assertTrue("Label should mention 800", text.contains("800"))
             assertTrue("Label should mention 1000", text.contains("1000"))
         }
+    }
+
+    @Test
+    fun factoryReset_clearsApiUsageAndLogs() {
+        seedUsageCount(50)
+        seedLogs(
+            """
+            [{"timestampMs":1,"endpoint":"e","durationMs":1,"success":true,
+              "requestText":"r","responseText":"x"}]
+            """.trimIndent(),
+        )
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<View>(R.id.settings_factory_reset_button).performClick()
+            val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
+                as androidx.appcompat.app.AlertDialog
+            shadowOf(Looper.getMainLooper()).idle()
+            dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).performClick()
+            shadowOf(Looper.getMainLooper()).idle()
+        }
+        val usage = appContext.getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
+        assertEquals(0, usage.getInt("apiRequestCount", 0))
+        val log = appContext.getSharedPreferences("ema_api_log", Context.MODE_PRIVATE)
+        assertEquals(null, log.getString("log", null))
     }
 
     @Test
@@ -347,6 +409,77 @@ class SettingsFragmentTest {
 
             assertEquals(View.GONE, appIdRow.findViewById<View>(R.id.setting_input_layout).visibility)
             assertEquals(View.VISIBLE, secretRow.findViewById<View>(R.id.setting_input_layout).visibility)
+        }
+    }
+
+    // Logs section
+    @Test
+    fun logsList_showsRecordedCallsNewestFirst() {
+        seedLogs(
+            """[
+                {"timestampMs":2000,"endpoint":"newest","durationMs":12,"success":true,"requestText":"GET","responseText":"{}"},
+                {"timestampMs":1000,"endpoint":"older","durationMs":34,"success":false,"requestText":"GET","responseText":"{}"}
+            ]""",
+        )
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val list = fragment.requireView().findViewById<android.widget.LinearLayout>(R.id.settings_logs_list)
+            assertEquals(2, list.childCount)
+            val firstRow = list.getChildAt(0) as TextView
+            assertTrue(firstRow.text.toString().contains("newest"))
+            assertTrue(firstRow.text.toString().contains("12"))
+        }
+    }
+
+    @Test
+    fun logsList_showsEmptyState_whenNoRecords() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val empty = fragment.requireView().findViewById<View>(R.id.settings_logs_empty_state)
+            val list = fragment.requireView().findViewById<android.widget.LinearLayout>(R.id.settings_logs_list)
+            assertEquals(View.VISIBLE, empty.visibility)
+            assertEquals(0, list.childCount)
+        }
+    }
+
+    @Test
+    fun logRow_tap_opensPrettyPrintedDetail() {
+        seedLogs(
+            """
+            [{"timestampMs":2000,"endpoint":"ecu/energy","durationMs":12,"success":true,
+              "requestText":"GET /x",
+              "responseText":"{\"code\":0,\"data\":{\"power\":[8000]}}"}]
+            """.trimIndent(),
+        )
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val list = fragment.requireView().findViewById<android.widget.LinearLayout>(R.id.settings_logs_list)
+            list.getChildAt(0).performClick()
+            val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
+                as androidx.appcompat.app.AlertDialog
+            val message = dialogMessage(dialog)
+            assertTrue("Detail should contain response body", message.contains("power"))
+            assertTrue("Detail should be pretty-printed across lines", message.contains("\n"))
+        }
+    }
+
+    @Test
+    fun logDetail_keepsMaskedFieldMasked() {
+        seedLogs(
+            """
+            [{"timestampMs":2000,"endpoint":"ecu/energy","durationMs":12,"success":true,
+              "requestText":"App Secret: ••••3456","responseText":"{}"}]
+            """.trimIndent(),
+        )
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val list = fragment.requireView().findViewById<android.widget.LinearLayout>(R.id.settings_logs_list)
+            list.getChildAt(0).performClick()
+            val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
+                as androidx.appcompat.app.AlertDialog
+            val message = dialogMessage(dialog)
+            assertTrue("Masked value should remain masked in detail", message.contains("••••3456"))
+            assertFalse("Plain secret must not appear", message.contains("secret123456"))
         }
     }
 

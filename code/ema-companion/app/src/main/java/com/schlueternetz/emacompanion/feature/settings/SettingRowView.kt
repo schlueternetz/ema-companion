@@ -12,6 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.schlueternetz.emacompanion.R
+import com.schlueternetz.emacompanion.core.Masking
 
 class SettingRowView @JvmOverloads constructor(
     context: Context,
@@ -169,8 +170,6 @@ class SettingRowView @JvmOverloads constructor(
 
     private fun maskedDisplay(raw: String): String {
         if (!isMasked || raw.isEmpty()) return raw
-        val visibleCount = minOf(4, raw.length)
-        val masked = "•".repeat(raw.length - visibleCount)
-        return masked + raw.takeLast(visibleCount)
+        return Masking.mask(raw)
     }
 }

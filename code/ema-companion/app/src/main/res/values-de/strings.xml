@@ -1,14 +1,26 @@
 <resources>
-    <string name="placeholder_hello">Hallo Welt!</string>
     <string name="nav_home">Startseite</string>
     <string name="nav_settings">Einstellungen</string>
     <string name="nav_user_guide">Benutzerhandbuch</string>
+
+    <!-- Home -->
+    <string name="home_current_production">Aktuelle Produktion: %1$s %2$s</string>
+    <string name="home_network_error_banner">Netzwerkproblem – letzter bekannter Wert wird angezeigt</string>
 
     <!-- Settings section headers -->
     <string name="settings_section_solar_array">Solaranlagen-Einstellungen</string>
     <string name="settings_section_app">App-Einstellungen</string>
     <string name="settings_section_configuration">Konfiguration</string>
     <string name="settings_section_api">API-Einstellungen</string>
+    <string name="settings_section_logs">Protokolle</string>
+
+    <!-- Logs -->
+    <string name="settings_logs_empty">Noch keine API-Aufrufe aufgezeichnet</string>
+    <string name="settings_logs_success">Erfolg</string>
+    <string name="settings_logs_failure">Fehlgeschlagen</string>
+    <string name="settings_logs_row_summary">%1$s · %2$s · %3$d ms · %4$s</string>
+    <string name="settings_logs_detail_request">Anfrage</string>
+    <string name="settings_logs_detail_response">Antwort</string>
 
     <!-- Language -->
     <string name="settings_language_label">Sprache</string>

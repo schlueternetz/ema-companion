@@ -1,5 +1,30 @@
 # AI Lessons Learned
 
+## 2026-06-15: home-current-production (first real EMA API call)
+
+### Went Well
+* Pure `EmaRequestSigner` (injected `clock`/`nonce`) + reference HMAC computed via `openssl dgst -sha256 -hmac` → assert exact Base64 output, not impl-vs-impl
+* `java.util.Base64` (NOT `android.util.Base64`) keeps signer a plain-JUnit test; `android.util.Base64` needs Robolectric
+* `ProductionSource` interface + `HomeFragment.sourceOverride` companion seam = fake the fetch with no HTTP
+* Real-HTTP MockWebServer test THROUGH `HomeFragment.onResume`: inject client `ioDispatcher = Dispatchers.Unconfined` so socket call runs inline → coroutine done before assert (no flaky timing)
+* Throttle keyed on persisted `lastFetchEpochMs`; count+log+lastFetch updated at ONE point, only when a request is actually issued (`ConfigurationError`→none) → progress bar & Logs never disagree
+* Multi-line `"""..."""` JSON fixtures: shorten lines AND ktlint max-line-length ignores inside multiline strings (JSON whitespace-insignificant, `JSONObject`/`JSONArray` tolerate it)
+* Robolectric dialog button: `ShadowDialog.getLatestDialog()` as androidx `AlertDialog` + `Looper` idle BEFORE+AFTER `performClick()` (factory-reset positive button didn't fire without idle)
+* Per-domain own plain `SharedPreferences` (`ema_api_usage`, `ema_api_log`) not in encrypted `SettingsRepository`; factory reset must `clear()` each explicitly
+
+### Didn't Work
+* First real network call crashed on device: `AndroidManifest.xml` lacked `<uses-permission android:name="android.permission.INTERNET"/>` → `SecurityException: missing INTERNET permission`. Robolectric/MockWebServer does NOT enforce INTERNET, so the integration test passed green — only a real emulator caught it
+* Client caught only `IOException`; the missing-permission `SecurityException` (a RuntimeException) escaped the IO coroutine and killed the whole app — a background fetch must catch broad `Exception` → degrade to NetworkError
+* `gradlew ktlintCheck` in app module wires ONLY `runKtlintCheckOverKotlinScripts` (.kts) — lints ZERO `.kt`; green proves nothing about Kotlin source
+* Hand-rebuilding standalone ktlint classpath from Gradle cache = deep rabbit hole: ktlint 1.0.1 needs kotlin-compiler-embeddable 1.9.x (2.2.x → `NoSuchFieldError HEADER_KEYWORD`), exactly one slf4j-api 2.0.x + logback 1.3.5 (extra/sources jars → NOPLogger cast crash)
+* `adb` not on PATH in the Bash tool
+
+### Avoid
+* First networking feature → add `INTERNET` permission to the manifest AND deploy to a real emulator; Robolectric won't catch its absence
+* Don't reconstruct a parallel lint harness when the project gate is broken — trust `gradlew ktlintCheck`, match existing style manually, move on
+* Fragment that fetches in `onResume`: inject data source via companion seam + run client on `Dispatchers.Unconfined` in tests so it completes inline before assertions
+* Count/log an API call at exactly one point (the repository), only for issued requests
+
 ## 2026-06-14: ema-api-stub (new standalone Ktor mock app)
 
 ### Went Well
