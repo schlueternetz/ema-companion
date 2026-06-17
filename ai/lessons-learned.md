@@ -1,5 +1,20 @@
 # AI Lessons Learned
 
+## 2026-06-17: import path skipped throttle reset
+
+### Went Well
+* On-device diagnosis from plain prefs: `run-as <pkg> cat .../shared_prefs/ema_api_usage.xml` — `lastFetchEpochMs` still old value (not 0) PROVED `invalidateApiThrottle()` never ran, before touching code
+* Compared timestamp delta (now − lastFetch = 870 min ≫ 10-min throttle) to rule out "throttle still active" as the cause
+
+### Didn't Work
+* `invalidateApiThrottle()` lived ONLY in per-field `onSave`; import (`handleImport`→`refreshAllDisplayedValues`) changed connection creds but never reset throttle/error → next Home visit honored stale throttle, no fetch. Fix: call it in `refreshAllDisplayedValues()` (shared by import + factory reset)
+* User "invalid credentials" did nothing because `SettingRowView.attemptSave` gates `onSave` behind `validator` — invalid-FORMAT input never saves, so never invalidates; need format-valid-but-wrong creds to exercise the error path
+
+### Avoid
+* New mutation belongs at EVERY entry point of a state change, not just the per-field edit — import/factory-reset are config-change paths too (spec: changing a connection setting clears throttle)
+* Import with blank/absent creds → `isConfigured()` false → silent `ConfigurationError` (no log, no error, no count), NOT an auth error — expected, don't chase it as a bug
+* Behavior-only fix in a Fragment ≠ UX change — skip `write-user-guide` (no layout/menu/nav/string/visible change) despite the PostToolUse hook reminder
+
 ## 2026-06-15: home-current-production (first real EMA API call)
 
 ### Went Well

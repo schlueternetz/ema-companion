@@ -366,6 +366,23 @@ class SettingsFragmentTest {
     }
 
     @Test
+    fun importingSettings_resetsThrottleAndClearsError() {
+        // Import can change connection settings, so the post-import refresh must reset the
+        // throttle and clear the stale error just like a manual credential edit does.
+        appContext.getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE).edit()
+            .putLong("lastFetchEpochMs", 12345L)
+            .putString("lastFetchError", "API")
+            .apply()
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.refreshAllDisplayedValues()
+        }
+        val usage = appContext.getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
+        assertEquals(0L, usage.getLong("lastFetchEpochMs", -1L))
+        assertEquals(null, usage.getString("lastFetchError", null))
+    }
+
+    @Test
     fun factoryReset_clearsApiUsageAndLogs() {
         seedUsageCount(50)
         seedLogs(

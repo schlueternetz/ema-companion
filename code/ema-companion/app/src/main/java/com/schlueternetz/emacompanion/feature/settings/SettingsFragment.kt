@@ -551,6 +551,11 @@ class SettingsFragment : Fragment() {
         // deferred until the next setting edit triggered an Activity recreate.
         applyDisplayMode(repository.getDisplayMode())
         applyLanguage(repository.getLanguage(), repository)
+        // An import (or factory reset) can change the connection settings (App ID/Secret,
+        // System/ECU ID, Base URL), so reset the throttle and clear the stale error just like a
+        // manual edit does — otherwise the next Home visit keeps the old throttle and never
+        // fetches with the imported credentials.
+        invalidateApiThrottle()
         checkConfigurationAndUpdateNav()
     }
 
