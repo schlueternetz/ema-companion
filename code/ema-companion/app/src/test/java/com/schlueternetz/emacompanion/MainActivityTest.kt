@@ -13,6 +13,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import androidx.work.testing.WorkManagerTestInitHelper
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,6 +30,7 @@ class MainActivityTest {
     @Before
     fun setUp() {
         appContext = ApplicationProvider.getApplicationContext()
+        WorkManagerTestInitHelper.initializeTestWorkManager(appContext)
         appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit().clear().apply()
     }

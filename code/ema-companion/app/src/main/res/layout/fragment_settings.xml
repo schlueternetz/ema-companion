@@ -56,6 +56,32 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
+                <!-- Array Timezone row (click-to-dialog) -->
+                <LinearLayout
+                    android:id="@+id/settings_array_timezone_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:contentDescription="@string/settings_array_timezone_label"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/settings_array_timezone_label"
+                        android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+                    <TextView
+                        android:id="@+id/settings_array_timezone_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+                </LinearLayout>
+
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
@@ -272,11 +298,19 @@
                     android:textAppearance="?attr/textAppearanceBodyMedium"
                     android:visibility="gone" />
 
-                <LinearLayout
-                    android:id="@+id/settings_logs_list"
+                <androidx.core.widget.NestedScrollView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical" />
+                    android:layout_height="240dp"
+                    android:scrollbars="vertical"
+                    android:fadeScrollbars="false">
+
+                    <LinearLayout
+                        android:id="@+id/settings_logs_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+
+                </androidx.core.widget.NestedScrollView>
 
             </LinearLayout>
 

@@ -1,6 +1,7 @@
 package com.schlueternetz.emacompanion.core.api
 
 import android.content.Context
+import com.schlueternetz.emacompanion.core.AppConfig
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLog
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLogRepository
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
@@ -61,7 +62,7 @@ class ProductionRepository(
     override suspend fun refresh(): ProductionState {
         val now = clock()
         // Only a successful read starts the throttle, so a previous failure never blocks a retry.
-        if (now - usage.getLastFetchEpochMs() < THROTTLE_MS) {
+        if (now - usage.getLastFetchEpochMs() < AppConfig.PRODUCTION_FETCH_INTERVAL_MS) {
             return currentState()
         }
 
@@ -122,8 +123,6 @@ class ProductionRepository(
         ProductionState(snapshot = cached, updatedAtEpochMs = cachedAtEpochMs, error = error)
 
     companion object {
-        const val THROTTLE_MS = 10 * 60 * 1000L
-
         // EMA account/authorization and token error codes (manual §4) → treated as auth failures.
         private val AUTH_CODES = setOf(2000, 2001, 2002, 2003, 2004, 3000, 3001, 3002, 3003, 3004)
 

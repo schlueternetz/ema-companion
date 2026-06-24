@@ -116,4 +116,31 @@
     <string name="setting_row_save_button_description">Speichern</string>
     <string name="setting_row_cancel_button_description">Abbrechen</string>
     <string name="setting_row_info_button_description">Info</string>
+
+    <!-- Module Health Tile -->
+    <string name="home_module_health_title">Modulstatus</string>
+    <string name="home_module_health_status_green">Alle Module produzieren</string>
+    <string name="home_module_health_status_yellow">Modul offline</string>
+    <string name="home_module_health_status_red">Modul offline – Handlungsbedarf</string>
+    <string name="home_module_health_status_unknown">Wird geprüft…</string>
+    <string name="home_module_health_checked">Geprüft am %1$s um %2$s</string>
+    <string name="home_module_health_offline_singular">Keine Produktion seit 1 Tag</string>
+    <string name="home_module_health_offline_plural">Keine Produktion seit %1$d Tagen</string>
+    <string name="home_module_health_detail_title">Offline-Module</string>
+    <string name="home_module_health_icon_description">Modulstatus</string>
+    <string name="home_module_health_error_network">Netzwerkproblem – Prüfung nicht möglich</string>
+    <string name="home_module_health_error_auth">Authentifizierung fehlgeschlagen – API-Zugangsdaten prüfen</string>
+    <string name="home_module_health_error_api">Modulstatus konnte nicht geprüft werden</string>
+
+    <!-- Array Timezone Setting -->
+    <string name="settings_array_timezone_label">Zeitzone der Anlage</string>
+    <string name="settings_array_timezone_dialog_title">Zeitzone auswählen</string>
+
+    <!-- Module Health Notifications -->
+    <string name="notification_channel_module_health_name">Modulstatus-Benachrichtigungen</string>
+    <string name="notification_channel_module_health_description">Benachrichtigungen wenn ein Solarmodul aufhört zu produzieren</string>
+    <string name="notification_module_health_yellow_title">Solarmodul offline</string>
+    <string name="notification_module_health_yellow_text">Ein oder mehrere Module haben seit 1–2 Tagen nicht produziert. Tippen für Details.</string>
+    <string name="notification_module_health_red_title">Solarmodul offline – Handlungsbedarf</string>
+    <string name="notification_module_health_red_text">Ein oder mehrere Module haben seit 3 Tagen nicht produziert. Anlage prüfen.</string>
 </resources>

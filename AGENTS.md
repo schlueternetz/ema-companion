@@ -28,6 +28,12 @@ Architecture decisions are documented in [`docs/adr/`](docs/adr/). Read the rele
 - Maestro (`maestro/`) for a small set of critical UI flows only — not for broad UI coverage
 - No Espresso
 
+**EMA API call budget**:
+- The EMA API has a hard monthly call quota — every request counts against it and cannot be refunded
+- Before designing or implementing any feature that calls the EMA API, explicitly count the calls per trigger and propose the approach that minimises them
+- Prefer: throttle guards, persisted caches for immutable data (past days, historical summaries), and reusing data already fetched by another feature over making a fresh call
+- Flag any design that makes redundant or unbounded API calls (e.g. re-fetching data that cannot have changed) and propose an alternative before implementing
+
 **Debugging** (cost discipline):
 - For any bug or unexpected-behavior report, reproduce it at the lowest test layer first (unit, then Robolectric) before launching the emulator — a deterministic failing test is cheaper and pinpoints the cause
 - Reserve the emulator and screenshots for final confirmation or genuinely visual/layout bugs, not for exploratory "did it move?" loops (each screenshot read costs thousands of tokens)
@@ -40,6 +46,12 @@ Architecture decisions are documented in [`docs/adr/`](docs/adr/). Read the rele
 - Accessibility target: WCAG 2.1 AA; all interactive elements need content descriptions, 48dp touch targets minimum
 - UI tasks are only complete when lint passes and Robolectric tests include ATF (`AccessibilityValidator`) checks
 
+**Tile error display** (ADR-006):
+- Every Home tile must show the last known data (or a neutral placeholder) at all times — never blank on error
+- Fetch errors are shown as an inline status line below the data text; no dialog, toast, or popup for transient fetch errors
+- Each tile's state class carries a `FetchError?` field (reuse `core/api/FetchError`); persist it alongside the tile data so `currentState()` reconstructs the full rendered state
+- `ConfigurationError` is silent — show neutral placeholder only, no error line
+
 **Package and code organization** (ADR-004):
 - Feature-first: all code lives in `feature/<name>/` (e.g. `feature/home/`, `feature/settings/`)
 - Only `MainActivity` stays at the root package
@@ -50,8 +62,8 @@ Architecture decisions are documented in [`docs/adr/`](docs/adr/). Read the rele
 - When writing a new ADR or significantly updating an existing one, invoke the `write-adr` skill — it writes the file and updates all cross-references (`getting-started.md` ADR table, `AGENTS.md` Key Conventions)
 
 **User guide**:
-- After completing any UI (frontend) change — layouts, activities, fragments, menus, or navigation — invoke the `write-user-guide` skill to update `docs/user-guide/user-guide.md`
-- The English files in `docs/user-guide/` are the single source of truth (and the only version on GitHub). German is **in-app only**: `write-user-guide` generates `user-guide-de.md` and `system-context-de.png` into `code/ema-companion/app/src/main/assets/user-guide/` (committed there via a `.gitignore` negation, never in `docs/`). Edit English only and re-run the skill; never hand-edit a `*-de.*` file. The `*-de.mmd` intermediate is transient (gitignored).
+- After completing any UI (frontend) change — layouts, activities, fragments, menus, or navigation — invoke the `write-user-guide` skill to update the relevant pages in `docs/user-guide/`
+- The guide is split into one file per screen plus an index: `user-guide.md` (index), `home.md`, `settings.md`, `import-export.md`. Each page must stay under ~600 words (3-minute read). Only add a new page when a section is logically self-contained and too long for an existing page.
 
 **Hooks** (`.claude/settings.json` — fire automatically, but know they exist):
 - **UX file written** (`PostToolUse` on Edit/Write): fires when layout, Activity, Fragment, strings, menu, or navigation files change — injects a reminder to invoke `write-user-guide`

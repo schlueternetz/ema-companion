@@ -24,6 +24,7 @@ import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.ApiUsageRepository
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLog
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLogRepository
+import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthRepository
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -38,6 +39,7 @@ class SettingsFragment : Fragment() {
     private lateinit var logRepository: ApiCallLogRepository
     private lateinit var languageValueView: TextView
     private lateinit var displayModeValueView: TextView
+    private lateinit var arrayTimezoneValueView: TextView
     private lateinit var notificationsSwitch: MaterialSwitch
     private lateinit var settingEmaAppId: SettingRowView
     private lateinit var settingEmaAppSecret: SettingRowView
@@ -94,6 +96,7 @@ class SettingsFragment : Fragment() {
         logsEmptyState = view.findViewById(R.id.settings_logs_empty_state)
         languageValueView = view.findViewById(R.id.settings_language_value)
         displayModeValueView = view.findViewById(R.id.settings_display_mode_value)
+        arrayTimezoneValueView = view.findViewById(R.id.settings_array_timezone_value)
         notificationsSwitch = view.findViewById(R.id.settings_notifications_switch)
 
         wireEmaAppId()
@@ -103,6 +106,7 @@ class SettingsFragment : Fragment() {
         wireSystemCapacity()
         wireLanguage(view)
         wireDisplayMode(view)
+        wireArrayTimezone(view)
         wireNotifications()
         wireHistoricDays()
         wireApiRequestLimit(view)
@@ -362,6 +366,41 @@ class SettingsFragment : Fragment() {
             .setOnClickListener { showDisplayModeDialog() }
     }
 
+    private fun wireArrayTimezone(view: View) {
+        updateArrayTimezoneDisplay()
+        view.findViewById<View>(R.id.settings_array_timezone_row)
+            .setOnClickListener { showArrayTimezoneDialog() }
+    }
+
+    private fun updateArrayTimezoneDisplay() {
+        arrayTimezoneValueView.text = repository.getArrayTimezone()
+    }
+
+    private fun showArrayTimezoneDialog() {
+        val allZones = java.util.TimeZone.getAvailableIDs().sorted().toTypedArray()
+        val current = repository.getArrayTimezone()
+        val currentIndex = allZones.indexOfFirst { it == current }.coerceAtLeast(0)
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle(R.string.settings_array_timezone_dialog_title)
+            .setSingleChoiceItems(allZones, currentIndex) { dialog, which ->
+                val selected = allZones[which]
+                repository.setArrayTimezone(selected)
+                updateArrayTimezoneDisplay()
+                rescheduleModuleHealthWorker(selected)
+                dialog.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun rescheduleModuleHealthWorker(timezoneId: String) {
+        com.schlueternetz.emacompanion.feature.home.ModuleHealthWorker.schedule(
+            requireContext(),
+            timezoneId,
+            androidx.work.ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+        )
+    }
+
     private fun wireNotifications() {
         notificationsSwitch.isChecked = repository.getNotificationsEnabled()
         notificationsSwitch.setOnCheckedChangeListener { _, isChecked ->
@@ -525,6 +564,12 @@ class SettingsFragment : Fragment() {
                 repository.clearAll()
                 usageRepository.clear()
                 logRepository.clear()
+                requireContext().getSharedPreferences(
+                    ModuleHealthRepository.PREFS_HEALTH, android.content.Context.MODE_PRIVATE,
+                ).edit().clear().apply()
+                requireContext().getSharedPreferences(
+                    ModuleHealthRepository.PREFS_DAILY, android.content.Context.MODE_PRIVATE,
+                ).edit().clear().apply()
                 refreshAllDisplayedValues()
             }
             .setNegativeButton(R.string.settings_factory_reset_cancel, null)
@@ -546,6 +591,7 @@ class SettingsFragment : Fragment() {
         settingBaseUrl.value = repository.getBaseUrl()
         updateLanguageDisplay()
         updateDisplayModeDisplay()
+        updateArrayTimezoneDisplay()
         // Apply the persisted theme and language, not just their labels. After an import
         // or factory reset the stored value changes but the effect would otherwise be
         // deferred until the next setting edit triggered an Activity recreate.
@@ -568,8 +614,9 @@ class SettingsFragment : Fragment() {
             return
         }
         try {
-            JSONObject(content)
+            val json = JSONObject(content)
             repository.importFromJson(content)
+            logImport(json)
             refreshAllDisplayedValues()
             showSnackbar(getString(R.string.settings_import_success))
             return
@@ -579,7 +626,9 @@ class SettingsFragment : Fragment() {
         showPinDialog(getString(R.string.settings_pin_dialog_title_import)) { pin ->
             try {
                 val decrypted = SettingsCrypto.decrypt(content, pin)
+                val json = JSONObject(decrypted)
                 repository.importFromJson(decrypted)
+                logImport(json)
                 refreshAllDisplayedValues()
                 showSnackbar(getString(R.string.settings_import_success))
             } catch (e: AEADBadTagException) {
@@ -588,6 +637,23 @@ class SettingsFragment : Fragment() {
                 showSnackbar(getString(R.string.settings_import_error_unreadable))
             }
         }
+    }
+
+    private fun logImport(json: JSONObject) {
+        val sensitiveKeys = setOf("emaAppSecret")
+        val fields = json.keys().asSequence().joinToString(", ") { key ->
+            if (key in sensitiveKeys) "$key=[hidden]" else key
+        }
+        logRepository.append(
+            ApiCallLog(
+                timestampMs = System.currentTimeMillis(),
+                endpoint = "settings/import",
+                durationMs = 0,
+                success = true,
+                requestText = "Imported fields: $fields",
+                responseText = "Settings imported successfully",
+            ),
+        )
     }
 
     private fun handleExport(uri: Uri) {

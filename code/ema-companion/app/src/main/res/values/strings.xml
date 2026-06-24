@@ -122,4 +122,31 @@
 
     <!-- Suggested filename -->
     <string name="settings_export_filename" translatable="false">ema-companion-settings.json</string>
+
+    <!-- Module Health Tile -->
+    <string name="home_module_health_title">Module Health</string>
+    <string name="home_module_health_status_green">All modules producing</string>
+    <string name="home_module_health_status_yellow">Module offline</string>
+    <string name="home_module_health_status_red">Module offline — action needed</string>
+    <string name="home_module_health_status_unknown">Checking…</string>
+    <string name="home_module_health_checked">Checked %1$s at %2$s</string>
+    <string name="home_module_health_offline_singular">No production for 1 day</string>
+    <string name="home_module_health_offline_plural">No production for %1$d days</string>
+    <string name="home_module_health_detail_title">Offline Modules</string>
+    <string name="home_module_health_icon_description">Module health status</string>
+    <string name="home_module_health_error_network">Network issue — couldn\'t check</string>
+    <string name="home_module_health_error_auth">Authentication failed — check your API credentials</string>
+    <string name="home_module_health_error_api">Couldn\'t check module status</string>
+
+    <!-- Array Timezone Setting -->
+    <string name="settings_array_timezone_label">Array Timezone</string>
+    <string name="settings_array_timezone_dialog_title">Select Timezone</string>
+
+    <!-- Module Health Notifications -->
+    <string name="notification_channel_module_health_name">Module Health Alerts</string>
+    <string name="notification_channel_module_health_description">Alerts when a solar module stops producing</string>
+    <string name="notification_module_health_yellow_title">Solar module offline</string>
+    <string name="notification_module_health_yellow_text">One or more modules have not produced for 1–2 days. Tap to view details.</string>
+    <string name="notification_module_health_red_title">Solar module offline — action needed</string>
+    <string name="notification_module_health_red_text">One or more modules have not produced for 3 days. Check your array.</string>
 </resources>

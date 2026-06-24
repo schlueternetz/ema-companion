@@ -6,6 +6,7 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 import org.json.JSONException
 import org.json.JSONObject
+import java.util.TimeZone
 
 class SettingsRepository(private val prefs: SharedPreferences) {
 
@@ -23,6 +24,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         const val NOTIFICATIONS_ENABLED_KEY = "notificationsEnabled"
         const val BASE_URL_KEY = "baseUrl"
         const val DISPLAY_MODE_KEY = "displayMode"
+        const val ARRAY_TIMEZONE_KEY = "arrayTimezone"
 
         const val BASE_URL_DEFAULT = "https://api.apsystemsema.com:9282/user/api/v2/"
         const val DISPLAY_MODE_DEFAULT = "system"
@@ -140,6 +142,13 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         prefs.edit().putString(DISPLAY_MODE_KEY, value).apply()
     }
 
+    fun getArrayTimezone(): String =
+        prefs.getString(ARRAY_TIMEZONE_KEY, null) ?: TimeZone.getDefault().id
+
+    fun setArrayTimezone(value: String) {
+        prefs.edit().putString(ARRAY_TIMEZONE_KEY, value).apply()
+    }
+
     fun clearAll() {
         prefs.edit().clear().apply()
     }
@@ -165,6 +174,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             put(NOTIFICATIONS_ENABLED_KEY, getNotificationsEnabled())
             put(BASE_URL_KEY, getBaseUrl())
             put(DISPLAY_MODE_KEY, getDisplayMode())
+            put(ARRAY_TIMEZONE_KEY, getArrayTimezone())
         }.toString()
     }
 
@@ -186,6 +196,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         if (obj.has(NOTIFICATIONS_ENABLED_KEY)) edit.putBoolean(NOTIFICATIONS_ENABLED_KEY, obj.getBoolean(NOTIFICATIONS_ENABLED_KEY))
         if (obj.has(BASE_URL_KEY)) edit.putString(BASE_URL_KEY, obj.getString(BASE_URL_KEY))
         if (obj.has(DISPLAY_MODE_KEY)) edit.putString(DISPLAY_MODE_KEY, obj.getString(DISPLAY_MODE_KEY))
+        if (obj.has(ARRAY_TIMEZONE_KEY)) edit.putString(ARRAY_TIMEZONE_KEY, obj.getString(ARRAY_TIMEZONE_KEY))
         edit.apply()
     }
 }

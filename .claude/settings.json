@@ -1,5 +1,4 @@
 {
-  "enabledMcpjsonServers": ["github"],
   "permissions": {
     "allow": [
       "Bash(./gradlew *)",
@@ -9,9 +8,14 @@
       "PowerShell(./gradlew *)",
       "PowerShell(adb *)",
       "PowerShell(emulator *)",
-      "PowerShell(git *)"
+      "PowerShell(git *)",
+      "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1 2>&1 | Select-String \"Events injected\")",
+      "Edit(/.claude/skills/write-user-guide/**)"
     ]
   },
+  "enabledMcpjsonServers": [
+    "github"
+  ],
   "hooks": {
     "PostToolUse": [
       {

@@ -26,6 +26,9 @@ class ProductionRepositoryTest {
             calls++
             return fetch
         }
+
+        override suspend fun getBatchInverterEnergy(date: String): BatchEnergyFetch =
+            BatchEnergyFetch(ApiResult.ConfigurationError)
     }
 
     private fun successFetch(power: Int = 8000) = ProductionFetch(
