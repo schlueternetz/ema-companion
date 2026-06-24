@@ -12,7 +12,7 @@ import java.time.YearMonth
 class ApiUsageRepository(
     private val prefs: SharedPreferences,
     private val monthProvider: () -> String = { YearMonth.now().toString() },
-) {
+) : ThrottleResettable {
 
     /** The request count for the current calendar month (0 if the stored month has rolled over). */
     fun getRequestCount(): Int =
@@ -57,6 +57,10 @@ class ApiUsageRepository(
         prefs.edit().apply {
             if (error == null) remove(KEY_LAST_ERROR) else putString(KEY_LAST_ERROR, error.name)
         }.apply()
+    }
+
+    override fun resetThrottle() {
+        prefs.edit().putLong(KEY_LAST_FETCH, 0L).remove(KEY_LAST_ERROR).apply()
     }
 
     fun clear() {

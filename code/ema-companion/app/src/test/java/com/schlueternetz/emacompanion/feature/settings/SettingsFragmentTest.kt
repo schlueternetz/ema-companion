@@ -41,6 +41,8 @@ class SettingsFragmentTest {
             .edit().clear().apply()
         appContext.getSharedPreferences("ema_api_log", Context.MODE_PRIVATE)
             .edit().clear().apply()
+        appContext.getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
+            .edit().clear().apply()
     }
 
     private fun seedLogs(json: String) {
@@ -380,6 +382,41 @@ class SettingsFragmentTest {
         val usage = appContext.getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
         assertEquals(0L, usage.getLong("lastFetchEpochMs", -1L))
         assertEquals(null, usage.getString("lastFetchError", null))
+    }
+
+    @Test
+    fun importingSettings_resetsModuleHealthThrottle() {
+        // An import can change EMA credentials, so the module health throttle must be reset
+        // (just like the production tile throttle) so the next Home visit re-checks immediately.
+        appContext.getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
+            .edit().putLong("lastCheckEpochMs", System.currentTimeMillis()).apply()
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.refreshAllDisplayedValues()
+        }
+        val health = appContext.getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
+        assertFalse(
+            "module health throttle should be cleared after import",
+            health.contains("lastCheckEpochMs"),
+        )
+    }
+
+    @Test
+    fun changingCredential_resetsModuleHealthThrottle() {
+        // A per-field credential save must also reset the module health throttle so the next
+        // Home visit re-checks with the new credentials, not the old 24-hour throttle.
+        appContext.getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
+            .edit().putLong("lastCheckEpochMs", System.currentTimeMillis()).apply()
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<SettingRowView>(R.id.setting_ema_app_id)
+                .onSave.invoke("a".repeat(32))
+        }
+        val health = appContext.getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
+        assertFalse(
+            "module health throttle should be cleared after credential edit",
+            health.contains("lastCheckEpochMs"),
+        )
     }
 
     @Test

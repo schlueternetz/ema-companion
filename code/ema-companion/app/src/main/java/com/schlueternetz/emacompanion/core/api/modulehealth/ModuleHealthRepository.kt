@@ -8,6 +8,7 @@ import com.schlueternetz.emacompanion.core.api.BatchEnergyFetch
 import com.schlueternetz.emacompanion.core.api.EmaApiClient
 import com.schlueternetz.emacompanion.core.api.FetchError
 import com.schlueternetz.emacompanion.core.api.OkHttpEmaApiClient
+import com.schlueternetz.emacompanion.core.api.ThrottleResettable
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLog
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLogRepository
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
@@ -28,7 +29,7 @@ class ModuleHealthRepository(
     private val appSecretProvider: () -> String,
     private val clock: () -> Long = { System.currentTimeMillis() },
     private val today: () -> LocalDate = { LocalDate.now() },
-) : ModuleHealthSource {
+) : ModuleHealthSource, ThrottleResettable {
 
     override fun currentState(): ModuleHealthState {
         val statusName = healthPrefs.getString(KEY_STATUS, null)
@@ -177,6 +178,10 @@ class ModuleHealthRepository(
         JSONArray().also { arr ->
             modules.forEach { arr.put(JSONObject().put("uid", it.uid).put("days", it.offlineDays)) }
         }.toString()
+
+    override fun resetThrottle() {
+        healthPrefs.edit().remove(KEY_LAST_CHECK).remove(KEY_FETCH_ERROR).apply()
+    }
 
     private fun setFetchError(error: FetchError) {
         healthPrefs.edit().putString(KEY_FETCH_ERROR, error.name).apply()

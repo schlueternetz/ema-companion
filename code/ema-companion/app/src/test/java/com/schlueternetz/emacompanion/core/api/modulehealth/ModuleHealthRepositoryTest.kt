@@ -10,6 +10,7 @@ import com.schlueternetz.emacompanion.core.api.FetchError
 import com.schlueternetz.emacompanion.core.api.ProductionFetch
 import com.schlueternetz.emacompanion.core.api.ProductionSnapshot
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
@@ -308,6 +309,35 @@ class ModuleHealthRepositoryTest {
         )
         val state = kotlinx.coroutines.runBlocking { repo2.refresh() }
         assertNull(state.error)
+    }
+
+    // ── resetThrottle (settings-change abstraction) ──────────────────────────
+
+    @Test
+    fun resetThrottle_clearsCheckTimestamp_allowingImmediateRefresh() {
+        // Simulate an active 24-hour throttle: seed a recent lastCheckEpochMs
+        val healthPrefs = context.getSharedPreferences(ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE)
+        healthPrefs.edit().putLong("lastCheckEpochMs", System.currentTimeMillis()).commit()
+
+        repo.resetThrottle()
+
+        assertFalse(
+            "lastCheckEpochMs should be removed so refresh skips the throttle check",
+            healthPrefs.contains("lastCheckEpochMs"),
+        )
+    }
+
+    @Test
+    fun resetThrottle_clearsFetchError() {
+        val healthPrefs = context.getSharedPreferences(ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE)
+        healthPrefs.edit().putString("fetchError", "NETWORK").commit()
+
+        repo.resetThrottle()
+
+        assertNull(
+            "stale fetch error should be cleared on settings change",
+            healthPrefs.getString("fetchError", null),
+        )
     }
 
     // ── helper ───────────────────────────────────────────────────────────────

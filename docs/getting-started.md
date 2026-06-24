@@ -45,3 +45,4 @@ Key decisions are documented in [`docs/adr/`](adr/):
 | [ADR-004](adr/004-package-and-code-organization.md) | Package and Code Organization |
 | [ADR-005](adr/005-in-app-markdown-rendering.md) | In-App Markdown Rendering |
 | [ADR-006](adr/006-tile-error-display.md) | Tile Error Display Pattern |
+| [ADR-007](adr/007-tile-repository-pattern.md) | Tile Repository Pattern |

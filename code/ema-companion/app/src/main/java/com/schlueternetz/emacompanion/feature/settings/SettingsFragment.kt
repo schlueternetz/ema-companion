@@ -22,6 +22,7 @@ import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.ApiUsageRepository
+import com.schlueternetz.emacompanion.core.api.ThrottleResettable
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLog
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLogRepository
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthRepository
@@ -36,6 +37,8 @@ class SettingsFragment : Fragment() {
 
     private lateinit var repository: SettingsRepository
     private lateinit var usageRepository: ApiUsageRepository
+    private lateinit var moduleHealthRepository: ModuleHealthRepository
+    private lateinit var tileRepositories: List<ThrottleResettable>
     private lateinit var logRepository: ApiCallLogRepository
     private lateinit var languageValueView: TextView
     private lateinit var displayModeValueView: TextView
@@ -80,6 +83,8 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         repository = SettingsRepository.create(requireContext())
         usageRepository = ApiUsageRepository.create(requireContext())
+        moduleHealthRepository = ModuleHealthRepository.create(requireContext())
+        tileRepositories = listOf(usageRepository, moduleHealthRepository)
         logRepository = ApiCallLogRepository.create(requireContext())
 
         settingEmaAppId = view.findViewById(R.id.setting_ema_app_id)
@@ -319,8 +324,7 @@ class SettingsFragment : Fragment() {
     // immediately with the new config, not wait out a throttle started by a prior attempt. Clearing
     // the stale error avoids showing the old failure until that fetch completes.
     private fun invalidateApiThrottle() {
-        usageRepository.setLastFetchEpochMs(0)
-        usageRepository.setLastError(null)
+        tileRepositories.forEach { it.resetThrottle() }
     }
 
     private fun updateApiRequestProgress() {

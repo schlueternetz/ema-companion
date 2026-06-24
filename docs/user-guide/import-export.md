@@ -1,3 +1,5 @@
+[User Guide](user-guide.md) › [Settings](settings.md) › Import and Export
+
 # Import and Export
 
 Settings can be transferred between devices or backed up using the Import and Export buttons in the [Settings](settings.md) screen under **Configuration**.

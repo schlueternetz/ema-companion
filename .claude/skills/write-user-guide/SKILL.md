@@ -56,10 +56,14 @@ Write or update each affected page in `docs/user-guide/`. Also write identical c
 
 **Screen pages** (`home.md`, `settings.md`, etc.):
 ```
+[User Guide](user-guide.md) › [Parent](parent.md) › Current Page   ← breadcrumb; omit middle crumb for direct children of the index
+
 # [Screen Name]
 
 [What the user sees, what actions are available, how to navigate]
 ```
+
+The breadcrumb must be the very first line of every non-index page. All ancestors are links; the current page is plain text. For direct children of the index (e.g. `home.md`, `settings.md`): `[User Guide](user-guide.md) › Home`. For deeper pages (e.g. `import-export.md`): `[User Guide](user-guide.md) › [Settings](settings.md) › Import and Export`.
 
 ## Step 3 — Regenerate the German translations
 
@@ -97,6 +101,8 @@ The English files in `docs/user-guide/` are the **single source of truth** and t
 - **Concise** — short, clear sentences; no padding.
 
 ## Gotchas
+
+- **No links inside table cells** — Markwon's `TablePlugin` does not propagate link spans within cells. Links in table cells render as plain text and are never clickable. Place any cross-page links (e.g. "See [Import and Export](import-export.md)") as a standalone paragraph outside the table.
 
 - **Write English to BOTH locations**: `docs/user-guide/<page>.md` (git-tracked, GitHub source of truth) AND `code/ema-companion/app/src/main/assets/user-guide/<page>.md` (gitignored but required at runtime). Missing the asset copy means the app shows an error fallback instead of the guide.
 - Changes to `docs/user-guide/` are tracked in git — **audit** with `git diff docs/user-guide/` after the skill runs to confirm the output looks correct before committing.

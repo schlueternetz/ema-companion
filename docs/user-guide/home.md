@@ -1,3 +1,5 @@
+[User Guide](user-guide.md) › Home
+
 # Home
 
 The Home screen is a dashboard of tiles. Each tile fetches live data when you open the app or return to this screen.

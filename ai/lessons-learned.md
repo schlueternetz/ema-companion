@@ -1,5 +1,20 @@
 # AI Lessons Learned
 
+## 2026-06-23: throttle-reset abstraction (ThrottleResettable)
+
+### Went Well
+* Root cause obvious from reading `SettingsFragment`: `invalidateApiThrottle()` only reset `ApiUsageRepository`, no equivalent call existed for `ModuleHealthRepository`'s `KEY_LAST_CHECK`
+* `ThrottleResettable` interface in `core/api/` + `listOf(usageRepository, moduleHealthRepository).forEach { it.resetThrottle() }` = all future tiles just implement the interface — zero manual hookup in fragment
+* Moving throttle-reset logic into the repo (`resetThrottle()`) keeps the fragment thin and the repo self-contained — better than fragment calling multiple setter methods
+* Adding `ema_module_health` clear to `SettingsFragmentTest.setUp()` avoids cross-test leakage from the new prefs
+
+### Didn't Work
+* Nothing notable — straightforward interface extraction
+
+### Avoid
+* Each new tile repo must implement `ThrottleResettable` and be added to `tileRepositories` in `SettingsFragment.onViewCreated` — forgetting this repeats the exact bug that was just fixed
+* `SettingsFragmentTest.setUp()` must clear every SharedPreferences file that SettingsFragment touches — add new prefs stores to setUp when adding tile repos
+
 ## 2026-06-17: import path skipped throttle reset
 
 ### Went Well

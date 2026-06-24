@@ -10,7 +10,12 @@
       "PowerShell(emulator *)",
       "PowerShell(git *)",
       "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1 2>&1 | Select-String \"Events injected\")",
-      "Edit(/.claude/skills/write-user-guide/**)"
+      "Edit(/.claude/skills/write-user-guide/**)",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb devices)",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1)",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1 2>&1 | Select-Object -Last 3)",
+      "Skill(write-adr)",
+      "Skill(write-adr:*)"
     ]
   },
   "enabledMcpjsonServers": [

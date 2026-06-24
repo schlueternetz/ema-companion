@@ -46,6 +46,12 @@ Architecture decisions are documented in [`docs/adr/`](docs/adr/). Read the rele
 - Accessibility target: WCAG 2.1 AA; all interactive elements need content descriptions, 48dp touch targets minimum
 - UI tasks are only complete when lint passes and Robolectric tests include ATF (`AccessibilityValidator`) checks
 
+**Tile repository pattern** (ADR-007):
+- Each tile repo implements a tile-specific source interface (`currentState()` + `refresh()`) and `ThrottleResettable`
+- Add every new tile repo to `SettingsFragment.tileRepositories` (for throttle reset) and call its `clear()` in `showFactoryResetDialog()` (for factory reset)
+- Add the tile's SharedPreferences store name(s) to `SettingsFragmentTest.setUp()` so state doesn't leak across tests
+- Known gap: `ModuleHealthRepository` lacks a public `clear()` — factory reset clears its prefs directly; fix this when adding a third tile
+
 **Tile error display** (ADR-006):
 - Every Home tile must show the last known data (or a neutral placeholder) at all times — never blank on error
 - Fetch errors are shown as an inline status line below the data text; no dialog, toast, or popup for transient fetch errors

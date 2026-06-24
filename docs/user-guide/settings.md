@@ -1,3 +1,5 @@
+[User Guide](user-guide.md) › Settings
+
 # Settings
 
 The Settings screen is scrollable and organised into sections.
@@ -63,6 +65,8 @@ The log list is independently scrollable within its own area. Tap any entry to o
 
 | Control | Description |
 |---|---|
-| **Import Settings** | Opens the system file picker to select a JSON settings file. Plain JSON is merged immediately; encrypted files prompt for a 4-digit PIN. See [Import and Export](import-export.md). |
-| **Export Settings** | Saves all settings to `ema-companion-settings.json` in a location you choose. Choose no encryption or a 4-digit PIN. See [Import and Export](import-export.md). |
+| **Import Settings** | Opens the system file picker to select a JSON settings file. Plain JSON is merged immediately; encrypted files prompt for a 4-digit PIN. |
+| **Export Settings** | Saves all settings to `ema-companion-settings.json` in a location you choose. Choose no encryption or a 4-digit PIN. |
 | **Factory Reset** | Permanently deletes all settings, the API request count, call logs, and module health history. A confirmation dialog appears before anything is deleted. |
+
+For step-by-step import and export instructions, see [Import and Export](import-export.md).
