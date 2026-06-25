@@ -1,4 +1,6 @@
 <!-- GENERATED from import-export.md by the write-user-guide skill. Source of truth is the English file. Do not hand-edit; edit the English and re-run the skill. -->
+[Benutzerhandbuch](user-guide.md) › [Einstellungen](settings.md) › Importieren und Exportieren
+
 # Importieren und Exportieren
 
 Einstellungen können zwischen Geräten übertragen oder gesichert werden, indem die Schaltflächen „Einstellungen importieren" und „Einstellungen exportieren" im Bildschirm [Einstellungen](settings.md) unter **Konfiguration** verwendet werden.

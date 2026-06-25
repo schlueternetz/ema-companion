@@ -1,6 +1,6 @@
 ---
 name: local-android-dev
-description: Runs the EMA Companion Android app on the local emulator in debug mode, or rebuilds and redeploys it. Use when the user asks to run, start, launch, deploy, rebuild, or update the app on the emulator.
+description: Runs the EMA Companion Android app on the local emulator in debug mode, or rebuilds and redeploys it. Use when the user asks to run, start, launch, deploy, rebuild, or update the app on the emulator. Do NOT use for running automated tests — use /ai-tdd instead.
 allowed-tools: PowerShell Read
 ---
 
@@ -62,6 +62,7 @@ Use this when the user asks to update, rebuild, or redeploy after a code change.
 
 ## Gotchas
 
+- **Temp files outside the repo**: all `adb pull` outputs, screenshots, and XML dumps go to `D:\ema-debug\` — never inside the project directory. Create it first if needed: `New-Item -ItemType Directory -Force D:\ema-debug`.
 - `installDebug` combines `assembleDebug` + `adb install` — prefer it over running both separately.
 - If the emulator is already running from a previous session, skip step 1 and check `& $adb devices` first.
 - If `installDebug` fails with a `INSTALL_FAILED_UPDATE_INCOMPATIBLE` error, uninstall first: `& $adb uninstall com.schlueternetz.emacompanion`

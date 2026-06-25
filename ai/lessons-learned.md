@@ -1,5 +1,51 @@
 # AI Lessons Learned
 
+## 2026-06-25: Seeding SharedPreferences from adb
+
+### Went Well
+* Base64 encode XML locally, pipe through `echo BASE64 | base64 -d >` in `run-as` shell — preserves all double quotes inside XML attribute values and JSON strings
+* `MSYS_NO_PATHCONV=1` required on all `adb shell` calls involving `/data/data/` paths; without it, git-bash rewrites `/data/` to `C:/Program Files/Git/data/`
+* `adb push` to sdcard works; but `run-as <pkg> cp /sdcard/...` fails on play-store emulator images (Permission denied from app's run-as context)
+
+### Didn't Work
+* Shell redirect `run-as pkg sh -c 'printf "%s" "$XML" > file'` — double quotes inside $XML get stripped by shell expansion, producing malformed XML without attribute quotes
+* `run-as pkg cp /sdcard/file.xml /data/data/...` — play-store emulator image denies cross-partition copy from run-as
+
+### Avoid
+* Never seed prefs by interpolating XML into a shell string — use base64 round-trip instead: `base64`-encode locally, `echo BASE64 | base64 -d > prefs.xml` on device via run-as
+* Always `MSYS_NO_PATHCONV=1` before any `adb shell` path referencing `/data/`, `/sdcard/`, etc. on Windows git-bash
+
+## 2026-06-24: WorkManager periodic task force-run limitations
+
+### Went Well
+* WorkManager DB lives in `no_backup/androidx.work.workdb`, not `databases/` — check there when diagnosing
+* Job scheduler historical stats (`dumpsys jobscheduler`) show START/STOP timestamps: near-instant stop (< 20ms) = `doWork()` never ran; WorkManager called `jobFinished()` immediately
+* Notification channel + POST_NOTIFICATIONS grant can be confirmed without a real notification via `dumpsys notification --noredact`
+
+### Didn't Work
+* `cmd jobscheduler run -f <pkg> <jobId>` does NOT reliably execute `doWork()` for `PeriodicWorkRequest` — WorkManager's SystemJobService checks its own internal state machine and calls `jobFinished()` immediately if the work spec is not in ENQUEUED state (e.g. between periods)
+* Each force-run starts a new job ID (1→2→3) — re-querying `dumpsys jobscheduler` for the ID is needed each time, but this is beside the point since none of them ran the worker
+
+### Avoid
+* Don't use `cmd jobscheduler run -f` to test WorkManager workers — use an instrumented test with `WorkManagerTestInitHelper` and `TestDriver.setAllConstraintsMet()`, or wait for the real scheduled time
+* Don't write XML directly via `run-as tee` to seed prefs while the app is running — the in-memory cache isn't updated; force-stop first, seed, then launch
+
+## 2026-06-23: module-health-tile integration + factory reset tests
+
+### Went Well
+* `ModuleHealthRepository` direct constructor (not `forTest`) gives full prefs isolation in integration tests — pass isolated SharedPreferences for health, daily, and log
+* MockWebServer enqueue order matches fetch order: repo fetches dates oldest-first (`dayBefore → yesterday → today`), so enqueue responses in that same order
+* `server.requestCount` is the simplest way to assert "only N API calls made" in an integration test — no fake client needed
+* Factory reset already cleared `PREFS_DAILY` in `SettingsFragment.showFactoryResetDialog()` — test just confirmed it; no production change needed
+* `Dispatchers.Unconfined` on `OkHttpEmaApiClient` makes socket calls inline in tests — no coroutine timing issues
+
+### Didn't Work
+* `SettingsFragmentTest.setUp()` was missing `ema_module_health_daily` clear — cross-test leakage risk from the daily cache prefs
+
+### Avoid
+* When adding a new SharedPreferences store to any repo, add it to BOTH `SettingsFragmentTest.setUp()` (test isolation) AND `showFactoryResetDialog()` (production reset) — missing either causes subtle bugs
+* `ModuleHealthRepository.forTest()` uses `ApiCallLogRepository.create(context)` which shares the global `ema_api_log` prefs — use direct constructor for full test isolation when log contents matter
+
 ## 2026-06-23: throttle-reset abstraction (ThrottleResettable)
 
 ### Went Well

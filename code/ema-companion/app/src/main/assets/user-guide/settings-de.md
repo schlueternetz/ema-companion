@@ -1,4 +1,6 @@
 <!-- GENERATED from settings.md by the write-user-guide skill. Source of truth is the English file. Do not hand-edit; edit the English and re-run the skill. -->
+[Benutzerhandbuch](user-guide.md) › Einstellungen
+
 # Einstellungen
 
 Der Bildschirm Einstellungen ist scrollbar und in Abschnitte gegliedert.
@@ -64,6 +66,8 @@ Die Protokollliste ist in ihrem eigenen Bereich unabhängig scrollbar. Tippe auf
 
 | Steuerung | Beschreibung |
 |---|---|
-| **Einstellungen importieren** | Öffnet die Dateiauswahl zum Auswählen einer JSON-Einstellungsdatei. Einfaches JSON wird sofort zusammengeführt; verschlüsselte Dateien fordern zur Eingabe einer 4-stelligen PIN auf. Siehe [Importieren und Exportieren](import-export.md). |
-| **Einstellungen exportieren** | Speichert alle Einstellungen als `ema-companion-settings.json` an einem Ort deiner Wahl. Wähle keine Verschlüsselung oder eine 4-stellige PIN. Siehe [Importieren und Exportieren](import-export.md). |
+| **Einstellungen importieren** | Öffnet die Dateiauswahl zum Auswählen einer JSON-Einstellungsdatei. Einfaches JSON wird sofort zusammengeführt; verschlüsselte Dateien fordern zur Eingabe einer 4-stelligen PIN auf. |
+| **Einstellungen exportieren** | Speichert alle Einstellungen als `ema-companion-settings.json` an einem Ort deiner Wahl. Wähle keine Verschlüsselung oder eine 4-stellige PIN. |
 | **Werksreset** | Löscht dauerhaft alle Einstellungen, den API-Anfragezähler, Protokolle und den Modulstatus-Verlauf. Vor dem Löschen erscheint ein Bestätigungsdialog. |
+
+Schritt-für-Schritt-Anleitungen zum Importieren und Exportieren findest du unter [Importieren und Exportieren](import-export.md).

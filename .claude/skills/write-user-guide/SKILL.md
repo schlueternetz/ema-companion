@@ -69,11 +69,16 @@ The breadcrumb must be the very first line of every non-index page. All ancestor
 
 The English files in `docs/user-guide/` are the **single source of truth** and the only version rendered on GitHub. German is **in-app only**: it is generated from the English source and committed **into the app asset folder** `code/ema-companion/app/src/main/assets/user-guide/` (NOT `docs/`) — never authored or hand-edited. After Step 2, regenerate German for every page that changed:
 
-1. **Translate each page.** For each `docs/user-guide/<page>.md`, write `code/ema-companion/app/src/main/assets/user-guide/<page>-de.md` (natural, fluent German; keep all markdown syntax and link targets unchanged — `[Startseite](home.md)` not `[Startseite](home-de.md)`). Use the actual in-app German UI labels from `values-de/strings.xml` (e.g. *Einstellungen*, *Benutzerhandbuch*, *Werksreset*). Prepend this generated-marker as the very first line (it is invisible in-app):
+1. **Translate each page.** For each `docs/user-guide/<page>.md`, write `code/ema-companion/app/src/main/assets/user-guide/<page>-de.md` (natural, fluent German; keep all markdown syntax and link targets unchanged — `[Startseite](home.md)` not `[Startseite](home-de.md)`). Use the actual in-app German UI labels from `values-de/strings.xml` (e.g. *Einstellungen*, *Benutzerhandbuch*, *Werksreset*). The file must begin with the generated-marker comment, then the translated breadcrumb (for non-index pages), then the heading:
 
    ```
    <!-- GENERATED from <page>.md by the write-user-guide skill. Source of truth is the English file. Do not hand-edit; edit the English and re-run the skill. -->
+   [Benutzerhandbuch](user-guide.md) › Startseite          ← translated breadcrumb, same rules as English
+   
+   # Startseite
    ```
+
+   The breadcrumb must appear on every non-index German page immediately after the generated-marker. Translate the link label and the current-page text; keep the link target filenames in English (e.g. `user-guide.md`, `settings.md`). For deeper pages: `[Benutzerhandbuch](user-guide.md) › [Einstellungen](settings.md) › Importieren und Exportieren`.
 
 2. **Translate the diagram source.** For each `docs/user-guide/*.mmd`, translate **only the quoted label strings** into a transient `*-de.mmd` (write it into the asset folder; it is gitignored there and discarded after rendering). **Never translate mermaid ids** — e.g. in `Person(owner, "APsystems Solar Owner")` translate only `"APsystems Solar Owner"`, never `owner`. A leaked id breaks rendering.
 
@@ -102,7 +107,7 @@ The English files in `docs/user-guide/` are the **single source of truth** and t
 
 ## Gotchas
 
-- **No links inside table cells** — Markwon's `TablePlugin` does not propagate link spans within cells. Links in table cells render as plain text and are never clickable. Place any cross-page links (e.g. "See [Import and Export](import-export.md)") as a standalone paragraph outside the table.
+- **No links inside table cells — applies to all languages** — Markwon's `TablePlugin` does not propagate link spans within cells. Links in table cells render as plain text and are never clickable. Place any cross-page links (e.g. "See [Import and Export](import-export.md)") as a standalone paragraph outside the table. When translating, keep any standalone-paragraph links standalone — do not inline them into adjacent table cell descriptions.
 
 - **Write English to BOTH locations**: `docs/user-guide/<page>.md` (git-tracked, GitHub source of truth) AND `code/ema-companion/app/src/main/assets/user-guide/<page>.md` (gitignored but required at runtime). Missing the asset copy means the app shows an error fallback instead of the guide.
 - Changes to `docs/user-guide/` are tracked in git — **audit** with `git diff docs/user-guide/` after the skill runs to confirm the output looks correct before committing.

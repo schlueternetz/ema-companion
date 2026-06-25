@@ -29,7 +29,15 @@ Shows whether your individual solar modules have been producing over the last th
 
 A "Checked [date] at [time]" line appears below the status once a check has completed.
 
-If a check fails, the tile shows a short status line beneath the checked timestamp:
+![Green state: green checkmark icon with "All modules producing" label](home-module-health-green.png)
+
+![Yellow state: warning icon with "Module offline" label and checked timestamp](home-module-health-yellow.png)
+
+![Red state: warning icon with "Module offline — action needed" label and checked timestamp](home-module-health-red.png)
+
+![Detail dialog: lists each offline module ID with the number of days without production](home-module-health-detail.png)
+
+If a check fails, the status icon changes to a **?** (gray) and the status text is hidden — the last known status is not shown to avoid confusion. A short error line appears beneath the checked timestamp instead:
 
 - **Network issue — couldn't check** — the app could not reach the EMA service
 - **Authentication failed — check your API credentials** — your credentials were rejected; check them in Settings

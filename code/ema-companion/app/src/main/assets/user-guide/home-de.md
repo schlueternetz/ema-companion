@@ -1,4 +1,6 @@
 <!-- GENERATED from home.md by the write-user-guide skill. Source of truth is the English file. Do not hand-edit; edit the English and re-run the skill. -->
+[Benutzerhandbuch](user-guide.md) › Startseite
+
 # Startseite
 
 Die Startseite ist ein Dashboard mit Kacheln. Jede Kachel ruft Live-Daten ab, wenn du die App öffnest oder zu diesem Bildschirm zurückkehrst.
@@ -28,7 +30,15 @@ Zeigt an, ob deine einzelnen Solarmodule in den letzten drei Tagen produziert ha
 
 Sobald eine Prüfung abgeschlossen ist, erscheint darunter eine Zeile „Geprüft am [Datum] um [Uhrzeit]".
 
-Schlägt eine Prüfung fehl, zeigt die Kachel eine kurze Statuszeile unterhalb des Prüfzeitstempels:
+![Grüner Status: grünes Häkchen-Symbol mit der Beschriftung „Alle Module produzieren"](home-module-health-green.png)
+
+![Gelber Status: Warnsymbol mit der Beschriftung „Modul offline" und Prüfzeitstempel](home-module-health-yellow.png)
+
+![Roter Status: Warnsymbol mit der Beschriftung „Modul offline – Handlungsbedarf" und Prüfzeitstempel](home-module-health-red.png)
+
+![Detaildialog: listet jede offline-Modul-ID mit der Anzahl der Tage ohne Produktion auf](home-module-health-detail.png)
+
+Schlägt eine Prüfung fehl, wechselt das Statussymbol zu einem **?** (grau) und der Statustext wird ausgeblendet — der zuletzt bekannte Status wird nicht angezeigt, um Verwechslungen zu vermeiden. Stattdessen erscheint unterhalb des Prüfzeitstempels eine kurze Fehlerzeile:
 
 - **Netzwerkproblem – Prüfung nicht möglich** — die App konnte den EMA-Dienst nicht erreichen
 - **Authentifizierung fehlgeschlagen – API-Zugangsdaten prüfen** — deine Zugangsdaten wurden abgelehnt; prüfe sie in den Einstellungen

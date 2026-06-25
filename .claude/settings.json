@@ -15,7 +15,10 @@
       "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1)",
       "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1 2>&1 | Select-Object -Last 3)",
       "Skill(write-adr)",
-      "Skill(write-adr:*)"
+      "Skill(write-adr:*)",
+      "Bash(./gradlew.bat installDebug)",
+      "PowerShell(Test-NetConnection -ComputerName api.apsystemsema.com -Port 9282 -InformationLevel Quiet)",
+      "Edit(/.claude/skills/local-android-dev/**)"
     ]
   },
   "enabledMcpjsonServers": [

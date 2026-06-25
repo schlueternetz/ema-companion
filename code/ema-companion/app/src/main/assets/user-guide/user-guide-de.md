@@ -27,8 +27,8 @@ Wenn die App nicht vollständig konfiguriert ist, sind nur **Einstellungen** und
 
 ## Abschnitte
 
-- [Startseite](home.md) — Produktions- und Modulstatus-Kacheln
-- [Einstellungen](settings.md) — Zugangsdaten, Einstellungen und API-Konfiguration
+- [Startseite](home.md) — Kacheln für aktuelle Produktion, Modulstatus und Push-Benachrichtigungen
+- [Einstellungen](settings.md) — Zugangsdaten, Anlage-Zeitzone, App-Einstellungen und API-Konfiguration
 
 ## Geplante Funktionen
 

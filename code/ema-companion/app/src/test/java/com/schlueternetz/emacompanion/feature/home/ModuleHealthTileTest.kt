@@ -160,4 +160,32 @@ class ModuleHealthTileTest {
         val errorView = view.findViewById<TextView>(R.id.module_health_error)
         assertEquals(View.GONE, errorView.visibility)
     }
+
+    @Test
+    fun fetchError_statusLabelIsEmpty() {
+        // When a fetch error occurs the label next to the icon should be blank —
+        // the error line below provides the detail.
+        val state = ModuleHealthState(
+            status = ModuleHealthStatus.GREEN,
+            error = FetchError.NETWORK,
+        )
+        val view = launchWithState(state)
+        val statusView = view.findViewById<TextView>(R.id.module_health_status)
+        assertEquals("status label should be empty on fetch error", "", statusView.text.toString())
+    }
+
+    @Test
+    fun fetchError_iconHasContentDescription() {
+        // Accessibility: the question-mark icon must have a content description so
+        // screen readers can convey the unknown state when the label is empty.
+        val state = ModuleHealthState(
+            status = ModuleHealthStatus.GREEN,
+            error = FetchError.API,
+        )
+        val view = launchWithState(state)
+        val iconView = view.findViewById<android.widget.ImageView>(R.id.module_health_icon)
+        assert(!iconView.contentDescription.isNullOrEmpty()) {
+            "icon must have a content description when label is hidden due to fetch error"
+        }
+    }
 }

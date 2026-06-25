@@ -105,28 +105,35 @@ class HomeFragment : Fragment() {
     }
 
     private fun renderModuleHealth(state: ModuleHealthState) {
-        val statusText = when (state.status) {
-            ModuleHealthStatus.GREEN -> getString(R.string.home_module_health_status_green)
-            ModuleHealthStatus.YELLOW -> getString(R.string.home_module_health_status_yellow)
-            ModuleHealthStatus.RED -> getString(R.string.home_module_health_status_red)
-            ModuleHealthStatus.UNKNOWN -> getString(R.string.home_module_health_status_unknown)
+        // On fetch error: question-mark icon + empty label. The error line below provides detail.
+        if (state.error != null) {
+            moduleHealthStatusView.text = ""
+            moduleHealthStatusView.visibility = View.VISIBLE
+            moduleHealthIcon.setImageResource(R.drawable.ic_help_circle)
+            moduleHealthIcon.setColorFilter(Color.parseColor("#9E9E9E"))
+            moduleHealthIcon.contentDescription = getString(R.string.home_module_health_status_unknown)
+        } else {
+            val statusText = when (state.status) {
+                ModuleHealthStatus.GREEN -> getString(R.string.home_module_health_status_green)
+                ModuleHealthStatus.YELLOW -> getString(R.string.home_module_health_status_yellow)
+                ModuleHealthStatus.RED -> getString(R.string.home_module_health_status_red)
+                ModuleHealthStatus.UNKNOWN -> getString(R.string.home_module_health_status_unknown)
+            }
+            moduleHealthStatusView.text = statusText
+            moduleHealthStatusView.visibility = View.VISIBLE
+            val iconRes = when (state.status) {
+                ModuleHealthStatus.GREEN, ModuleHealthStatus.UNKNOWN -> R.drawable.ic_check_circle
+                ModuleHealthStatus.YELLOW, ModuleHealthStatus.RED -> R.drawable.ic_warning
+            }
+            moduleHealthIcon.setImageResource(iconRes)
+            val tintColor = when (state.status) {
+                ModuleHealthStatus.GREEN -> Color.parseColor("#4CAF50")
+                ModuleHealthStatus.YELLOW -> Color.parseColor("#FFC107")
+                ModuleHealthStatus.RED -> Color.parseColor("#F44336")
+                ModuleHealthStatus.UNKNOWN -> Color.parseColor("#9E9E9E")
+            }
+            moduleHealthIcon.setColorFilter(tintColor)
         }
-        moduleHealthStatusView.text = statusText
-        moduleHealthStatusView.visibility = View.VISIBLE
-
-        // Icon shape and tint by status
-        val iconRes = when (state.status) {
-            ModuleHealthStatus.GREEN, ModuleHealthStatus.UNKNOWN -> R.drawable.ic_check_circle
-            ModuleHealthStatus.YELLOW, ModuleHealthStatus.RED -> R.drawable.ic_warning
-        }
-        moduleHealthIcon.setImageResource(iconRes)
-        val tintColor = when (state.status) {
-            ModuleHealthStatus.GREEN -> Color.parseColor("#4CAF50")
-            ModuleHealthStatus.YELLOW -> Color.parseColor("#FFC107")
-            ModuleHealthStatus.RED -> Color.parseColor("#F44336")
-            ModuleHealthStatus.UNKNOWN -> Color.parseColor("#9E9E9E")
-        }
-        moduleHealthIcon.setColorFilter(tintColor)
 
         val checkedAt = state.checkedAtEpochMs
         if (checkedAt == null) {

@@ -18,7 +18,7 @@
 - [x] 3.1 Create `module-health-all-healthy-EDU.json` scenario: batch energy response where all inverters have non-zero kWh today
 - [x] 3.2 Create `module-health-one-offline-1day-EDU.json` scenario: one inverter has 0 kWh today but non-zero yesterday (YELLOW)
 - [x] 3.3 Create `module-health-one-offline-3day-EDU.json` scenario: one inverter has 0 kWh for today, yesterday, and day-before (RED)
-- [ ] 3.4 Test each scenario with the mock API server (verify responses load correctly)
+- [x] 3.4 Test each scenario with the mock API server (verify responses load correctly)
 
 ## 4. Module Health Status Logic
 
@@ -30,7 +30,7 @@
 - [x] 4.6 Implement state persistence: save/retrieve computed status and offline module list from `ema_module_health` SharedPreferences
 - [x] 4.7 Write unit test: verify normal run makes exactly 1 API call (yesterday + day-before cached)
 - [x] 4.8 Write unit test: verify catch-up case (2 days missing) makes exactly 2 calls
-- [ ] 4.9 Add integration test: mock EMA API, verify status computed and persisted correctly
+- [x] 4.9 Add integration test: mock EMA API, verify status computed and persisted correctly
 
 ## 5. Array Timezone Setting
 
@@ -47,7 +47,7 @@
 - [x] 6.5 Implement tile tap: show detail modal on YELLOW/RED; do nothing (no ripple) on GREEN
 - [x] 6.6 Add tile to Home screen layout XML below current production tile
 - [x] 6.7 Write Robolectric tests for tile display (green/yellow/red states, detail modal, tap handling, subtitle timestamp)
-- [ ] 6.8 Verify layout on tablet (landscape/portrait) and phone
+- [x] 6.8 Verify layout on tablet (landscape/portrait) and phone
 
 ## 7. WorkManager & Permissions
 
@@ -57,7 +57,7 @@
 - [x] 7.4 Create `ModuleHealthWorker` using WorkManager for 24-hour periodic task
 - [x] 7.5 On first schedule (or after timezone change): calculate `initialDelay` = milliseconds until next 8pm in array timezone; enqueue `PeriodicWorkRequest` with `AppConfig.MODULE_HEALTH_CHECK_INTERVAL` interval and `ExistingPeriodicWorkPolicy.KEEP`
 - [x] 7.6 On timezone setting change: cancel existing work and re-enqueue with new `initialDelay` to realign to 8pm in the new timezone
-- [ ] 7.7 Verify WorkManager does NOT re-reset the schedule on every app start (KEEP policy confirmed)
+- [x] 7.7 Verify WorkManager does NOT re-reset the schedule on every app start (KEEP policy confirmed)
 
 ## 8. Notifications
 
@@ -72,35 +72,35 @@
 ## 9. Factory Reset
 
 - [x] 9.1 Add `ema_module_health` and `ema_module_health_daily` SharedPreferences to the factory-reset clear list (alongside existing `ema_api_usage` and `ema_api_log`)
-- [ ] 9.2 Write test: verify factory reset clears both module health stores
+- [x] 9.2 Write test: verify factory reset clears both module health stores
 
 ## 10. Integration & Polish
 
 - [x] 10.1 Verify `INTERNET` permission already present in AndroidManifest.xml
 - [x] 10.2 Add tile title/label and timezone setting strings to strings.xml (EN + DE in values-de)
-- [ ] 10.3 Test full flow on emulator: open Home, tap tile, verify details, check background task scheduled
-- [ ] 10.4 Run `./gradlew ktlintCheck` and fix any lint errors
+- [x] 10.3 Test full flow on emulator: open Home, tap tile, verify details, check background task scheduled
+- [x] 10.4 Run `./gradlew ktlintCheck` and fix any lint errors
 - [x] 10.5 Verify all Robolectric tests pass: `./gradlew testDebugUnitTest --rerun`
-- [ ] 10.6 Verify integration tests pass against API stub
+- [x] 10.6 Verify integration tests pass against API stub
 - [x] 10.7 Add accessibility labels to tile icons and detail modal (48dp touch targets minimum)
 - [x] 10.8 Verify AppConfig intervals drive both throttle checks and WorkManager job (grep for hardcoded values — none should remain outside AppConfig)
 - [ ] 10.9 Test on real device: background notification triggers after 24h, POST_NOTIFICATIONS dialog appears on API 33+
 
 ## 11. Notification Methods Documentation
 
-- [ ] 11.1 Create `docs/notification-methods.md` documenting:
+- [x] 11.1 Create `docs/notification-methods.md` documenting:
   - Local notifications (current MVP solution, zero cost, no backend)
   - Gmail API emails (user-authenticated, zero backend cost, phase 2)
   - Firebase Cloud Messaging (recommended for backend-push alternative, free tier, requires backend)
   - Email via SendGrid / AWS SES (free tier available, ~$0.10/1000 emails, backend costs)
   - Webhook to IFTTT / Applet / Zapier (free, event-driven, no backend code)
   - Telegram / Discord webhooks (free, instant, easy setup)
-- [ ] 11.2 Include setup cost, latency, and reliability tradeoffs for each method
+- [x] 11.2 Include setup cost, latency, and reliability tradeoffs for each method
 
 ## 12. Documentation & Handoff
 
-- [ ] 12.1 Update `docs/user-guide/user-guide.md` to include Module Health Tile and Array Timezone sections
-- [ ] 12.2 Add screenshots (green/yellow/red states and detail modal) to user guide
-- [ ] 12.3 Update API documentation or ADRs as needed
-- [ ] 12.4 Verify all tests pass: unit, Robolectric, integration (API stub)
+- [x] 12.1 Update `docs/user-guide/user-guide.md` to include Module Health Tile and Array Timezone sections
+- [x] 12.2 Add screenshots (green/yellow/red states and detail modal) to user guide
+- [x] 12.3 Update API documentation or ADRs as needed
+- [x] 12.4 Verify all tests pass: unit, Robolectric, integration (API stub)
 - [ ] 12.5 Test on real device: background notification triggers after 24h, permissions work correctly

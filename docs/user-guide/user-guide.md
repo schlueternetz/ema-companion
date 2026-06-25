@@ -26,8 +26,8 @@ When the app is not fully configured, only **Settings** and **User Guide** are r
 
 ## Sections
 
-- [Home](home.md) — production and module health tiles
-- [Settings](settings.md) — credentials, preferences, and API configuration
+- [Home](home.md) — current production tile, module health tile, and push notifications
+- [Settings](settings.md) — credentials, array timezone, app preferences, and API configuration
 
 ## What's Coming
 

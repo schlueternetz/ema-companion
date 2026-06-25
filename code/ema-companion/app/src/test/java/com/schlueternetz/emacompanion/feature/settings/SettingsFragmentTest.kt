@@ -43,6 +43,8 @@ class SettingsFragmentTest {
             .edit().clear().apply()
         appContext.getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
             .edit().clear().apply()
+        appContext.getSharedPreferences("ema_module_health_daily", Context.MODE_PRIVATE)
+            .edit().clear().apply()
     }
 
     private fun seedLogs(json: String) {
@@ -551,6 +553,30 @@ class SettingsFragmentTest {
             assertTrue("Masked value should remain masked in detail", message.contains("••••3456"))
             assertFalse("Plain secret must not appear", message.contains("secret123456"))
         }
+    }
+
+    @Test
+    fun factoryReset_clearsBothModuleHealthStores() {
+        // Seed data in both health and daily prefs
+        appContext.getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
+            .edit().putString("status", "GREEN").putLong("lastCheckEpochMs", 12345L).apply()
+        appContext.getSharedPreferences("ema_module_health_daily", Context.MODE_PRIVATE)
+            .edit().putString("daily_2025-07-24", """{"INV1":1.5}""").apply()
+
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<View>(R.id.settings_factory_reset_button).performClick()
+            val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
+                as androidx.appcompat.app.AlertDialog
+            shadowOf(Looper.getMainLooper()).idle()
+            dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).performClick()
+            shadowOf(Looper.getMainLooper()).idle()
+        }
+
+        val health = appContext.getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
+        assertEquals("ema_module_health should be empty after factory reset", 0, health.all.size)
+        val daily = appContext.getSharedPreferences("ema_module_health_daily", Context.MODE_PRIVATE)
+        assertEquals("ema_module_health_daily should be empty after factory reset", 0, daily.all.size)
     }
 
     @Test

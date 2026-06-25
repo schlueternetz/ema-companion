@@ -38,6 +38,7 @@ Architecture decisions are documented in [`docs/adr/`](docs/adr/). Read the rele
 - For any bug or unexpected-behavior report, reproduce it at the lowest test layer first (unit, then Robolectric) before launching the emulator — a deterministic failing test is cheaper and pinpoints the cause
 - Reserve the emulator and screenshots for final confirmation or genuinely visual/layout bugs, not for exploratory "did it move?" loops (each screenshot read costs thousands of tokens)
 - For navigation/UI-state bugs, drive the real code path in the test (e.g. `NavigationUI.onNavDestinationSelected`), not just a bare `navController.navigate(id)` — the menu/tap path adds NavOptions that a plain navigate hides
+- **All emulator debug artifacts (screenshots, `adb pull` files, uiautomator XML dumps, SharedPreferences dumps) must be saved to `D:\ema-debug\` — never inside the project directory.** Create the folder if it doesn't exist (`New-Item -ItemType Directory -Force D:\ema-debug`). This keeps throwaway files out of git entirely.
 
 **Platform, localization, and accessibility** (ADR-003):
 - minSdk 31 (Android 12) — no APIs above 31 without a runtime check or AndroidX backport
