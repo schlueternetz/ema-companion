@@ -311,6 +311,62 @@ class ModuleHealthRepositoryTest {
         assertNull(state.error)
     }
 
+    // ── RED latch (status stays RED until GREEN) ─────────────────────────────
+
+    @Test
+    fun refresh_previousRed_computedYellow_latchesToRed() {
+        val healthPrefs = context.getSharedPreferences(ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE)
+        healthPrefs.edit()
+            .putString("status", ModuleHealthStatus.RED.name)
+            .putLong("lastCheckEpochMs", 0L)
+            .commit()
+        // Data that pure computeStatus() would classify as YELLOW (INV1 offline 1 day)
+        fakeClient.responses[today.toString()] = mapOf("INV1" to 0.0, "INV2" to 1.5)
+        fakeClient.responses[yesterday.toString()] = mapOf("INV1" to 1.2, "INV2" to 1.2)
+        fakeClient.responses[dayBefore.toString()] = mapOf("INV1" to 1.1, "INV2" to 1.1)
+
+        val state = kotlinx.coroutines.runBlocking { repo.refresh() }
+
+        assertEquals("RED latches until GREEN", ModuleHealthStatus.RED, state.status)
+    }
+
+    @Test
+    fun refresh_previousRed_computedGreen_clearsToGreen() {
+        val healthPrefs = context.getSharedPreferences(ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE)
+        healthPrefs.edit()
+            .putString("status", ModuleHealthStatus.RED.name)
+            .putLong("lastCheckEpochMs", 0L)
+            .commit()
+        // All modules producing — computes GREEN
+        fakeClient.responses[today.toString()] = mapOf("INV1" to 1.5, "INV2" to 1.5)
+        fakeClient.responses[yesterday.toString()] = mapOf("INV1" to 1.2, "INV2" to 1.2)
+        fakeClient.responses[dayBefore.toString()] = mapOf("INV1" to 1.1, "INV2" to 1.1)
+
+        val state = kotlinx.coroutines.runBlocking { repo.refresh() }
+
+        assertEquals("RED clears on GREEN recovery", ModuleHealthStatus.GREEN, state.status)
+    }
+
+    // ── lastNotifiedStatus ───────────────────────────────────────────────────
+
+    @Test
+    fun getLastNotifiedStatus_initially_returnsNull() {
+        assertNull(repo.getLastNotifiedStatus())
+    }
+
+    @Test
+    fun setLastNotifiedStatus_roundtrip() {
+        repo.setLastNotifiedStatus(ModuleHealthStatus.YELLOW)
+        assertEquals(ModuleHealthStatus.YELLOW, repo.getLastNotifiedStatus())
+    }
+
+    @Test
+    fun setLastNotifiedStatus_persistsAcrossRecreation() {
+        repo.setLastNotifiedStatus(ModuleHealthStatus.RED)
+        val repo2 = ModuleHealthRepository.forTest(context, fakeClient, today = { today })
+        assertEquals(ModuleHealthStatus.RED, repo2.getLastNotifiedStatus())
+    }
+
     // ── resetThrottle (settings-change abstraction) ──────────────────────────
 
     @Test
@@ -337,6 +393,50 @@ class ModuleHealthRepositoryTest {
         assertNull(
             "stale fetch error should be cleared on settings change",
             healthPrefs.getString("fetchError", null),
+        )
+    }
+
+    @Test
+    fun resetThrottle_clearsLastNotifiedStatus() {
+        repo.setLastNotifiedStatus(ModuleHealthStatus.RED)
+
+        repo.resetThrottle()
+
+        assertNull(
+            "lastNotifiedStatus must be cleared so the next check re-fires notifications",
+            repo.getLastNotifiedStatus(),
+        )
+    }
+
+    // ── lastEmailedStatus ────────────────────────────────────────────────────
+
+    @Test
+    fun getLastEmailedStatus_initially_returnsNull() {
+        assertNull(repo.getLastEmailedStatus())
+    }
+
+    @Test
+    fun setLastEmailedStatus_roundtrip() {
+        repo.setLastEmailedStatus(ModuleHealthStatus.RED)
+        assertEquals(ModuleHealthStatus.RED, repo.getLastEmailedStatus())
+    }
+
+    @Test
+    fun setLastEmailedStatus_persistsAcrossRecreation() {
+        repo.setLastEmailedStatus(ModuleHealthStatus.GREEN)
+        val repo2 = ModuleHealthRepository.forTest(context, fakeClient, today = { today })
+        assertEquals(ModuleHealthStatus.GREEN, repo2.getLastEmailedStatus())
+    }
+
+    @Test
+    fun resetThrottle_clearsLastEmailedStatus() {
+        repo.setLastEmailedStatus(ModuleHealthStatus.YELLOW)
+
+        repo.resetThrottle()
+
+        assertNull(
+            "lastEmailedStatus must be cleared on credential/settings change",
+            repo.getLastEmailedStatus(),
         )
     }
 

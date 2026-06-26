@@ -45,6 +45,20 @@
     <!-- Notifications -->
     <string name="settings_notifications_label">Notifications Enabled</string>
 
+    <!-- Email Alerts -->
+    <string name="email_alerts_section_title">Email Alerts</string>
+    <string name="email_alerts_toggle_title">Email Alerts</string>
+    <string name="email_alerts_enabled_for">Email alerts enabled for: %1$s</string>
+    <string name="email_alerts_instructions">Receive an email when a module goes offline.\n\nPrerequisites: a Gmail account with 2-Step Verification enabled.\n\n1. Open your Google Account › Security › App Passwords.\n2. Create an App Password for "Mail" on "Other device".\n3. Enter your Gmail address and the 16-character App Password below.</string>
+    <string name="email_alerts_open_google_account">Open Google Account ↗</string>
+    <string name="email_alerts_address_hint">you@gmail.com</string>
+    <string name="email_alerts_app_password_hint">16-character App Password</string>
+    <string name="email_alerts_verify_save">Verify &amp; Save</string>
+    <string name="email_alerts_connection_error">Connection failed. Check your App Password and try again.</string>
+    <string name="email_alerts_disable_title">Disable Email Alerts</string>
+    <string name="email_alerts_disable_message">Email alerts will be disabled and your credentials will be removed.</string>
+    <string name="email_alerts_disable_confirm">Disable</string>
+
     <!-- Historic data days -->
     <string name="settings_historic_days_label">Historic Data Days</string>
     <string name="settings_historic_days_suffix">days</string>
@@ -149,4 +163,14 @@
     <string name="notification_module_health_yellow_text">One or more modules have not produced for 1–2 days. Tap to view details.</string>
     <string name="notification_module_health_red_title">Solar module offline — action needed</string>
     <string name="notification_module_health_red_text">One or more modules have not produced for 3 days. Check your array.</string>
+
+    <!-- Email alerts -->
+    <string name="email_subject_yellow">EMA Companion: Solar module offline</string>
+    <string name="email_body_yellow_intro">One or more solar modules in your array have not produced for 1–2 days.</string>
+    <string name="email_subject_red">EMA Companion: Solar module offline — action needed</string>
+    <string name="email_body_red_intro">One or more solar modules have not produced for 3 or more days. Check your array.</string>
+    <string name="email_subject_green">EMA Companion: All modules producing</string>
+    <string name="email_body_green">All solar modules in your array are producing again.</string>
+    <string name="email_body_module_line">Module %1$s: No production for %2$d day(s)</string>
+    <string name="email_body_cta">Open EMA Companion to view details.</string>
 </resources>

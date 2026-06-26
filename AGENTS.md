@@ -59,6 +59,13 @@ Architecture decisions are documented in [`docs/adr/`](docs/adr/). Read the rele
 - Each tile's state class carries a `FetchError?` field (reuse `core/api/FetchError`); persist it alongside the tile data so `currentState()` reconstructs the full rendered state
 - `ConfigurationError` is silent — show neutral placeholder only, no error line
 
+**Email alerts** (ADR-008):
+- Emails fire on module health status change only — `newStatus != UNKNOWN && newStatus != lastEmailedStatus`
+- `lastEmailedStatus` and `lastNotifiedStatus` are separate persisted fields in `ema_module_health`; do not merge them
+- RED latch: if persisted status is RED and computed status is YELLOW, final status stays RED — only GREEN clears RED
+- `lastEmailedStatus` is updated only on `EmailResult.Success`; leave it unchanged on `AuthFailure` or `NetworkError` so the next change retries
+- App Password must never appear in logs, crash reports, or `ApiCallLogRepository`; `resetThrottle()` on `ModuleHealthRepository` must clear `KEY_LAST_EMAILED_STATUS`
+
 **Package and code organization** (ADR-004):
 - Feature-first: all code lives in `feature/<name>/` (e.g. `feature/home/`, `feature/settings/`)
 - Only `MainActivity` stays at the root package

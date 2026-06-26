@@ -1,102 +1,100 @@
-## 1. Google Sign-In & OAuth Setup
+## 0. Fix Phase 1: Push notification fires on status change only
 
-- [ ] 1.1 Add Google Play Services SDK dependencies to gradle/libs.versions.toml (Google Auth, Gmail API)
-- [ ] 1.2 Create Google OAuth 2.0 Client ID for Android app in Google Cloud Console
-- [ ] 1.3 Configure OAuth consent screen in Google Cloud Console with app name, scopes (Gmail send)
-- [ ] 1.4 Create `GoogleSignInManager` class to handle OAuth 2.0 authentication flow
-- [ ] 1.5 Implement Google Sign-In launcher activity / fragment (Settings > Email Alerts)
-- [ ] 1.6 Write unit test: mock Google Sign-In, verify token returned
-- [ ] 1.7 Write Robolectric test: verify Sign-In UI displays, button tappable
+- [x] 0.1 Add `lastNotifiedStatus: String?` field to `ema_module_health` SharedPreferences (alongside existing `status`)
+- [x] 0.2 Update `ModuleHealthWorker`: post push notification only when computed status differs from `lastNotifiedStatus`; update `lastNotifiedStatus` after posting
+- [x] 0.3 Update `SettingsFragment.showFactoryResetDialog()` to clear `lastNotifiedStatus` from `ema_module_health` prefs
+- [x] 0.4 Update `ModuleHealthRepository.resetThrottle()` (or a new `clear()`) to also remove `lastNotifiedStatus`
+- [x] 0.5 Update Robolectric tests for `ModuleHealthWorker`: assert notification fires on GREEN→YELLOW, not on repeated YELLOW→YELLOW
+- [x] 0.6 Run `./gradlew testDebugUnitTest --rerun` — all existing tests pass
 
-## 2. OAuth Token Storage & Security
+## 1. JavaMail Dependency
 
-- [ ] 2.1 Add OAuth token storage methods to `SettingsRepository`: `encryptedGetGoogleToken()`, `setGoogleToken()`, `deleteGoogleToken()`, `getGoogleUserEmail()`
-- [ ] 2.2 Implement token storage in EncryptedSharedPreferences (AES256-GCM)
-- [ ] 2.3 Add token expiry tracking (store expiry timestamp alongside token)
-- [ ] 2.4 Implement token refresh logic: check expiry before use, silently refresh if needed
-- [ ] 2.5 Write unit test: verify token stored encrypted, retrieved correctly
-- [ ] 2.6 Write unit test: verify token refresh on expiry, fallback on failure
+- [x] 1.1 Add `com.sun.mail:android-mail:1.6.7` and `com.sun.mail:android-activation:1.6.7` to `gradle/libs.versions.toml` and `app/build.gradle.kts`
+- [x] 1.2 Add `com.icegreen:greenmail:2.0.1` as `testImplementation` for SMTP integration tests
+- [x] 1.3 Verify build succeeds: `./gradlew assembleDebug`
 
-## 3. Gmail Email Sending
+## 2. SMTP Credential Storage
 
-- [ ] 3.1 Create `GmailEmailSender` class to send emails via Gmail API
-- [ ] 3.2 Implement email composition: MIME format for subject, body, sender, recipient
-- [ ] 3.3 Implement Gmail API call (send message on behalf of authenticated user)
-- [ ] 3.4 Implement error handling: network errors, rate limits, auth failures, fallback to local notification
-- [ ] 3.5 Add retry logic: on transient failures, queue for next check (12h)
-- [ ] 3.6 Write unit test: mock Gmail API, verify email sent with correct content
-- [ ] 3.7 Write unit test: verify error handling on API failure, fallback to local notification
+- [x] 2.1 Add to `SettingsRepository`: `getEmailAddress(): String`, `setEmailAddress(v: String)`, `getEmailAppPassword(): String`, `setEmailAppPassword(v: String)`, `deleteEmailCredentials()`, `isEmailConfigured(): Boolean`
+- [x] 2.2 Store both fields in EncryptedSharedPreferences (same backing store as EMA credentials)
+- [x] 2.3 Add `emailAlertsEnabled: Boolean` toggle field to `SettingsRepository` (plain SharedPreferences — not sensitive)
+- [x] 2.4 Write unit test: verify address and password stored, retrieved, deleted correctly
+- [x] 2.5 Write unit test: verify `isEmailConfigured()` returns false when either field is blank
 
-## 4. Email Content Templates (Localization)
+## 3. Email Sender
 
-- [ ] 4.1 Add email template strings to strings.xml (EN) and values-de/strings.xml (DE):
-  - Yellow alert subject and body
-  - Red alert subject and body
-  - Recovery subject and body
-  - Partial recovery (RED→YELLOW) subject and body
-- [ ] 4.2 Create `EmailContentBuilder` class to generate personalized email body with module details
-- [ ] 4.3 Include module ID, offline duration, system context in email body
-- [ ] 4.4 Implement sorting: list offline modules by duration (longest first)
-- [ ] 4.5 Write unit test: verify templates render correctly in both languages
-- [ ] 4.6 Write unit test: verify module details formatted correctly in email
+- [x] 3.1 Create `core/email/EmailSender` interface: `fun send(to: String, subject: String, body: String): EmailResult`; `EmailResult` = `sealed class` with `Success`, `AuthFailure`, `NetworkError`
+- [x] 3.2 Create `core/email/GmailSmtpEmailSender` implementing `EmailSender`; constructor takes `from: String, appPassword: String`; sends via `smtp.gmail.com:587` with STARTTLS using JavaMail
+- [x] 3.3 Implement `GmailSmtpEmailSender.testConnection(): EmailResult` (sends no email — just opens and closes an authenticated session); used by Settings to verify credentials on save
+- [x] 3.4 Write unit tests for `EmailResult` sealed class (exhaustive `when` coverage) — covered by GreenMail tests which exercise all three result types
+- [x] 3.5 Write GreenMail integration test: start in-process SMTP server, verify `GmailSmtpEmailSender` delivers a message with correct `To`, `Subject`, and body
+- [x] 3.6 Write GreenMail integration test: verify `AuthFailure` returned on wrong credentials
+- [x] 3.7 Write GreenMail integration test: verify `NetworkError` returned when server unreachable (wrong port)
 
-## 5. Settings UI for Email Alerts
+## 4. Email Content Builder
 
-- [ ] 5.1 Add "Email Alerts" section to Settings screen (SettingsFragment)
-- [ ] 5.2 Implement "Sign In with Google" button (launches GoogleSignInManager)
-- [ ] 5.3 Implement display of signed-in email address: "Email alerts enabled for: user@gmail.com"
-- [ ] 5.4 Implement "Disable Email Alerts" button with confirmation dialog
-- [ ] 5.5 Add error message display for sign-in failures
-- [ ] 5.6 Add loading indicator during sign-in process
-- [ ] 5.7 Write Robolectric test: verify sign-in UI state, email address display, disable button
-- [ ] 5.8 Write Robolectric test: verify token persists across app restart
+- [x] 4.1 Add email template strings to `values/strings.xml` (EN)
+- [x] 4.2 Add same strings to `values-de/strings.xml` (DE)
+- [x] 4.3 Create `core/email/EmailContentBuilder`
+- [x] 4.4 Write unit tests (EN qualifiers)
+- [x] 4.5 Write unit tests (DE qualifiers)
 
-## 6. Integration with ModuleHealthWorker
+## 5. lastEmailedStatus Field
 
-- [ ] 6.1 Modify `ModuleHealthWorker` to trigger email send on status change (if user is signed in)
-- [ ] 6.2 Add state-change detection: compare new status to persisted status from Phase 1
-- [ ] 6.3 Call `GmailEmailSender` only on actual status changes (GREEN→YELLOW, YELLOW→RED, etc.)
-- [ ] 6.4 Ensure local notification sent regardless of email success/failure
-- [ ] 6.5 Add logging: email sent, errors, token refresh, fallback to local
-- [ ] 6.6 Write integration test: mock Gmail API, verify email sent on status change
-- [ ] 6.7 Write integration test: verify no email on same status, email on recovery
+- [x] 5.1 Add `lastEmailedStatus: String?` to `ema_module_health` SharedPreferences
+- [x] 5.2 Clear on factory reset (handled by PREFS_HEALTH.clear() in showFactoryResetDialog)
+- [x] 5.3 Clear on import/credential change (handled by resetThrottle() via refreshAllDisplayedValues)
+- [x] 5.4 Write unit tests (getLastEmailedStatus, setLastEmailedStatus, resetThrottle_clearsLastEmailedStatus)
+- [x] 5.5 resetThrottle clears lastEmailedStatus — same path as EMA credential change test
 
-## 7. Testing & Validation
+## 6. Settings UI — Email Alerts
 
-- [ ] 7.1 Test OAuth flow on emulator with real Google Account
-- [ ] 7.2 Test email sending via Gmail API on emulator (verify in Gmail Sent folder)
-- [ ] 7.3 Test token expiry handling: wait for expiry (or mock), verify refresh and retry
-- [ ] 7.4 Test error scenarios: network offline, Gmail quota exceeded, revoked token
-- [ ] 7.5 Test language switching: change app language mid-session, verify next email is in new language
-- [ ] 7.6 Test German email templates: verify subject/body in German, special characters render
-- [ ] 7.7 Test Settings UI: sign-in, email display, disable, token persistence across restart
-- [ ] 7.8 Test concurrent scenarios: email send fails, local notification sent, user disables email alerts
+- [x] 6.1 Add `email_alerts_toggle_title` = `"Email Alerts"` and DE equivalent to `strings.xml`; add `email_alerts_enabled_for` = `"Email alerts enabled for: %1$s"` and DE equivalent
+- [x] 6.2 Add "Email Alerts" toggle (`SwitchPreference` or inline toggle row) to the Settings screen, below API Settings section
+- [x] 6.3 Add email setup sub-screen (fragment or full-screen dialog) shown when toggle is enabled and credentials not yet configured; layout contains:
+  - Static instruction text (matches spec: 2-minute notice, step-by-step guide, prerequisite note about 2-Step Verification)
+  - "Open Google Account ↗" button that fires `Intent(Intent.ACTION_VIEW, Uri.parse("https://myaccount.google.com/apppasswords"))`
+  - Gmail address input field
+  - App Password input field (masked, last 4 chars visible — same `SettingRowView` pattern as EMA App Secret)
+  - "Verify & Save" button
+- [x] 6.4 "Verify & Save": calls `GmailSmtpEmailSender.testConnection()` on IO dispatcher; on `Success` saves credentials and navigates back; on failure shows inline error "Connection failed. Check your App Password and try again."
+- [x] 6.5 When credentials are configured: toggle row shows "Email alerts enabled for: user@gmail.com"; tapping shows a "Disable Email Alerts" confirmation dialog that calls `deleteEmailCredentials()` and clears `lastEmailedStatus`
+- [x] 6.6 Add "Email Alerts" section to `SettingsFragmentTest.setUp()` prefs clear list
+- [x] 6.7 Write Robolectric test: toggle off by default; enabling toggle shows setup row
+- [x] 6.8 Write Robolectric test: after saving credentials, Settings shows "enabled for: address"
+- [x] 6.9 Write Robolectric test: disable flow shows confirmation dialog, deletes credentials on confirm
+- [x] 6.10 Write Robolectric test: "Open Google Account" button fires correct `ACTION_VIEW` intent
 
-## 8. Documentation & Localization
+## 7. Integration with ModuleHealthWorker
 
-- [ ] 8.1 Add email template strings to values-de/strings.xml (German translations)
-- [ ] 8.2 Create `docs/gmail-setup-guide.md`: instructions for Google Cloud Console OAuth setup
-- [ ] 8.3 Update user guide (docs/user-guide/user-guide.md) with Email Alerts section
-  - How to sign in with Google
-  - What emails they'll receive and when
-  - How to disable email alerts
-- [ ] 8.4 Update notification methods documentation to include Gmail in Phase 2
-- [ ] 8.5 Create ADR documenting design decisions (token storage, email on status change, fallback behavior)
+- [x] 7.1 Inject `EmailSender` and `EmailContentBuilder` into `ModuleHealthWorker` (via constructor or WorkerFactory); default to `GmailSmtpEmailSender` built from `SettingsRepository` credentials
+- [x] 7.2 After computing new status, compare to `lastEmailedStatus`; if changed AND `isEmailConfigured()` AND `emailAlertsEnabled`: call `EmailSender.send()`, update `lastEmailedStatus` on `Success`
+- [x] 7.3 On `AuthFailure`: log error, do NOT update `lastEmailedStatus` (retry next change), fall back to local notification
+- [x] 7.4 On `NetworkError`: log error, do NOT update `lastEmailedStatus`, fall back to local notification
+- [x] 7.5 Local push notification fires independently of email result (already in place from Phase 1 after task 0.x)
+- [x] 7.6 Write integration test with `FakeEmailSender`: GREEN→YELLOW triggers one email send with correct subject
+- [x] 7.7 Write integration test: YELLOW→YELLOW (same status) sends no email
+- [x] 7.8 Write integration test: RED→GREEN sends recovery email
+- [x] 7.9 Write integration test: email `AuthFailure` → `lastEmailedStatus` NOT updated → next status change retries
+- [x] 7.10 Write integration test: email not configured → no `EmailSender.send()` call
+
+## 8. Documentation
+
+- [x] 8.1 Update `docs/user-guide/settings.md` with Email Alerts section: how to enable, what the setup steps are (condensed), what emails arrive and when, how to disable; invoke `write-user-guide` skill
+- [ ] 8.2 Update `docs/notification-methods.md` to include SMTP email as the Phase 2 delivery mechanism
+- [x] 8.3 Create ADR documenting: SMTP vs OAuth decision, status-change-only trigger, lastEmailedStatus/lastNotifiedStatus pattern, RED→GREEN-only recovery
 
 ## 9. Code Review & Polish
 
-- [ ] 9.1 Run `./gradlew ktlintCheck` and fix lint errors
-- [ ] 9.2 Verify all Robolectric tests pass: `./gradlew testDebugUnitTest --rerun`
-- [ ] 9.3 Verify integration tests pass (mock Gmail API)
-- [ ] 9.4 Code review: token security, error handling, test coverage
-- [ ] 9.5 Performance review: no blocking operations on main thread (OAuth, Gmail API calls async)
-- [ ] 9.6 Security review: no tokens logged, no sensitive data in Logcat
+- [x] 9.1 Run `./gradlew ktlintCheck` and fix lint errors
+- [x] 9.2 Verify all tests pass: `./gradlew testDebugUnitTest --rerun`
+- [x] 9.3 Security review: confirm App Password never appears in Logcat, API log, or crash reports
+- [x] 9.4 Verify no blocking calls on main thread: SMTP send and `testConnection()` run only on IO dispatcher
 
 ## 10. Real Device Testing
 
-- [ ] 10.1 Test on real Android device (API 31+): Google Sign-In flow, token storage
-- [ ] 10.2 Test email sending: modify status, verify email arrives in user's Gmail inbox
-- [ ] 10.3 Test background notification: trigger 12h check, verify email + local notification
-- [ ] 10.4 Test edge cases: user signs out mid-email, app force-stopped, device offline
-- [ ] 10.5 Test Settings UI: Settings screen responsive, no ANR, text renders
-- [ ] 10.6 Verify no crashes in Logcat, no permission denials
+- [ ] 10.1 Test on real Android device: enter Gmail address and App Password, verify "Verify & Save" succeeds
+- [ ] 10.2 Test email delivery: trigger status change (seed RED data), verify email arrives in Gmail inbox within 24h check cycle
+- [ ] 10.3 Test language: switch app to German, verify next alert email is in German
+- [ ] 10.4 Test disable flow: disable Email Alerts, verify no email on next status change
+- [ ] 10.5 Test error case: enter wrong App Password, verify inline error shown on save, no credentials stored

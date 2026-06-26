@@ -95,7 +95,18 @@ class ModuleHealthRepository(
             }
         }
 
-        val state = computeStatus(window)
+        val previousStatus = healthPrefs.getString(KEY_STATUS, null)
+            ?.let { runCatching { ModuleHealthStatus.valueOf(it) }.getOrNull() }
+        val computed = computeStatus(window)
+        val finalStatus = if (previousStatus == ModuleHealthStatus.RED &&
+            computed.status == ModuleHealthStatus.YELLOW
+        ) {
+            ModuleHealthStatus.RED
+        } else {
+            computed.status
+        }
+        val state = computed.copy(status = finalStatus)
+
         healthPrefs.edit()
             .putString(KEY_STATUS, state.status.name)
             .putString(KEY_OFFLINE_MODULES, encodeOfflineModules(state.offlineModules))
@@ -179,8 +190,29 @@ class ModuleHealthRepository(
             modules.forEach { arr.put(JSONObject().put("uid", it.uid).put("days", it.offlineDays)) }
         }.toString()
 
+    fun getLastNotifiedStatus(): ModuleHealthStatus? =
+        healthPrefs.getString(KEY_LAST_NOTIFIED_STATUS, null)
+            ?.let { runCatching { ModuleHealthStatus.valueOf(it) }.getOrNull() }
+
+    fun setLastNotifiedStatus(status: ModuleHealthStatus) {
+        healthPrefs.edit().putString(KEY_LAST_NOTIFIED_STATUS, status.name).apply()
+    }
+
+    fun getLastEmailedStatus(): ModuleHealthStatus? =
+        healthPrefs.getString(KEY_LAST_EMAILED_STATUS, null)
+            ?.let { runCatching { ModuleHealthStatus.valueOf(it) }.getOrNull() }
+
+    fun setLastEmailedStatus(status: ModuleHealthStatus) {
+        healthPrefs.edit().putString(KEY_LAST_EMAILED_STATUS, status.name).apply()
+    }
+
     override fun resetThrottle() {
-        healthPrefs.edit().remove(KEY_LAST_CHECK).remove(KEY_FETCH_ERROR).apply()
+        healthPrefs.edit()
+            .remove(KEY_LAST_CHECK)
+            .remove(KEY_FETCH_ERROR)
+            .remove(KEY_LAST_NOTIFIED_STATUS)
+            .remove(KEY_LAST_EMAILED_STATUS)
+            .apply()
     }
 
     private fun setFetchError(error: FetchError) {
@@ -201,6 +233,8 @@ class ModuleHealthRepository(
         private const val KEY_OFFLINE_MODULES = "offlineModules"
         private const val KEY_LAST_CHECK = "lastCheckEpochMs"
         private const val KEY_FETCH_ERROR = "fetchError"
+        const val KEY_LAST_NOTIFIED_STATUS = "lastNotifiedStatus"
+        const val KEY_LAST_EMAILED_STATUS = "lastEmailedStatus"
         private const val KEY_PREFIX = "daily_"
         private const val WINDOW_DAYS = 3
         private val AUTH_CODES = setOf(2000, 2001, 2002, 2003, 2004, 3000, 3001, 3002, 3003, 3004)

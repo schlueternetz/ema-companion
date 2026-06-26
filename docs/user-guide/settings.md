@@ -55,6 +55,28 @@ Changing the **Array Timezone** immediately reschedules the background Module He
 | **API Request Limit** | Maximum EMA API calls permitted per month (1–2,678,400; default 1,000). A progress bar below the field shows how many of this month's **successful** reads have been used. The count resets automatically at the start of each calendar month. Tap ↺ to restore the default. |
 | **Base URL** | The API endpoint (default `https://api.apsystemsema.com:9282/user/api/v2/`). Must be a valid URL up to 2,048 characters. Tap ↺ to restore the default. |
 
+## Email Alerts
+
+Sends an email when your module health status changes (GREEN → YELLOW or RED, and back to GREEN). Emails are sent from your own Gmail account using an App Password — no third-party relay involved.
+
+**Requirement:** A Gmail account with 2-Step Verification enabled.
+
+### Enabling Email Alerts
+
+1. Toggle **Email Alerts** on. A setup form appears below the toggle.
+2. Tap **Open Google Account ↗** to open `myaccount.google.com/apppasswords` in your browser.
+3. In your Google Account, go to **Security → App Passwords** and create one for "Mail" on "Other device". Copy the 16-character password shown.
+4. Back in EMA Companion, enter your Gmail address and paste the App Password.
+5. Tap **Verify & Save**. The app connects to Gmail to confirm the credentials. On success the setup form is replaced by a status line showing the address in use. If the connection fails, an error message appears — check that the App Password was copied correctly.
+
+### Disabling Email Alerts
+
+Tap the **"Email alerts enabled for: …"** row. A confirmation dialog appears — tap **Disable** to remove the credentials and stop sending emails.
+
+### When emails are sent
+
+An email is sent once per status change, not on every background check. If a module has been offline for two days (YELLOW) and a third day passes with no production (RED), a second email is sent. When all modules recover, a recovery email is sent. Changing your EMA credentials resets the email history so the next check sends a fresh alert if needed.
+
 ## Logs
 
 Records EMA API activity, newest first. Each row shows the time, endpoint, duration (milliseconds), and success or failure. Importing settings also generates a log entry listing which fields were imported — no sensitive values are shown. If no entries exist yet, the section shows "No API calls recorded yet".

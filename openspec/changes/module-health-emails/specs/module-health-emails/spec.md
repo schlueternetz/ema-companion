@@ -24,9 +24,9 @@ The system SHALL send an email to the user's Gmail inbox when module health stat
   - Body: Confirmation that all modules are producing
 
 #### Scenario: No email on same status during check
-- **WHEN** 12-hour check runs and status remains YELLOW or RED (no change)
-- **THEN** NO email is sent (only local notification per Phase 1 throttle)
-- **AND** local notification remains as alert
+- **WHEN** 24-hour check runs and status remains YELLOW or RED (no change)
+- **THEN** NO email is sent
+- **AND** NO local notification is sent (both channels fire on status change only)
 
 #### Scenario: No email if user not signed in
 - **WHEN** status changes and user has not enabled email alerts
@@ -58,16 +58,17 @@ The system SHALL gracefully handle Gmail API failures without crashing the app.
 ### Requirement: Email sent only on meaningful status changes
 The system SHALL not spam user with emails on every check.
 
-#### Scenario: Status change transitions require email
-- **WHEN** status: GREEN→YELLOW (yellow email)
-- **WHEN** status: GREEN→RED (red email)
-- **WHEN** status: YELLOW→RED (red email, upgraded alert)
-- **WHEN** status: YELLOW→GREEN (recovery email)
-- **WHEN** status: RED→GREEN (recovery email)
-- **THEN** email is sent for each transition
+#### Scenario: Status change transitions that trigger email
+- **WHEN** status: GREEN→YELLOW — send YELLOW alert email
+- **WHEN** status: GREEN→RED — send RED alert email
+- **WHEN** status: YELLOW→RED — send RED alert email (escalation)
+- **WHEN** status: YELLOW→GREEN — send recovery email
+- **WHEN** status: RED→GREEN — send recovery email
+- **THEN** email is sent for each of the above transitions
 - **AND** no email if status remains the same
 
-#### Scenario: No email for transitions that lower urgency within red
-- **WHEN** status: RED→YELLOW (fewer offline modules, but still offline)
-- **THEN** optional: may send "partially recovered" email or skip (implementation choice; recommend send for transparency)
-- **AND** document behavior in ADR
+#### Scenario: RED stays RED — no partial recovery email
+- **WHEN** some offline modules recover but at least one remains offline (RED→YELLOW transition)
+- **THEN** the displayed status remains RED (not downgraded to YELLOW)
+- **AND** no email is sent
+- **RATIONALE**: a module is still offline; this is not a recovery. Alert only clears when all modules are producing (→GREEN).

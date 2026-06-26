@@ -22,6 +22,9 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         const val HISTORIC_DATA_DAYS_KEY = "historicDataDays"
         const val API_REQUEST_LIMIT_KEY = "apiRequestLimit"
         const val NOTIFICATIONS_ENABLED_KEY = "notificationsEnabled"
+        const val EMAIL_ALERTS_ENABLED_KEY = "emailAlertsEnabled"
+        const val EMAIL_ADDRESS_KEY = "emailAddress"
+        const val EMAIL_APP_PASSWORD_KEY = "emailAppPassword"
         const val BASE_URL_KEY = "baseUrl"
         const val DISPLAY_MODE_KEY = "displayMode"
         const val ARRAY_TIMEZONE_KEY = "arrayTimezone"
@@ -129,6 +132,31 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     fun setNotificationsEnabled(value: Boolean) {
         prefs.edit().putBoolean(NOTIFICATIONS_ENABLED_KEY, value).apply()
     }
+
+    fun getEmailAlertsEnabled(): Boolean = prefs.getBoolean(EMAIL_ALERTS_ENABLED_KEY, false)
+
+    fun setEmailAlertsEnabled(value: Boolean) {
+        prefs.edit().putBoolean(EMAIL_ALERTS_ENABLED_KEY, value).apply()
+    }
+
+    fun getEmailAddress(): String = prefs.getString(EMAIL_ADDRESS_KEY, "") ?: ""
+
+    fun setEmailAddress(value: String) {
+        prefs.edit().putString(EMAIL_ADDRESS_KEY, value).apply()
+    }
+
+    fun getEmailAppPassword(): String = prefs.getString(EMAIL_APP_PASSWORD_KEY, "") ?: ""
+
+    fun setEmailAppPassword(value: String) {
+        prefs.edit().putString(EMAIL_APP_PASSWORD_KEY, value).apply()
+    }
+
+    fun deleteEmailCredentials() {
+        prefs.edit().remove(EMAIL_ADDRESS_KEY).remove(EMAIL_APP_PASSWORD_KEY).apply()
+    }
+
+    fun isEmailConfigured(): Boolean =
+        getEmailAddress().isNotEmpty() && getEmailAppPassword().isNotEmpty()
 
     fun getBaseUrl(): String = prefs.getString(BASE_URL_KEY, BASE_URL_DEFAULT) ?: BASE_URL_DEFAULT
 

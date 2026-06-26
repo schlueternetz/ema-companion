@@ -1,6 +1,8 @@
 package com.schlueternetz.emacompanion.feature.settings
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Looper
 import android.view.View
 import android.widget.TextView
@@ -577,6 +579,97 @@ class SettingsFragmentTest {
         assertEquals("ema_module_health should be empty after factory reset", 0, health.all.size)
         val daily = appContext.getSharedPreferences("ema_module_health_daily", Context.MODE_PRIVATE)
         assertEquals("ema_module_health_daily should be empty after factory reset", 0, daily.all.size)
+    }
+
+    // ── Email Alerts (Phase 6) ────────────────────────────────────────────────
+
+    @Test
+    fun emailAlerts_toggleOffByDefault_enablingShowsSetupRow() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val switch = fragment.requireView()
+                .findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
+            val setupRow = fragment.requireView()
+                .findViewById<View>(R.id.settings_email_alerts_setup_row)
+
+            assertFalse("email alerts toggle should be off by default", switch.isChecked)
+            assertEquals(View.GONE, setupRow.visibility)
+
+            switch.performClick()
+
+            assertEquals(View.VISIBLE, setupRow.visibility)
+        }
+    }
+
+    @Test
+    fun emailAlerts_whenConfigured_showsEnabledForAddress() {
+        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putString("emailAddress", "user@gmail.com")
+            .putString("emailAppPassword", "mysecretpassword1")
+            .putBoolean("emailAlertsEnabled", true)
+            .apply()
+
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val statusRow = fragment.requireView()
+                .findViewById<View>(R.id.settings_email_alerts_status_row)
+            val statusText = fragment.requireView()
+                .findViewById<TextView>(R.id.settings_email_alerts_status_text)
+
+            assertEquals(View.VISIBLE, statusRow.visibility)
+            assertTrue(
+                "status text should show the email address",
+                statusText.text.toString().contains("user@gmail.com"),
+            )
+        }
+    }
+
+    @Test
+    fun emailAlerts_disableFlow_showsDialogAndClearsCredentials() {
+        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putString("emailAddress", "user@gmail.com")
+            .putString("emailAppPassword", "mysecretpassword1")
+            .putBoolean("emailAlertsEnabled", true)
+            .apply()
+
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<View>(R.id.settings_email_alerts_status_row)
+                .performClick()
+            val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
+                as androidx.appcompat.app.AlertDialog
+            shadowOf(Looper.getMainLooper()).idle()
+            dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).performClick()
+            shadowOf(Looper.getMainLooper()).idle()
+        }
+
+        val prefs = appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        assertEquals("credentials should be cleared", "", prefs.getString("emailAddress", ""))
+        assertEquals("credentials should be cleared", "", prefs.getString("emailAppPassword", ""))
+    }
+
+    @Test
+    fun emailAlerts_openGoogleAccountButton_firesCorrectIntent() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            // Enable the toggle so the setup row appears
+            fragment.requireView().findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
+                .performClick()
+
+            fragment.requireView()
+                .findViewById<View>(R.id.settings_email_alerts_open_google_account)
+                .performClick()
+
+            val intent = shadowOf(fragment.requireActivity()).nextStartedActivity
+            assertNotNull("intent should have been fired", intent)
+            assertEquals(Intent.ACTION_VIEW, intent.action)
+            assertEquals(
+                Uri.parse("https://myaccount.google.com/apppasswords"),
+                intent.data,
+            )
+        }
     }
 
     @Test

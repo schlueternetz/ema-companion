@@ -8,6 +8,11 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.schlueternetz.emacompanion.core.AppConfig
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthRepository
+import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthStatus
+import com.schlueternetz.emacompanion.core.email.EmailContentBuilder
+import com.schlueternetz.emacompanion.core.email.EmailResult
+import com.schlueternetz.emacompanion.core.email.EmailSender
+import com.schlueternetz.emacompanion.core.email.GmailSmtpEmailSender
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -20,14 +25,49 @@ class ModuleHealthWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val repo = ModuleHealthRepository.create(applicationContext)
+        val repo = repoOverride ?: ModuleHealthRepository.create(applicationContext)
+        val settings = SettingsRepository.create(applicationContext)
+        val previousNotifiedStatus = repo.getLastNotifiedStatus()
+        val previousEmailedStatus = repo.getLastEmailedStatus()
         val state = repo.refresh()
-        ModuleHealthNotifier.ensureChannelCreated(applicationContext)
-        ModuleHealthNotifier.notify(applicationContext, state)
+        val newStatus = state.status
+
+        if (newStatus != ModuleHealthStatus.UNKNOWN && newStatus != previousNotifiedStatus) {
+            ModuleHealthNotifier.ensureChannelCreated(applicationContext)
+            ModuleHealthNotifier.notify(applicationContext, state)
+            repo.setLastNotifiedStatus(newStatus)
+        }
+
+        if (newStatus != ModuleHealthStatus.UNKNOWN &&
+            newStatus != previousEmailedStatus &&
+            settings.isEmailConfigured() &&
+            settings.getEmailAlertsEnabled()
+        ) {
+            val sender = emailSenderOverride ?: GmailSmtpEmailSender(
+                from = settings.getEmailAddress(),
+                appPassword = settings.getEmailAppPassword(),
+            )
+            val contentBuilder = EmailContentBuilder(applicationContext)
+            val result = sender.send(
+                to = settings.getEmailAddress(),
+                subject = contentBuilder.buildSubject(newStatus),
+                body = contentBuilder.buildBody(newStatus, state.offlineModules),
+            )
+            if (result == EmailResult.Success) {
+                repo.setLastEmailedStatus(newStatus)
+            }
+        }
+
         return Result.success()
     }
 
     companion object {
+        /** Test seam: inject a pre-built repository so doWork() can be tested without real storage. */
+        var repoOverride: ModuleHealthRepository? = null
+
+        /** Test seam: inject a fake EmailSender so email logic can be tested without SMTP. */
+        var emailSenderOverride: EmailSender? = null
+
         private const val WORK_NAME = "module_health_check"
 
         /**

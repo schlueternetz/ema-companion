@@ -2,117 +2,98 @@
 
 Phase 1 (module-health-tile) provides:
 - Module health status computation (GREEN/YELLOW/RED)
-- 12-hour background check via WorkManager
-- Local in-app notifications on status change
+- 24-hour background check via WorkManager
+- Local in-app notifications on status **change** (GREEN→YELLOW, YELLOW→RED, any→GREEN)
 
-This phase adds email delivery of the same alerts. Users can opt-in via Google Sign-In (at signup or in Settings), and their module health alerts are sent to their Gmail inbox in their preferred language.
+This phase adds email delivery of the same alerts. Users can opt-in in Settings by enabling the "Email Alerts" setting and signing in with Google, and their module health alerts are sent to their Gmail inbox in their preferred language.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Allow users to receive module health alerts via email (opt-in feature)
+- Allow users to receive module health alerts via email (opt-in, Settings only)
+- Trigger email on the same status changes that trigger local push notifications
 - Translate emails to user's app language preference (EN/DE)
 - Use user's own Gmail account (zero backend cost)
-- Integrate seamlessly with Phase 1's notification system
+- Integrate with Phase 1's notification system — both channels fire together on status change
 
 **Non-Goals:**
 - Replace local notifications (both coexist)
-- Require email signup/verification (piggyback on Google Account)
+- Offer email setup during onboarding or first-launch (Settings only)
 - Backend email infrastructure or SendGrid integration
-- Daily digest or scheduled emails (immediate alerts only)
-- SMS or push notifications
+- Daily digest or scheduled emails (status-change alerts only)
+- SMS or push notifications via third-party services
 
 ## Decisions
 
-### 1. Google Sign-In with Gmail Scope
-**Decision**: Use Google Play Services OAuth 2.0 to authenticate users, requesting Gmail API "send" scope.
+### 1. Sending mechanism: Gmail SMTP + App Password
+**Decision**: Use JavaMail (jakarta.mail) to send email via `smtp.gmail.com:587` (STARTTLS). The user provides their Gmail address and a Gmail App Password in Settings. No OAuth, no GCP Console project, no consent screen review.
 
-**Rationale**: Eliminates signup friction (one tap, already has Google Account). No password stored, no external email service required.
+**User setup steps**:
+1. Enable 2-Step Verification on their Google Account (one-time)
+2. Go to Google Account → Security → App Passwords → create password for "EMA Companion"
+3. Paste the 16-character App Password into Settings
 
-**Alternatives Considered**:
-- Firebase Authentication: adds Firebase dependency, overkill for one OAuth flow
-- Manual Google OAuth: more boilerplate, same end result
+**Rationale**: No service infrastructure, no GCP project, no OAuth complexity, no token lifecycle to manage. JavaMail is a pure JVM library with no Android-specific dependencies. App Password is a well-established pattern for app-specific credential management.
 
-### 2. Optional at Signup or in Settings
-**Decision**: Offer Google Sign-In as optional flow either during app onboarding (suggested) or always available in Settings > Email Alerts.
+**Alternatives rejected**:
+- Gmail API OAuth: requires GCP project, consent screen review, token refresh management, sensitive `mail.google.com` scope that triggers scary consent dialogs
+- ntfy.sh: not email; different delivery paradigm, requires user to install a separate app
+- Backend SMTP relay: costs money or has quota limits
 
-**Rationale**: Gives users choice; some want email, others don't. Reduces friction at signup (not mandatory), but easy to enable later.
+**Token management**: None. SMTP authentication uses the static App Password on every send. No expiry, no refresh.
 
-**Alternatives Considered**:
-- Mandatory at signup: too aggressive; local notifications are fine for non-email users
-- Settings-only: some users might want it during onboarding
+### 2. Settings-only opt-in
+**Decision**: Email alerts are an optional setting in the Settings screen. They are never suggested during onboarding or first launch. The user enables "Email Alerts" (toggle), which reveals the sign-in / configuration UI. Without the toggle enabled, no auth UI is shown.
 
-### 3. Secure Token Storage
-**Decision**: Store OAuth access token in `SettingsRepository` using EncryptedSharedPreferences (AES256-GCM), same as existing API credentials.
+**Rationale**: Email alerts are a convenience layer on top of push notifications. Presenting them before the user has seen the app's core value (the Home screen with real data) is premature friction. Settings is the right place.
 
-**Rationale**: Consistent with app's existing security pattern. Token never logged or exposed. Survives app restart.
+### 3. Secure credential storage
+**Decision**: Store the Gmail address and App Password in `SettingsRepository` using EncryptedSharedPreferences (AES256-GCM), the same storage used for EMA API credentials. The App Password is never logged or displayed in plain text (masked, last 4 chars visible).
 
-**Alternatives Considered**:
-- In-memory only: lost on app close, poor UX
-- Plain SharedPreferences: security risk
+**Rationale**: Consistent with existing credential security pattern. App Password does not expire; no refresh logic needed. Cleared alongside other credentials on factory reset or settings import.
 
-### 4. Email on Status Change (Not Throttled)
-**Decision**: Send email when status changes (GREEN→YELLOW, YELLOW→RED, RED→YELLOW, etc.), NOT on every 12-hour check if status is unchanged.
+### 4. Email on status change only — aligned with push
+**Decision**: Send email (and local push) when and only when status **changes**:
+- GREEN → YELLOW: send YELLOW alert
+- GREEN → RED: send RED alert
+- YELLOW → RED: send RED alert (escalation)
+- Any → GREEN: send recovery email
+- RED → YELLOW: **no email, no downgrade** — status stays RED until fully GREEN
 
-**Rationale**: Avoids spam; user only notified when something new happens. Local notifications already throttled at 12h check level; emails add on top for users who opt in.
+**Rationale**: Avoids spam; user only notified on meaningful transitions. Aligns email and push so both channels behave identically. RED → YELLOW is not a recovery — some modules are still offline; keeping RED until GREEN prevents confusing "partially recovered" messages.
 
-**Alternatives Considered**:
-- Send on every check: spam
-- Throttle emails separately: complicates logic, unclear to user
+**Phase 1 impact**: Phase 1 currently sends push on every 12/24-hour check when YELLOW/RED. This must be changed to status-change only as part of this phase, so push and email fire together.
 
-### 5. Translated Email Content
-**Decision**: Email subject and body templates stored in strings.xml (EN and values-de/strings.xml), read at send time using user's app language preference.
+### 5. lastEmailedStatus field
+**Decision**: Persist a separate `lastEmailedStatus` (and `lastNotifiedStatus`) field in `ema_module_health` SharedPreferences, distinct from the displayed `status`. This is used to detect whether a status change warrants a new notification/email.
 
-**Rationale**: Reuses existing localization system. User's language choice is a first-class setting in the app; emails should match it.
+**Reset conditions**: Clear `lastEmailedStatus` and `lastNotifiedStatus` on:
+- Factory reset
+- Settings import (different system = unknown previous state)
+- EMA credential change (System ID, ECU ID)
 
-**Alternatives Considered**:
-- Hard-coded English: ignores German users
-- Detect system locale: error-prone; app language can differ from device language
+**Rationale**: Without a separate field, stale status from seeded data or a previous session can suppress the first real alert after reset. Clearing on credential change ensures the first check after connecting a new system fires an alert if the status is non-GREEN.
 
-### 6. Fallback to Local Notification on Failure
-**Decision**: If Gmail API call fails (network, token expired, rate limit), log the error and post a local notification instead. Do not crash.
+### 6. Fallback to local notification on email failure
+**Decision**: If email send fails (network, token, quota), log the error and ensure local push still fires. Do not retry email until the next status change occurs.
 
-**Rationale**: Email is a convenience, not essential. App remains reliable; user still gets notified locally.
+**Rationale**: Email is a convenience supplement. App reliability must not depend on external email delivery.
 
-**Alternatives Considered**:
-- Retry with backoff: complex; 12h window is long anyway
-- Silent failure: user unaware of alert
+### 7. Translated email content
+**Decision**: Email subject and body templates stored in `strings.xml` (EN) and `values-de/strings.xml` (DE). Language is read from the user's app language preference at send time.
 
-### 7. Token Refresh on Expiry
-**Decision**: Before sending email, check token expiry; if expired, attempt silent refresh. If refresh fails, treat as failed send (fallback to local notification).
-
-**Rationale**: OAuth tokens expire; silent refresh minimizes user friction. If refresh fails, something is wrong; local notification is safe fallback.
-
-**Alternatives Considered**:
-- Always request fresh token: more API calls, slower
-- No refresh: token eventually stale, emails fail silently
+**Rationale**: Reuses existing localization system. User's language choice is a first-class setting; emails match it.
 
 ## Risks / Trade-offs
 
 | Risk | Mitigation |
 |------|-----------|
-| Gmail API rate limits (100 emails/day per user) | Acceptable for module alerts (max 2-3 per day in normal scenarios). Document if user exceeds limits. |
-| Google account revoked or disconnected | Graceful: app detects in next check, falls back to local notifications, suggests re-signing-in. |
-| Token expires and refresh fails (e.g., offline) | Fall back to local notification, retry refresh on next check when online. |
-| User's Gmail quota full | Email fails silently (handled by Gmail API); local notification sent as fallback. |
-| Translated email templates incomplete or incorrect | Verify with German speaker; use app's existing `values-de` strings as source of truth. |
-| Wrong language selected (user changed locale mid-email) | Language is read at send time; emails match current preference. Previous emails may differ. Acceptable. |
-| Google Play Services not available on device | Gmail Sign-In fails gracefully; local notifications remain functional. Document requirement. |
-
-## Migration Plan
-
-1. **Phase 1 complete**: module-health-tile shipped, local notifications working
-2. **Phase 2 development**: Add Google Sign-In, token storage, Gmail API integration
-3. **Phase 2 testing**: Test OAuth flow, token refresh, email sending on emulator with real Google Account
-4. **Phase 2 rollout**: Feature flag or opt-in via Settings to control rollout; can disable if Gmail API issues arise
-
-Rollback: Remove "Email Alerts" section from Settings; disable Gmail API calls; app reverts to local notifications only.
+| App Password revoked or expired | SMTP send fails; fall back to local notification; Settings shows "Email delivery failed — check App Password" on next open |
+| User forgets App Password setup steps | Help link in Settings; one-time setup, not repeated |
+| Gmail SMTP rate limit (500/day) | Module alerts fire at most ~once/day in normal operation; irrelevant in practice |
+| Translated email templates incomplete | Verify with German speaker; use existing `values-de` strings as source of truth |
+| Phase 1 push behavior change (status-change only) | Existing Robolectric notification tests must be updated to match; no functional regression expected |
 
 ## Open Questions
 
-1. **Email address collection**: Should we display user's Gmail address in Settings for confirmation? (Yes, recommended UX)
-2. **Signup flow**: Should signup screen suggest email opt-in, or save for onboarding tutorial later? (Defer to PM)
-3. **Email template design**: What should subject/body say? Examples: 
-   - YELLOW: "⚠️ Module Alert: 1 module offline for 25 hours"
-   - RED: "🚨 Module Critical: 1 module offline for 80 hours—action needed"
-   - RECOVERY: "✅ All modules online—system recovered"
+1. **Email template design**: Subject/body copy for each transition (examples in `email-content-templates` spec).

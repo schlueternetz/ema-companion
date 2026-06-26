@@ -1,5 +1,23 @@
 # AI Lessons Learned
 
+## 2026-06-25: module-health-emails (Phases 6–7)
+
+### Went Well
+* `emailSenderOverride` companion seam in `ModuleHealthWorker` mirrors `repoOverride` — same pattern, zero friction
+* `FakeEmailSender` with `sentCount` + `lastSubject` + `nextResult` covered all 5 email worker tests cleanly
+* `SettingsRepository.create(context)` falls back to plain SharedPreferences in Robolectric (keystore unavailable) — seeding via `getSharedPreferences("ema_companion_settings")` works transparently
+* `suppressEmailSwitchListener` flag on `MaterialSwitch` prevents cascade when `updateEmailAlertsDisplay()` sets `isChecked` programmatically
+* Inline setup section (LinearLayout in card, visibility toggle) simpler to test than a dialog — no `ShadowDialog` traversal needed
+* `shadowOf(fragment.requireActivity()).nextStartedActivity` for Robolectric intent assertions on Fragment-fired intents
+
+### Didn't Work
+* Worker email tests initially called `repo.setEmailAddress()` — that method is on `SettingsRepository`, not `ModuleHealthRepository`; caught at compile time
+
+### Avoid
+* Email credential setters live on `SettingsRepository`, not `ModuleHealthRepository` — don't conflate the two repos in tests
+* Any `MaterialSwitch` set programmatically inside `refreshAllDisplayedValues()` needs a suppress-listener guard; without it the listener fires and re-writes prefs on every import/reset
+* PostToolUse hook fires per-edit on every UX file — batch all layout/string/fragment edits, invoke `write-user-guide` exactly once at the end (existing lesson, re-confirmed)
+
 ## 2026-06-25: Seeding SharedPreferences from adb
 
 ### Went Well

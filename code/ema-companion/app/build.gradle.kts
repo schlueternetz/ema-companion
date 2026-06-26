@@ -47,6 +47,12 @@ android {
             isIncludeAndroidResources = true
         }
     }
+    packaging {
+        resources {
+            excludes += "META-INF/NOTICE.md"
+            excludes += "META-INF/LICENSE.md"
+        }
+    }
 }
 
 dependencies {
@@ -64,7 +70,10 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.android.mail)
+    implementation(libs.android.activation)
     testImplementation(libs.junit)
+    testImplementation(libs.greenmail)
     testImplementation(libs.androidx.navigation.testing)
     testImplementation(libs.robolectric)
     testImplementation(libs.accessibility.test.framework)

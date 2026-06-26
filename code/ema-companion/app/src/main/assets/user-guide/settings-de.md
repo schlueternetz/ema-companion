@@ -56,6 +56,28 @@ Das Ändern der **Zeitzone der Anlage** plant den täglichen Modulstatus-Job sof
 | **API-Anfragelimit** | Maximale EMA API-Aufrufe pro Monat (1–2.678.400; Standard 1.000). Ein Fortschrittsbalken unterhalb des Felds zeigt, wie viele der **erfolgreichen** Lesevorgänge dieses Monats bereits verbraucht wurden. Der Zähler wird automatisch zu Beginn jedes Kalendermonats zurückgesetzt. Tippe auf ↺, um den Standard wiederherzustellen. |
 | **Basis-URL** | Der API-Endpunkt (Standard: `https://api.apsystemsema.com:9282/user/api/v2/`). Muss eine gültige URL mit bis zu 2.048 Zeichen sein. Tippe auf ↺, um den Standard wiederherzustellen. |
 
+## E-Mail-Benachrichtigungen
+
+Sendet eine E-Mail, wenn sich der Modulstatus ändert (GRÜN → GELB oder ROT und zurück zu GRÜN). E-Mails werden über dein eigenes Gmail-Konto mit einem App-Passwort verschickt — kein Drittanbieter-Relay erforderlich.
+
+**Voraussetzung:** Ein Gmail-Konto mit aktivierter 2-Schritt-Verifizierung.
+
+### E-Mail-Benachrichtigungen aktivieren
+
+1. Schalte **E-Mail-Benachrichtigungen** ein. Unterhalb des Schalters erscheint ein Einrichtungsformular.
+2. Tippe auf **Google-Konto öffnen ↗**, um `myaccount.google.com/apppasswords` in deinem Browser zu öffnen.
+3. Gehe in deinem Google-Konto zu **Sicherheit → App-Passwörter** und erstelle eines für „Mail" auf „Anderes Gerät". Kopiere das angezeigte 16-stellige Passwort.
+4. Gib in EMA Companion deine Gmail-Adresse ein und füge das App-Passwort ein.
+5. Tippe auf **Prüfen & Speichern**. Die App verbindet sich mit Gmail, um die Zugangsdaten zu bestätigen. Bei Erfolg wird das Einrichtungsformular durch eine Statuszeile mit der verwendeten Adresse ersetzt. Schlägt die Verbindung fehl, erscheint eine Fehlermeldung — überprüfe, ob das App-Passwort korrekt kopiert wurde.
+
+### E-Mail-Benachrichtigungen deaktivieren
+
+Tippe auf die Zeile **„E-Mail-Benachrichtigungen aktiv für: …"**. Ein Bestätigungsdialog erscheint — tippe auf **Deaktivieren**, um die Zugangsdaten zu entfernen und den E-Mail-Versand zu beenden.
+
+### Wann E-Mails gesendet werden
+
+Eine E-Mail wird einmal pro Statusänderung gesendet, nicht bei jeder Hintergrundprüfung. Wenn ein Modul zwei Tage offline war (GELB) und ein dritter Tag ohne Produktion vergeht (ROT), wird eine zweite E-Mail gesendet. Wenn alle Module wieder produzieren, wird eine Wiederherstellungs-E-Mail gesendet. Das Ändern der EMA-Zugangsdaten setzt den E-Mail-Verlauf zurück, sodass die nächste Prüfung bei Bedarf eine neue Benachrichtigung sendet.
+
 ## Protokolle
 
 Zeichnet EMA API-Aktivitäten auf, neueste zuerst. Jede Zeile zeigt Uhrzeit, Endpunkt, Dauer (Millisekunden) und Erfolg oder Fehler. Das Importieren von Einstellungen erstellt ebenfalls einen Protokolleintrag mit den importierten Feldern — sensible Werte werden nicht angezeigt. Wenn noch keine Einträge vorhanden sind, zeigt der Abschnitt „Noch keine API-Aufrufe aufgezeichnet".

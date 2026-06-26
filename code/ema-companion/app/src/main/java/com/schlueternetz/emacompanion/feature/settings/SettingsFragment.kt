@@ -1,5 +1,6 @@
 package com.schlueternetz.emacompanion.feature.settings
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
@@ -16,16 +17,24 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.ApiUsageRepository
 import com.schlueternetz.emacompanion.core.api.ThrottleResettable
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLog
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLogRepository
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthRepository
+import com.schlueternetz.emacompanion.core.email.EmailResult
+import com.schlueternetz.emacompanion.core.email.EmailSender
+import com.schlueternetz.emacompanion.core.email.GmailSmtpEmailSender
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -44,6 +53,14 @@ class SettingsFragment : Fragment() {
     private lateinit var displayModeValueView: TextView
     private lateinit var arrayTimezoneValueView: TextView
     private lateinit var notificationsSwitch: MaterialSwitch
+    private lateinit var emailAlertsSwitch: MaterialSwitch
+    private lateinit var emailAlertsSetupRow: View
+    private lateinit var emailAlertsStatusRow: View
+    private lateinit var emailAlertsStatusText: TextView
+    private lateinit var emailAddressInput: TextInputEditText
+    private lateinit var emailPasswordInput: TextInputEditText
+    private lateinit var emailAlertsError: TextView
+    private var suppressEmailSwitchListener = false
     private lateinit var settingEmaAppId: SettingRowView
     private lateinit var settingEmaAppSecret: SettingRowView
     private lateinit var settingEmaSystemId: SettingRowView
@@ -103,6 +120,13 @@ class SettingsFragment : Fragment() {
         displayModeValueView = view.findViewById(R.id.settings_display_mode_value)
         arrayTimezoneValueView = view.findViewById(R.id.settings_array_timezone_value)
         notificationsSwitch = view.findViewById(R.id.settings_notifications_switch)
+        emailAlertsSwitch = view.findViewById(R.id.settings_email_alerts_switch)
+        emailAlertsSetupRow = view.findViewById(R.id.settings_email_alerts_setup_row)
+        emailAlertsStatusRow = view.findViewById(R.id.settings_email_alerts_status_row)
+        emailAlertsStatusText = view.findViewById(R.id.settings_email_alerts_status_text)
+        emailAddressInput = view.findViewById(R.id.email_address_input)
+        emailPasswordInput = view.findViewById(R.id.email_password_input)
+        emailAlertsError = view.findViewById(R.id.settings_email_alerts_error)
 
         wireEmaAppId()
         wireEmaAppSecret()
@@ -113,6 +137,7 @@ class SettingsFragment : Fragment() {
         wireDisplayMode(view)
         wireArrayTimezone(view)
         wireNotifications()
+        wireEmailAlerts(view)
         wireHistoricDays()
         wireApiRequestLimit(view)
         wireBaseUrl(view)
@@ -405,6 +430,93 @@ class SettingsFragment : Fragment() {
         )
     }
 
+    private fun wireEmailAlerts(view: View) {
+        updateEmailAlertsDisplay()
+        emailAlertsSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (suppressEmailSwitchListener) return@setOnCheckedChangeListener
+            if (isChecked) {
+                if (!repository.isEmailConfigured()) {
+                    emailAlertsSetupRow.visibility = View.VISIBLE
+                }
+            } else {
+                emailAlertsSetupRow.visibility = View.GONE
+                emailAlertsStatusRow.visibility = View.GONE
+                repository.setEmailAlertsEnabled(false)
+            }
+        }
+        emailAlertsStatusRow.setOnClickListener { showDisableEmailAlertsDialog() }
+        view.findViewById<View>(R.id.settings_email_alerts_open_google_account).setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://myaccount.google.com/apppasswords")))
+        }
+        view.findViewById<View>(R.id.settings_email_alerts_verify_save).setOnClickListener {
+            verifyAndSaveEmailCredentials()
+        }
+    }
+
+    private fun updateEmailAlertsDisplay() {
+        suppressEmailSwitchListener = true
+        val configured = repository.isEmailConfigured()
+        val enabled = repository.getEmailAlertsEnabled()
+        emailAlertsSwitch.isChecked = configured && enabled
+        if (configured && enabled) {
+            emailAlertsStatusRow.visibility = View.VISIBLE
+            emailAlertsStatusText.text = getString(R.string.email_alerts_enabled_for, repository.getEmailAddress())
+            emailAlertsSetupRow.visibility = View.GONE
+        } else {
+            emailAlertsStatusRow.visibility = View.GONE
+            emailAlertsSetupRow.visibility = View.GONE
+        }
+        suppressEmailSwitchListener = false
+    }
+
+    private fun showDisableEmailAlertsDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.email_alerts_disable_title)
+            .setMessage(R.string.email_alerts_disable_message)
+            .setPositiveButton(R.string.email_alerts_disable_confirm) { _, _ ->
+                repository.deleteEmailCredentials()
+                repository.setEmailAlertsEnabled(false)
+                requireContext().getSharedPreferences(
+                    ModuleHealthRepository.PREFS_HEALTH, android.content.Context.MODE_PRIVATE,
+                ).edit().remove(ModuleHealthRepository.KEY_LAST_EMAILED_STATUS).apply()
+                suppressEmailSwitchListener = true
+                emailAlertsSwitch.isChecked = false
+                suppressEmailSwitchListener = false
+                emailAlertsStatusRow.visibility = View.GONE
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun verifyAndSaveEmailCredentials() {
+        val address = emailAddressInput.text?.toString()?.trim() ?: ""
+        val password = emailPasswordInput.text?.toString() ?: ""
+        if (address.isEmpty() || password.isEmpty()) return
+        emailAlertsError.visibility = View.GONE
+        val verifyBtn = requireView().findViewById<View>(R.id.settings_email_alerts_verify_save)
+        verifyBtn.isEnabled = false
+        val sender = emailSenderFactory?.invoke(address, password)
+            ?: GmailSmtpEmailSender(from = address, appPassword = password)
+        viewLifecycleOwner.lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) { sender.testConnection() }
+            verifyBtn.isEnabled = true
+            when (result) {
+                EmailResult.Success -> {
+                    repository.setEmailAddress(address)
+                    repository.setEmailAppPassword(password)
+                    repository.setEmailAlertsEnabled(true)
+                    emailAlertsSetupRow.visibility = View.GONE
+                    emailAlertsStatusRow.visibility = View.VISIBLE
+                    emailAlertsStatusText.text = getString(R.string.email_alerts_enabled_for, address)
+                }
+                else -> {
+                    emailAlertsError.visibility = View.VISIBLE
+                    emailAlertsError.text = getString(R.string.email_alerts_connection_error)
+                }
+            }
+        }
+    }
+
     private fun wireNotifications() {
         notificationsSwitch.isChecked = repository.getNotificationsEnabled()
         notificationsSwitch.setOnCheckedChangeListener { _, isChecked ->
@@ -596,6 +708,7 @@ class SettingsFragment : Fragment() {
         updateLanguageDisplay()
         updateDisplayModeDisplay()
         updateArrayTimezoneDisplay()
+        updateEmailAlertsDisplay()
         // Apply the persisted theme and language, not just their labels. After an import
         // or factory reset the stored value changes but the effect would otherwise be
         // deferred until the next setting edit triggered an Activity recreate.
@@ -699,5 +812,10 @@ class SettingsFragment : Fragment() {
         } catch (e: Exception) {
             false
         }
+    }
+
+    companion object {
+        /** Test seam: inject a fake EmailSender for Verify & Save without real SMTP. */
+        var emailSenderFactory: ((from: String, password: String) -> EmailSender)? = null
     }
 }

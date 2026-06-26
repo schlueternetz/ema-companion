@@ -4,8 +4,8 @@ Users who've opted into email alerts via Google Sign-In need to receive translat
 
 ## What Changes
 
-- **Google Sign-In integration at signup** (or optional in Settings): users can authenticate with their personal Google Account to enable email notifications
-- **Module health emails sent automatically**: when status changes to yellow (some offline) or red (critical offline), email is sent to user's Gmail inbox
+- **Email Alerts toggle in Settings** (opt-in, Settings only): users enable email alerts via a toggle; sign-in with Google is required to complete setup
+- **Module health emails sent automatically**: when status **changes** to yellow or red (or recovers to green), email is sent to user's Gmail inbox — same trigger as local push notifications
 - **Emails are translated**: subject and body use user's app language preference (English or German)
 - **Graceful fallback**: if Gmail API fails or token expires, system logs error and falls back to in-app local notifications
 - **Token management**: OAuth tokens stored securely in EncryptedSharedPreferences, refreshed on expiry, revoked on sign-out

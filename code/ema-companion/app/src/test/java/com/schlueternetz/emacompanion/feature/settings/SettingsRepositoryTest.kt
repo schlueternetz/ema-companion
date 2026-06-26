@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -351,6 +352,76 @@ class SettingsRepositoryTest {
     fun importFromJson_setsApiRequestLimit() {
         repo.importFromJson("""{"apiRequestLimit":750}""")
         assertEquals(750, repo.getApiRequestLimit())
+    }
+
+    // Email alerts enabled
+    @Test
+    fun getEmailAlertsEnabled_returnsFalse_byDefault() {
+        assertFalse(repo.getEmailAlertsEnabled())
+    }
+
+    @Test
+    fun setEmailAlertsEnabled_persists() {
+        repo.setEmailAlertsEnabled(true)
+        assertTrue(repo.getEmailAlertsEnabled())
+    }
+
+    // Email credentials
+    @Test
+    fun getEmailAddress_returnsEmpty_whenNothingStored() {
+        assertEquals("", repo.getEmailAddress())
+    }
+
+    @Test
+    fun setEmailAddress_persistsAndReturnsValue() {
+        repo.setEmailAddress("user@gmail.com")
+        assertEquals("user@gmail.com", repo.getEmailAddress())
+    }
+
+    @Test
+    fun getEmailAppPassword_returnsEmpty_whenNothingStored() {
+        assertEquals("", repo.getEmailAppPassword())
+    }
+
+    @Test
+    fun setEmailAppPassword_persistsAndReturnsValue() {
+        repo.setEmailAppPassword("abcd efgh ijkl mnop")
+        assertEquals("abcd efgh ijkl mnop", repo.getEmailAppPassword())
+    }
+
+    @Test
+    fun deleteEmailCredentials_removesAddressAndPassword() {
+        repo.setEmailAddress("user@gmail.com")
+        repo.setEmailAppPassword("abcd efgh ijkl mnop")
+
+        repo.deleteEmailCredentials()
+
+        assertEquals("", repo.getEmailAddress())
+        assertEquals("", repo.getEmailAppPassword())
+    }
+
+    @Test
+    fun isEmailConfigured_returnsFalse_whenBothEmpty() {
+        assertFalse(repo.isEmailConfigured())
+    }
+
+    @Test
+    fun isEmailConfigured_returnsFalse_whenAddressEmpty() {
+        repo.setEmailAppPassword("abcd efgh ijkl mnop")
+        assertFalse(repo.isEmailConfigured())
+    }
+
+    @Test
+    fun isEmailConfigured_returnsFalse_whenPasswordEmpty() {
+        repo.setEmailAddress("user@gmail.com")
+        assertFalse(repo.isEmailConfigured())
+    }
+
+    @Test
+    fun isEmailConfigured_returnsTrue_whenBothPresent() {
+        repo.setEmailAddress("user@gmail.com")
+        repo.setEmailAppPassword("abcd efgh ijkl mnop")
+        assertTrue(repo.isEmailConfigured())
     }
 
     // clearAll
