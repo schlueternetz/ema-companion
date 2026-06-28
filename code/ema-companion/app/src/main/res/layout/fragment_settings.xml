@@ -297,7 +297,7 @@
                     android:text="@string/email_alerts_toggle_title"
                     android:textAppearance="?attr/textAppearanceBodyLarge" />
 
-                <!-- Setup section: visible when switch ON and credentials not yet saved -->
+                <!-- Setup form: visible when switch ON and not configured, or when editing credentials -->
                 <LinearLayout
                     android:id="@+id/settings_email_alerts_setup_row"
                     android:layout_width="match_parent"
@@ -319,15 +319,15 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
                         android:minHeight="48dp"
-                        android:text="@string/email_alerts_open_google_account"
-                        android:contentDescription="@string/email_alerts_open_google_account" />
+                        android:contentDescription="@string/email_alerts_open_google_account"
+                        android:text="@string/email_alerts_open_google_account" />
 
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
-                        android:hint="@string/email_alerts_address_hint"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+                        android:hint="@string/email_alerts_address_hint">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/email_address_input"
@@ -339,11 +339,11 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
                         android:hint="@string/email_alerts_app_password_hint"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         app:endIconMode="password_toggle">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -355,13 +355,33 @@
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/settings_email_alerts_verify_save"
+                    <!-- Cancel (hidden in create mode) + Save -->
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="4dp"
-                        android:minHeight="48dp"
-                        android:text="@string/email_alerts_verify_save" />
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/email_alerts_cancel_button"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            android:minHeight="48dp"
+                            android:text="@string/email_alerts_cancel"
+                            android:visibility="gone" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/settings_email_alerts_verify_save"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:minHeight="48dp"
+                            android:text="@string/email_alerts_verify_save" />
+
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/settings_email_alerts_error"
@@ -372,28 +392,63 @@
                         android:textColor="?attr/colorError"
                         android:visibility="gone" />
 
+                    <!-- Send test email — visible in edit mode only -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/email_alerts_test_button"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:minHeight="48dp"
+                        android:text="@string/email_alerts_send_test"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/email_alerts_test_result"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingVertical="4dp"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:visibility="gone" />
+
+                    <!-- Clear credentials — visible in edit mode only -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/email_alerts_clear_button"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:minHeight="48dp"
+                        android:text="@string/email_alerts_clear_credentials"
+                        android:visibility="gone"
+                        app:backgroundTint="?attr/colorErrorContainer"
+                        app:iconTint="?attr/colorOnErrorContainer" />
+
                 </LinearLayout>
 
-                <!-- Status row: visible when credentials are configured -->
+                <!-- Management section: always visible when credentials are saved -->
                 <LinearLayout
                     android:id="@+id/settings_email_alerts_status_row"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:gravity="center_vertical"
-                    android:minHeight="48dp"
-                    android:orientation="horizontal"
-                    android:paddingVertical="12dp"
+                    android:orientation="vertical"
                     android:visibility="gone">
 
                     <TextView
                         android:id="@+id/settings_email_alerts_status_text"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:layout_marginBottom="8dp"
+                        android:paddingVertical="4dp"
                         android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/email_alerts_edit_button"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="48dp"
+                        android:text="@string/email_alerts_edit_credentials" />
 
                 </LinearLayout>
 

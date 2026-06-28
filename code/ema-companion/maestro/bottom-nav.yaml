@@ -11,6 +11,20 @@ appId: com.schlueternetz.emacompanion
 - launchApp:
     clearState: true
 
+# Dismiss the POST_NOTIFICATIONS permission dialog if it appears.
+# pm clear (used by clearState) resets runtime permissions, so the dialog fires
+# on every flow run. It is shown by com.android.permissioncontroller as a separate
+# activity that takes the foreground — Maestro cannot see the app's bottom-nav
+# behind it until the dialog is dismissed. Tapping Allow brings the app back to
+# the foreground. Using the resource-id so this is locale-independent.
+- runFlow:
+    when:
+      visible:
+        id: "com.android.permissioncontroller:id/permission_allow_button"
+    commands:
+      - tapOn:
+          id: "com.android.permissioncontroller:id/permission_allow_button"
+
 # On a freshly-booted CI emulator the app window can take a while to reach the
 # foreground after a clear-state launch (the system itself may still be settling
 # right after boot). Wait for the bottom nav to be up before asserting individual

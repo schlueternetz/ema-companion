@@ -14,7 +14,11 @@ import com.google.android.apps.common.testing.accessibility.framework.Accessibil
 import com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.textfield.TextInputEditText
 import com.schlueternetz.emacompanion.R
+import com.schlueternetz.emacompanion.core.email.EmailResult
+import com.schlueternetz.emacompanion.core.email.EmailSender
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -47,6 +51,16 @@ class SettingsFragmentTest {
             .edit().clear().apply()
         appContext.getSharedPreferences("ema_module_health_daily", Context.MODE_PRIVATE)
             .edit().clear().apply()
+    }
+
+    @After
+    fun tearDownEmailSeam() {
+        SettingsFragment.emailSenderFactory = null
+    }
+
+    private class FakeEmailSender(private val result: EmailResult) : EmailSender {
+        override suspend fun send(to: String, subject: String, body: String) = result
+        override suspend fun testConnection() = result
     }
 
     private fun seedLogs(json: String) {
@@ -636,8 +650,8 @@ class SettingsFragmentTest {
 
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            fragment.requireView().findViewById<View>(R.id.settings_email_alerts_status_row)
-                .performClick()
+            fragment.requireView().findViewById<View>(R.id.email_alerts_edit_button).performClick()
+            fragment.requireView().findViewById<View>(R.id.email_alerts_clear_button).performClick()
             val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
                 as androidx.appcompat.app.AlertDialog
             shadowOf(Looper.getMainLooper()).idle()
@@ -668,6 +682,257 @@ class SettingsFragmentTest {
             assertEquals(
                 Uri.parse("https://myaccount.google.com/apppasswords"),
                 intent.data,
+            )
+        }
+    }
+
+    @Test
+    fun emailAlerts_save_withValidInput_savesAndTransitions() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
+                .performClick()
+            fragment.requireView().findViewById<TextInputEditText>(R.id.email_address_input)
+                .setText("user@gmail.com")
+            fragment.requireView().findViewById<TextInputEditText>(R.id.email_password_input)
+                .setText("abcdefghijklmnop")
+            fragment.requireView().findViewById<View>(R.id.settings_email_alerts_verify_save)
+                .performClick()
+
+            val setupRow = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_setup_row)
+            val statusRow = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_status_row)
+            assertEquals("setup row should be gone after save", View.GONE, setupRow.visibility)
+            assertEquals("status row should be visible after save", View.VISIBLE, statusRow.visibility)
+        }
+        val prefs = appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        assertEquals("user@gmail.com", prefs.getString("emailAddress", ""))
+        assertEquals("abcdefghijklmnop", prefs.getString("emailAppPassword", ""))
+    }
+
+    @Test
+    fun emailAlerts_save_stripsPasswordWhitespaceBeforeSaving() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
+                .performClick()
+            fragment.requireView().findViewById<TextInputEditText>(R.id.email_address_input)
+                .setText("user@gmail.com")
+            fragment.requireView().findViewById<TextInputEditText>(R.id.email_password_input)
+                .setText("qbnh wsnp gwpt jeaf")
+            fragment.requireView().findViewById<View>(R.id.settings_email_alerts_verify_save)
+                .performClick()
+        }
+        val prefs = appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        assertEquals("qbnhwsnpgwptjeaf", prefs.getString("emailAppPassword", ""))
+    }
+
+    @Test
+    fun emailAlerts_save_withInvalidEmail_showsError() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
+                .performClick()
+            fragment.requireView().findViewById<TextInputEditText>(R.id.email_address_input)
+                .setText("notanemail")
+            fragment.requireView().findViewById<TextInputEditText>(R.id.email_password_input)
+                .setText("abcdefghijklmnop")
+            fragment.requireView().findViewById<View>(R.id.settings_email_alerts_verify_save)
+                .performClick()
+
+            val error = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_error)
+            val setupRow = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_setup_row)
+            assertEquals("error should be visible", View.VISIBLE, error.visibility)
+            assertEquals("setup row should stay visible", View.VISIBLE, setupRow.visibility)
+        }
+    }
+
+    @Test
+    fun emailAlerts_save_withPasswordWrongLength_showsError() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
+                .performClick()
+            fragment.requireView().findViewById<TextInputEditText>(R.id.email_address_input)
+                .setText("user@gmail.com")
+            fragment.requireView().findViewById<TextInputEditText>(R.id.email_password_input)
+                .setText("tooshort")
+            fragment.requireView().findViewById<View>(R.id.settings_email_alerts_verify_save)
+                .performClick()
+
+            val error = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_error)
+            assertEquals("error should be visible", View.VISIBLE, error.visibility)
+        }
+    }
+
+    @Test
+    fun emailAlerts_configured_managementSectionAlwaysVisible_whenToggleOff() {
+        // Management section must remain visible even when alerts are paused so the user can
+        // edit credentials or disable without having to re-enable first.
+        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putString("emailAddress", "user@gmail.com")
+            .putString("emailAppPassword", "mysecretpassword1")
+            .putBoolean("emailAlertsEnabled", false)
+            .apply()
+
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val statusRow = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_status_row)
+            assertEquals("management section should be visible even when paused", View.VISIBLE, statusRow.visibility)
+        }
+    }
+
+    @Test
+    fun emailAlerts_editButton_showsSetupFormWithPrefilledEmail() {
+        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putString("emailAddress", "user@gmail.com")
+            .putString("emailAppPassword", "abcdefghijklmnop")
+            .putBoolean("emailAlertsEnabled", true)
+            .apply()
+
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<View>(R.id.email_alerts_edit_button).performClick()
+
+            val setupRow = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_setup_row)
+            val managementRow = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_status_row)
+            val addressInput = fragment.requireView().findViewById<TextInputEditText>(R.id.email_address_input)
+            val passwordInput = fragment.requireView().findViewById<TextInputEditText>(R.id.email_password_input)
+            val cancelButton = fragment.requireView().findViewById<View>(R.id.email_alerts_cancel_button)
+            val testButton = fragment.requireView().findViewById<View>(R.id.email_alerts_test_button)
+            val clearButton = fragment.requireView().findViewById<View>(R.id.email_alerts_clear_button)
+
+            assertEquals("setup form should be visible", View.VISIBLE, setupRow.visibility)
+            assertEquals("management section should be hidden", View.GONE, managementRow.visibility)
+            assertEquals("email should be pre-filled", "user@gmail.com", addressInput.text.toString())
+            assertEquals("password should be blank", "", passwordInput.text.toString())
+            assertEquals("cancel button should be visible", View.VISIBLE, cancelButton.visibility)
+            assertEquals("test button should be visible in edit mode", View.VISIBLE, testButton.visibility)
+            assertEquals("clear button should be visible in edit mode", View.VISIBLE, clearButton.visibility)
+        }
+    }
+
+    @Test
+    fun emailAlerts_editCancel_returnsToManagementSection() {
+        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putString("emailAddress", "user@gmail.com")
+            .putString("emailAppPassword", "abcdefghijklmnop")
+            .putBoolean("emailAlertsEnabled", true)
+            .apply()
+
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<View>(R.id.email_alerts_edit_button).performClick()
+            fragment.requireView().findViewById<View>(R.id.email_alerts_cancel_button).performClick()
+
+            val setupRow = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_setup_row)
+            val managementRow = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_status_row)
+            assertEquals("setup form should be hidden", View.GONE, setupRow.visibility)
+            assertEquals("management section should be visible", View.VISIBLE, managementRow.visibility)
+        }
+    }
+
+    @Test
+    fun emailAlerts_editSave_updatesCredentialsAndReturnsToManagement() {
+        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putString("emailAddress", "old@gmail.com")
+            .putString("emailAppPassword", "abcdefghijklmnop")
+            .putBoolean("emailAlertsEnabled", true)
+            .apply()
+
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<View>(R.id.email_alerts_edit_button).performClick()
+            fragment.requireView().findViewById<TextInputEditText>(R.id.email_address_input)
+                .setText("new@gmail.com")
+            fragment.requireView().findViewById<TextInputEditText>(R.id.email_password_input)
+                .setText("zyxwvutsrqponmlk")
+            fragment.requireView().findViewById<View>(R.id.settings_email_alerts_verify_save).performClick()
+
+            val setupRow = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_setup_row)
+            val managementRow = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_status_row)
+            assertEquals("setup form should be hidden after save", View.GONE, setupRow.visibility)
+            assertEquals("management section should be visible after save", View.VISIBLE, managementRow.visibility)
+        }
+        val prefs = appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        assertEquals("new@gmail.com", prefs.getString("emailAddress", ""))
+        assertEquals("zyxwvutsrqponmlk", prefs.getString("emailAppPassword", ""))
+    }
+
+    @Test
+    fun emailAlerts_testButton_success_showsSuccessResult() {
+        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putString("emailAddress", "user@gmail.com")
+            .putString("emailAppPassword", "abcdefghijklmnop")
+            .putBoolean("emailAlertsEnabled", true)
+            .apply()
+        SettingsFragment.emailSenderFactory = { _, _ -> FakeEmailSender(EmailResult.Success) }
+
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<View>(R.id.email_alerts_edit_button).performClick()
+            fragment.requireView().findViewById<View>(R.id.email_alerts_test_button).performClick()
+            shadowOf(Looper.getMainLooper()).idle()
+
+            val result = fragment.requireView().findViewById<TextView>(R.id.email_alerts_test_result)
+            assertEquals(View.VISIBLE, result.visibility)
+            assertTrue(
+                "success result should contain 'sent'",
+                result.text.toString().lowercase().contains("sent"),
+            )
+        }
+    }
+
+    @Test
+    fun emailAlerts_testButton_authFailure_showsAuthError() {
+        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putString("emailAddress", "user@gmail.com")
+            .putString("emailAppPassword", "abcdefghijklmnop")
+            .putBoolean("emailAlertsEnabled", true)
+            .apply()
+        SettingsFragment.emailSenderFactory = { _, _ -> FakeEmailSender(EmailResult.AuthFailure) }
+
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<View>(R.id.email_alerts_edit_button).performClick()
+            fragment.requireView().findViewById<View>(R.id.email_alerts_test_button).performClick()
+            shadowOf(Looper.getMainLooper()).idle()
+
+            val result = fragment.requireView().findViewById<TextView>(R.id.email_alerts_test_result)
+            assertEquals(View.VISIBLE, result.visibility)
+            assertTrue(
+                "auth failure result should mention authentication",
+                result.text.toString().lowercase().contains("authentication"),
+            )
+        }
+    }
+
+    @Test
+    fun emailAlerts_testButton_networkError_showsNetworkError() {
+        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putString("emailAddress", "user@gmail.com")
+            .putString("emailAppPassword", "abcdefghijklmnop")
+            .putBoolean("emailAlertsEnabled", true)
+            .apply()
+        SettingsFragment.emailSenderFactory = { _, _ -> FakeEmailSender(EmailResult.NetworkError) }
+
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<View>(R.id.email_alerts_edit_button).performClick()
+            fragment.requireView().findViewById<View>(R.id.email_alerts_test_button).performClick()
+            shadowOf(Looper.getMainLooper()).idle()
+
+            val result = fragment.requireView().findViewById<TextView>(R.id.email_alerts_test_result)
+            assertEquals(View.VISIBLE, result.visibility)
+            assertTrue(
+                "network error result should mention connect",
+                result.text.toString().lowercase().contains("connect"),
             )
         }
     }

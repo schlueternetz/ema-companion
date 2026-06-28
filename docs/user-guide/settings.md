@@ -61,17 +61,28 @@ Sends an email when your module health status changes (GREEN → YELLOW or RED, 
 
 **Requirement:** A Gmail account with 2-Step Verification enabled.
 
-### Enabling Email Alerts
+### Setting up Email Alerts
 
 1. Toggle **Email Alerts** on. A setup form appears below the toggle.
 2. Tap **Open Google Account ↗** to open `myaccount.google.com/apppasswords` in your browser.
 3. In your Google Account, go to **Security → App Passwords** and create one for "Mail" on "Other device". Copy the 16-character password shown.
-4. Back in EMA Companion, enter your Gmail address and paste the App Password.
-5. Tap **Verify & Save**. The app connects to Gmail to confirm the credentials. On success the setup form is replaced by a status line showing the address in use. If the connection fails, an error message appears — check that the App Password was copied correctly.
+4. Back in EMA Companion, enter your Gmail address and paste the App Password. Spaces in the App Password are stripped automatically.
+5. Tap **Save**. The app validates the format (a valid email address and a 16-character App Password) and saves immediately — no network connection is required. If the format is invalid, an error message appears below the button.
 
-### Disabling Email Alerts
+### Managing Email Alerts
 
-Tap the **"Email alerts enabled for: …"** row. A confirmation dialog appears — tap **Disable** to remove the credentials and stop sending emails.
+Once credentials are saved, the management section shows your configured email address and an **Edit credentials** button. Tap it to re-open the form with your email pre-filled and a blank password field.
+
+In edit mode, two additional actions appear below the Save button:
+
+| Action | What it does |
+|---|---|
+| **Send test email** | Sends a real test message to your configured address to verify the credentials work end-to-end. The result (success or error) appears inline. |
+| **Clear credentials** | Shows a confirmation dialog. Tap **Clear** to remove your saved Gmail credentials and stop all alert emails. |
+
+Tap **Cancel** to leave edit mode without saving.
+
+The toggle controls whether alerts are **active** or **paused** — the management section stays visible either way so you can always edit without re-enabling first.
 
 ### When emails are sent
 

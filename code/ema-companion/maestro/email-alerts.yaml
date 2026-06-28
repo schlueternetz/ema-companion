@@ -1,0 +1,58 @@
+# Critical flow: email alerts setup UI (ADR-002).
+# Verifies that the Email Alerts toggle is present in Settings, that enabling
+# it reveals the setup section with all required fields, and that disabling it
+# collapses the section again. Uses clearState to ensure email alerts are off
+# and no credentials are persisted at the start of the flow.
+#
+# Selectors use resource IDs — the UI labels are localised.
+appId: com.schlueternetz.emacompanion
+---
+- launchApp:
+    clearState: true
+
+# Dismiss the POST_NOTIFICATIONS permission dialog if it appears.
+# Same pattern as bottom-nav.yaml — pm clear resets runtime permissions.
+- runFlow:
+    when:
+      visible:
+        id: "com.android.permissioncontroller:id/permission_allow_button"
+    commands:
+      - tapOn:
+          id: "com.android.permissioncontroller:id/permission_allow_button"
+
+- extendedWaitUntil:
+    visible:
+      id: "settingsFragment"
+    timeout: 60000
+
+# The Email Alerts section is below the fold. Scroll it into view before
+# asserting so the test works on both phone and tablet form factors.
+- scrollUntilVisible:
+    element:
+      id: "settings_email_alerts_switch"
+    direction: DOWN
+    timeout: 5000
+
+# Toggle is off by default on a fresh install; setup section is hidden.
+- assertNotVisible:
+    id: "settings_email_alerts_setup_row"
+
+# Enable email alerts — setup section must appear with all required fields.
+- tapOn:
+    id: "settings_email_alerts_switch"
+- assertVisible:
+    id: "settings_email_alerts_setup_row"
+- assertVisible:
+    id: "settings_email_alerts_open_google_account"
+- assertVisible:
+    id: "email_address_input"
+- assertVisible:
+    id: "email_password_input"
+- assertVisible:
+    id: "settings_email_alerts_verify_save"
+
+# Disable email alerts — setup section must collapse.
+- tapOn:
+    id: "settings_email_alerts_switch"
+- assertNotVisible:
+    id: "settings_email_alerts_setup_row"

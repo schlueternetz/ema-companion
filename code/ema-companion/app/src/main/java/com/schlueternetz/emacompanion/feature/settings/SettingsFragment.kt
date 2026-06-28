@@ -32,9 +32,7 @@ import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthReposito
 import com.schlueternetz.emacompanion.core.email.EmailResult
 import com.schlueternetz.emacompanion.core.email.EmailSender
 import com.schlueternetz.emacompanion.core.email.GmailSmtpEmailSender
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -60,7 +58,13 @@ class SettingsFragment : Fragment() {
     private lateinit var emailAddressInput: TextInputEditText
     private lateinit var emailPasswordInput: TextInputEditText
     private lateinit var emailAlertsError: TextView
+    private lateinit var emailAlertsCancelButton: View
+    private lateinit var emailAlertsEditButton: View
+    private lateinit var emailAlertsTestButton: View
+    private lateinit var emailAlertsTestResult: TextView
+    private lateinit var emailAlertsClearButton: View
     private var suppressEmailSwitchListener = false
+    private var isEditingExisting = false
     private lateinit var settingEmaAppId: SettingRowView
     private lateinit var settingEmaAppSecret: SettingRowView
     private lateinit var settingEmaSystemId: SettingRowView
@@ -127,6 +131,11 @@ class SettingsFragment : Fragment() {
         emailAddressInput = view.findViewById(R.id.email_address_input)
         emailPasswordInput = view.findViewById(R.id.email_password_input)
         emailAlertsError = view.findViewById(R.id.settings_email_alerts_error)
+        emailAlertsCancelButton = view.findViewById(R.id.email_alerts_cancel_button)
+        emailAlertsEditButton = view.findViewById(R.id.email_alerts_edit_button)
+        emailAlertsTestButton = view.findViewById(R.id.email_alerts_test_button)
+        emailAlertsTestResult = view.findViewById(R.id.email_alerts_test_result)
+        emailAlertsClearButton = view.findViewById(R.id.email_alerts_clear_button)
 
         wireEmaAppId()
         wireEmaAppSecret()
@@ -435,16 +444,28 @@ class SettingsFragment : Fragment() {
         emailAlertsSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (suppressEmailSwitchListener) return@setOnCheckedChangeListener
             if (isChecked) {
+                repository.setEmailAlertsEnabled(true)
                 if (!repository.isEmailConfigured()) {
+                    isEditingExisting = false
+                    emailAlertsCancelButton.visibility = View.GONE
                     emailAlertsSetupRow.visibility = View.VISIBLE
+                    emailAlertsStatusRow.visibility = View.GONE
+                } else {
+                    updateEmailAlertsStatusText()
                 }
             } else {
-                emailAlertsSetupRow.visibility = View.GONE
-                emailAlertsStatusRow.visibility = View.GONE
                 repository.setEmailAlertsEnabled(false)
+                if (repository.isEmailConfigured()) {
+                    updateEmailAlertsStatusText()
+                } else {
+                    emailAlertsSetupRow.visibility = View.GONE
+                }
             }
         }
-        emailAlertsStatusRow.setOnClickListener { showDisableEmailAlertsDialog() }
+        emailAlertsEditButton.setOnClickListener { showEmailEditMode() }
+        emailAlertsCancelButton.setOnClickListener { cancelEmailEdit() }
+        emailAlertsTestButton.setOnClickListener { sendTestEmail() }
+        emailAlertsClearButton.setOnClickListener { showClearCredentialsDialog() }
         view.findViewById<View>(R.id.settings_email_alerts_open_google_account).setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://myaccount.google.com/apppasswords")))
         }
@@ -458,9 +479,9 @@ class SettingsFragment : Fragment() {
         val configured = repository.isEmailConfigured()
         val enabled = repository.getEmailAlertsEnabled()
         emailAlertsSwitch.isChecked = configured && enabled
-        if (configured && enabled) {
+        if (configured) {
             emailAlertsStatusRow.visibility = View.VISIBLE
-            emailAlertsStatusText.text = getString(R.string.email_alerts_enabled_for, repository.getEmailAddress())
+            updateEmailAlertsStatusText()
             emailAlertsSetupRow.visibility = View.GONE
         } else {
             emailAlertsStatusRow.visibility = View.GONE
@@ -469,7 +490,57 @@ class SettingsFragment : Fragment() {
         suppressEmailSwitchListener = false
     }
 
-    private fun showDisableEmailAlertsDialog() {
+    private fun updateEmailAlertsStatusText() {
+        emailAlertsStatusText.text = repository.getEmailAddress()
+    }
+
+    private fun showEmailEditMode() {
+        isEditingExisting = true
+        emailAddressInput.setText(repository.getEmailAddress())
+        emailPasswordInput.setText("")
+        emailAlertsError.visibility = View.GONE
+        emailAlertsTestResult.visibility = View.GONE
+        emailAlertsCancelButton.visibility = View.VISIBLE
+        emailAlertsTestButton.visibility = View.VISIBLE
+        emailAlertsClearButton.visibility = View.VISIBLE
+        emailAlertsSetupRow.visibility = View.VISIBLE
+        emailAlertsStatusRow.visibility = View.GONE
+    }
+
+    private fun cancelEmailEdit() {
+        isEditingExisting = false
+        emailAlertsCancelButton.visibility = View.GONE
+        emailAlertsTestButton.visibility = View.GONE
+        emailAlertsClearButton.visibility = View.GONE
+        emailAlertsSetupRow.visibility = View.GONE
+        emailAlertsStatusRow.visibility = View.VISIBLE
+        emailAlertsError.visibility = View.GONE
+    }
+
+    private fun sendTestEmail() {
+        val address = repository.getEmailAddress()
+        val password = repository.getEmailAppPassword()
+        val sender = emailSenderFactory?.invoke(address, password)
+            ?: GmailSmtpEmailSender(address, password)
+        emailAlertsTestButton.isEnabled = false
+        emailAlertsTestResult.text = getString(R.string.email_alerts_test_sending)
+        emailAlertsTestResult.visibility = View.VISIBLE
+        viewLifecycleOwner.lifecycleScope.launch {
+            val result = sender.send(
+                to = address,
+                subject = getString(R.string.email_alerts_test_subject),
+                body = getString(R.string.email_alerts_test_body),
+            )
+            emailAlertsTestButton.isEnabled = true
+            emailAlertsTestResult.text = when (result) {
+                is EmailResult.Success -> getString(R.string.email_alerts_test_success)
+                is EmailResult.AuthFailure -> getString(R.string.email_alerts_test_auth_failure)
+                is EmailResult.NetworkError -> getString(R.string.email_alerts_test_network_error)
+            }
+        }
+    }
+
+    private fun showClearCredentialsDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.email_alerts_disable_title)
             .setMessage(R.string.email_alerts_disable_message)
@@ -482,6 +553,11 @@ class SettingsFragment : Fragment() {
                 suppressEmailSwitchListener = true
                 emailAlertsSwitch.isChecked = false
                 suppressEmailSwitchListener = false
+                isEditingExisting = false
+                emailAlertsCancelButton.visibility = View.GONE
+                emailAlertsTestButton.visibility = View.GONE
+                emailAlertsClearButton.visibility = View.GONE
+                emailAlertsSetupRow.visibility = View.GONE
                 emailAlertsStatusRow.visibility = View.GONE
             }
             .setNegativeButton(android.R.string.cancel, null)
@@ -490,31 +566,26 @@ class SettingsFragment : Fragment() {
 
     private fun verifyAndSaveEmailCredentials() {
         val address = emailAddressInput.text?.toString()?.trim() ?: ""
-        val password = emailPasswordInput.text?.toString() ?: ""
-        if (address.isEmpty() || password.isEmpty()) return
-        emailAlertsError.visibility = View.GONE
-        val verifyBtn = requireView().findViewById<View>(R.id.settings_email_alerts_verify_save)
-        verifyBtn.isEnabled = false
-        val sender = emailSenderFactory?.invoke(address, password)
-            ?: GmailSmtpEmailSender(from = address, appPassword = password)
-        viewLifecycleOwner.lifecycleScope.launch {
-            val result = withContext(Dispatchers.IO) { sender.testConnection() }
-            verifyBtn.isEnabled = true
-            when (result) {
-                EmailResult.Success -> {
-                    repository.setEmailAddress(address)
-                    repository.setEmailAppPassword(password)
-                    repository.setEmailAlertsEnabled(true)
-                    emailAlertsSetupRow.visibility = View.GONE
-                    emailAlertsStatusRow.visibility = View.VISIBLE
-                    emailAlertsStatusText.text = getString(R.string.email_alerts_enabled_for, address)
-                }
-                else -> {
-                    emailAlertsError.visibility = View.VISIBLE
-                    emailAlertsError.text = getString(R.string.email_alerts_connection_error)
-                }
-            }
+        val password = emailPasswordInput.text?.toString()?.filter { !it.isWhitespace() } ?: ""
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(address).matches() || password.length != 16) {
+            emailAlertsError.text = getString(R.string.email_alerts_connection_error)
+            emailAlertsError.visibility = View.VISIBLE
+            return
         }
+        emailAlertsError.visibility = View.GONE
+        repository.setEmailAddress(address)
+        repository.setEmailAppPassword(password)
+        repository.setEmailAlertsEnabled(true)
+        isEditingExisting = false
+        suppressEmailSwitchListener = true
+        emailAlertsSwitch.isChecked = true
+        suppressEmailSwitchListener = false
+        emailAlertsCancelButton.visibility = View.GONE
+        emailAlertsTestButton.visibility = View.GONE
+        emailAlertsClearButton.visibility = View.GONE
+        emailAlertsSetupRow.visibility = View.GONE
+        emailAlertsStatusRow.visibility = View.VISIBLE
+        updateEmailAlertsStatusText()
     }
 
     private fun wireNotifications() {
@@ -815,7 +886,6 @@ class SettingsFragment : Fragment() {
     }
 
     companion object {
-        /** Test seam: inject a fake EmailSender for Verify & Save without real SMTP. */
-        var emailSenderFactory: ((from: String, password: String) -> EmailSender)? = null
+        var emailSenderFactory: ((address: String, password: String) -> EmailSender)? = null
     }
 }

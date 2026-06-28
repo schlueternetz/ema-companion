@@ -1,5 +1,21 @@
 # AI Lessons Learned
 
+## 2026-06-27: Maestro permission dialog + GreenMail port
+
+### Went Well
+* Screenshot (adb screencap → pull) confirmed root cause immediately: POST_NOTIFICATIONS dialog visible, bottom-nav present but Maestro couldn't see it
+* `runFlow when: visible: id: "com.android.permissioncontroller:id/permission_allow_button"` — locale-independent, skips gracefully when permission already granted
+* GreenMail `ServerSetup(0, "127.0.0.1", PROTOCOL_SMTP)` → `greenMail.smtp.port` gives actual bound port after `start()`; one-line fix
+
+### Didn't Work
+* `extendedWaitUntil 60s` masked not ONE failure mode but TWO: ANR dialog (previous bug) AND permission dialog (this bug) — both have the same symptom (`settingsFragment not visible`) but different fixes
+
+### Avoid
+* `ActivityResultContracts.RequestPermission().launch()` starts a `com.android.permissioncontroller` activity in the FOREGROUND — app goes to background; Maestro cannot see ANY app views while this dialog is showing, even though the bottom-nav is visually below it
+* Never hardcode GreenMail port (e.g. 3025) — use port 0 so the OS picks a free ephemeral port; hardcoded ports cause `Address already in use` on CI or parallel test runs
+* Maestro `runFlow when: visible` checks the condition ONCE at execution time — place it immediately after `launchApp` so the dialog has had a chance to appear before the check runs
+* `pm clear` (used by Maestro `clearState: true`) resets runtime permissions on API 33+ — every fresh-state flow run will trigger the POST_NOTIFICATIONS dialog on Android 13+ unless the flow dismisses it
+
 ## 2026-06-25: module-health-emails (Phases 6–7)
 
 ### Went Well

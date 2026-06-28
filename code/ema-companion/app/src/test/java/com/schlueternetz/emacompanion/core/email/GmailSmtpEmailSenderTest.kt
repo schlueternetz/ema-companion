@@ -14,13 +14,15 @@ import org.junit.Test
 class GmailSmtpEmailSenderTest {
 
     private lateinit var greenMail: GreenMail
-    private val smtpPort = 3025
+    private var smtpPort = 0
 
     @Before
     fun setUp() {
-        greenMail = GreenMail(ServerSetup(smtpPort, "127.0.0.1", ServerSetup.PROTOCOL_SMTP))
+        // Port 0 → OS assigns a free ephemeral port; avoids "address in use" on CI
+        greenMail = GreenMail(ServerSetup(0, "127.0.0.1", ServerSetup.PROTOCOL_SMTP))
         greenMail.setUser("sender@test.com", "testpass")
         greenMail.start()
+        smtpPort = greenMail.smtp.port
     }
 
     @After

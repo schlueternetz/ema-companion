@@ -63,6 +63,8 @@ class GmailSmtpEmailSender(
             put("mail.smtp.host", smtpHost)
             put("mail.smtp.port", smtpPort.toString())
             put("mail.smtp.auth", "true")
+            put("mail.smtp.connectiontimeout", "15000")
+            put("mail.smtp.timeout", "15000")
             if (useTls) {
                 put("mail.smtp.starttls.enable", "true")
             }

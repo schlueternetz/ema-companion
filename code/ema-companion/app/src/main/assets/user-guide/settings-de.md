@@ -62,17 +62,28 @@ Sendet eine E-Mail, wenn sich der Modulstatus ändert (GRÜN → GELB oder ROT u
 
 **Voraussetzung:** Ein Gmail-Konto mit aktivierter 2-Schritt-Verifizierung.
 
-### E-Mail-Benachrichtigungen aktivieren
+### E-Mail-Benachrichtigungen einrichten
 
 1. Schalte **E-Mail-Benachrichtigungen** ein. Unterhalb des Schalters erscheint ein Einrichtungsformular.
 2. Tippe auf **Google-Konto öffnen ↗**, um `myaccount.google.com/apppasswords` in deinem Browser zu öffnen.
 3. Gehe in deinem Google-Konto zu **Sicherheit → App-Passwörter** und erstelle eines für „Mail" auf „Anderes Gerät". Kopiere das angezeigte 16-stellige Passwort.
-4. Gib in EMA Companion deine Gmail-Adresse ein und füge das App-Passwort ein.
-5. Tippe auf **Prüfen & Speichern**. Die App verbindet sich mit Gmail, um die Zugangsdaten zu bestätigen. Bei Erfolg wird das Einrichtungsformular durch eine Statuszeile mit der verwendeten Adresse ersetzt. Schlägt die Verbindung fehl, erscheint eine Fehlermeldung — überprüfe, ob das App-Passwort korrekt kopiert wurde.
+4. Gib in EMA Companion deine Gmail-Adresse ein und füge das App-Passwort ein. Leerzeichen im App-Passwort werden automatisch entfernt.
+5. Tippe auf **Speichern**. Die App prüft das Format (eine gültige E-Mail-Adresse und ein 16-stelliges App-Passwort) und speichert sofort — eine Netzwerkverbindung ist nicht erforderlich. Bei ungültigem Format erscheint eine Fehlermeldung unterhalb der Schaltfläche.
 
-### E-Mail-Benachrichtigungen deaktivieren
+### E-Mail-Benachrichtigungen verwalten
 
-Tippe auf die Zeile **„E-Mail-Benachrichtigungen aktiv für: …"**. Ein Bestätigungsdialog erscheint — tippe auf **Deaktivieren**, um die Zugangsdaten zu entfernen und den E-Mail-Versand zu beenden.
+Sobald Zugangsdaten gespeichert sind, zeigt der Verwaltungsbereich deine konfigurierte E-Mail-Adresse und eine Schaltfläche **Zugangsdaten bearbeiten**. Tippe darauf, um das Formular mit vorausgefüllter E-Mail-Adresse und leerem Passwortfeld zu öffnen.
+
+Im Bearbeitungsmodus erscheinen unterhalb der Speichern-Schaltfläche zwei weitere Aktionen:
+
+| Aktion | Funktion |
+|---|---|
+| **Test-E-Mail senden** | Sendet eine echte Test-Nachricht an deine konfigurierte Adresse, um die Zugangsdaten vollständig zu prüfen. Das Ergebnis (Erfolg oder Fehler) wird direkt angezeigt. |
+| **Zugangsdaten löschen** | Zeigt einen Bestätigungsdialog. Tippe auf **Löschen**, um deine gespeicherten Gmail-Zugangsdaten zu entfernen und alle Benachrichtigungs-E-Mails zu stoppen. |
+
+Tippe auf **Abbrechen**, um den Bearbeitungsmodus ohne Speichern zu verlassen.
+
+Der Schalter steuert, ob Benachrichtigungen **aktiv** oder **pausiert** sind — der Verwaltungsbereich bleibt in beiden Zuständen sichtbar, sodass du jederzeit bearbeiten kannst, ohne vorher aktivieren zu müssen.
 
 ### Wann E-Mails gesendet werden
 

@@ -53,11 +53,21 @@
     <string name="email_alerts_open_google_account">Open Google Account ↗</string>
     <string name="email_alerts_address_hint">you@gmail.com</string>
     <string name="email_alerts_app_password_hint">16-character App Password</string>
-    <string name="email_alerts_verify_save">Verify &amp; Save</string>
-    <string name="email_alerts_connection_error">Connection failed. Check your App Password and try again.</string>
-    <string name="email_alerts_disable_title">Disable Email Alerts</string>
-    <string name="email_alerts_disable_message">Email alerts will be disabled and your credentials will be removed.</string>
-    <string name="email_alerts_disable_confirm">Disable</string>
+    <string name="email_alerts_verify_save">Save</string>
+    <string name="email_alerts_cancel">Cancel</string>
+    <string name="email_alerts_connection_error">Enter a valid email address and 16-character App Password.</string>
+    <string name="email_alerts_edit_credentials">Edit credentials</string>
+    <string name="email_alerts_send_test">Send test email</string>
+    <string name="email_alerts_test_sending">Sending test email…</string>
+    <string name="email_alerts_test_success">Test email sent successfully</string>
+    <string name="email_alerts_test_auth_failure">Authentication failed — check your Gmail address and App Password</string>
+    <string name="email_alerts_test_network_error">Could not connect — SMTP port may be blocked on this network</string>
+    <string name="email_alerts_test_subject" translatable="false">EMA Companion: Test</string>
+    <string name="email_alerts_test_body" translatable="false">This is a test message from EMA Companion. Your email alerts are configured correctly.</string>
+    <string name="email_alerts_clear_credentials">Clear credentials</string>
+    <string name="email_alerts_disable_title">Clear Credentials</string>
+    <string name="email_alerts_disable_message">Your Gmail credentials will be removed. Email alerts will stop.</string>
+    <string name="email_alerts_disable_confirm">Clear</string>
 
     <!-- Historic data days -->
     <string name="settings_historic_days_label">Historic Data Days</string>

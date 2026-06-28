@@ -50,11 +50,19 @@
     <string name="email_alerts_open_google_account">Google-Konto öffnen ↗</string>
     <string name="email_alerts_address_hint">du@gmail.com</string>
     <string name="email_alerts_app_password_hint">16-stelliges App-Passwort</string>
-    <string name="email_alerts_verify_save">Prüfen &amp; Speichern</string>
-    <string name="email_alerts_connection_error">Verbindung fehlgeschlagen. Überprüfe dein App-Passwort und versuche es erneut.</string>
-    <string name="email_alerts_disable_title">E-Mail-Benachrichtigungen deaktivieren</string>
-    <string name="email_alerts_disable_message">E-Mail-Benachrichtigungen werden deaktiviert und deine Zugangsdaten werden entfernt.</string>
-    <string name="email_alerts_disable_confirm">Deaktivieren</string>
+    <string name="email_alerts_verify_save">Speichern</string>
+    <string name="email_alerts_cancel">Abbrechen</string>
+    <string name="email_alerts_connection_error">Gib eine gültige E-Mail-Adresse und ein 16-stelliges App-Passwort ein.</string>
+    <string name="email_alerts_edit_credentials">Zugangsdaten bearbeiten</string>
+    <string name="email_alerts_send_test">Test-E-Mail senden</string>
+    <string name="email_alerts_test_sending">Test-E-Mail wird gesendet…</string>
+    <string name="email_alerts_test_success">Test-E-Mail erfolgreich gesendet</string>
+    <string name="email_alerts_test_auth_failure">Authentifizierung fehlgeschlagen — Gmail-Adresse und App-Passwort prüfen</string>
+    <string name="email_alerts_test_network_error">Keine Verbindung möglich — SMTP-Port ist möglicherweise in diesem Netzwerk blockiert</string>
+    <string name="email_alerts_clear_credentials">Zugangsdaten löschen</string>
+    <string name="email_alerts_disable_title">Zugangsdaten löschen</string>
+    <string name="email_alerts_disable_message">Deine Gmail-Zugangsdaten werden entfernt. E-Mail-Benachrichtigungen werden gestoppt.</string>
+    <string name="email_alerts_disable_confirm">Löschen</string>
 
     <!-- Historic data days -->
     <string name="settings_historic_days_label">Verlaufszeitraum (Tage)</string>
