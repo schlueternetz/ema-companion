@@ -14,7 +14,7 @@ captures/
 *.jks
 
 # Gradle
-gradle-wrapper.jar
+# NOTE: gradle-wrapper.jar must be committed — CI/clean checkouts need it to run ./gradlew
 .gradle
 
 # Claude Code

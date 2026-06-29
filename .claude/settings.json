@@ -1,6 +1,65 @@
 {
-  "enabledMcpjsonServers": ["github"],
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew *)",
+      "Bash(adb *)",
+      "Bash(emulator *)",
+      "Bash(git *)",
+      "PowerShell(./gradlew *)",
+      "PowerShell(adb *)",
+      "PowerShell(emulator *)",
+      "PowerShell(git *)",
+      "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1 2>&1 | Select-String \"Events injected\")",
+      "Edit(/.claude/skills/write-user-guide/**)",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb devices)",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1)",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1 2>&1 | Select-Object -Last 3)",
+      "Skill(write-adr)",
+      "Skill(write-adr:*)",
+      "Bash(./gradlew.bat installDebug)",
+      "PowerShell(Test-NetConnection -ComputerName api.apsystemsema.com -Port 9282 -InformationLevel Quiet)",
+      "Edit(/.claude/skills/local-android-dev/**)",
+      "Bash(gh run *)",
+      "PowerShell(gh run list --limit 10 2>&1)",
+      "Bash(xargs cat)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(t['id'], t['done'], t['description'][:80]\\) for t in d['tasks'] if not t['done']]\")",
+      "Bash(xargs grep -n \"email\\\\|Email\\\\|PREFS\\\\|prefs_\")",
+      "Bash(xargs grep -n \"email\\\\|Email\\\\|smtp\\\\|SMTP\")",
+      "Bash(xargs grep -n \"verifyAndSave\\\\|lifecycleScope\\\\|Dispatchers\\\\|coroutine\\\\|launch\")",
+      "Bash(xargs grep -n \"permission\")",
+      "Read(//d/ema-debug/**)",
+      "Bash(find ~/.gradle -name \"greenmail-*.jar\" -path \"*/com.icegreen/*\" 2>/dev/null | head -5)",
+      "Read(//c/Users/micro/.gradle/**)",
+      "Bash(jar tf *)",
+      "Bash(jar xf *)",
+      "Bash(javap -p com/icegreen/greenmail/server/AbstractServer.class)",
+      "Bash(javap -p com/icegreen/greenmail/util/GreenMail.class)",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1 2>&1 | Select-String \"injected\")"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "github"
+  ],
   "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const c=[];process.stdin.on('data',d=>c.push(d));process.stdin.on('end',()=>{try{const data=JSON.parse(Buffer.concat(c).toString());const raw=((data.tool_input||{}).file_path||'');let fp='';for(let i=0;i<raw.length;i++){const ch=raw.charCodeAt(i);fp+=ch===92?'/':raw[i];}const ux=['res/layout/','Activity.kt','Fragment.kt','values/strings.xml','res/menu/','res/navigation/'];if(ux.some(p=>fp.includes(p))){process.stdout.write(JSON.stringify({systemMessage:'UX file changed - invoke write-user-guide.',hookSpecificOutput:{hookEventName:'PostToolUse',additionalContext:'A UX file was just changed. Invoke the write-user-guide skill now to update docs/user-guide/user-guide.md before finishing.'}}));}process.exit(0);}catch(e){process.exit(0);}});\"",
+            "shell": "bash",
+            "statusMessage": "Checking for UX changes..."
+          },
+          {
+            "type": "command",
+            "command": "node -e \"const c=[];process.stdin.on('data',d=>c.push(d));process.stdin.on('end',()=>{try{const data=JSON.parse(Buffer.concat(c).toString());const raw=((data.tool_input||{}).file_path||'');let fp='';for(let i=0;i<raw.length;i++){fp+=raw.charCodeAt(i)===92?'/':raw[i];}if(fp.includes('.claude/skills/')&&fp.endsWith('/SKILL.md')){process.stdout.write(JSON.stringify({systemMessage:'SKILL.md written - run skill-check to validate.',hookSpecificOutput:{hookEventName:'PostToolUse',additionalContext:'A SKILL.md file was just written. Invoke the skill-check skill now to validate it against Anthropic guidelines before finishing.'}}));}process.exit(0);}catch(e){process.exit(0);}});\"",
+            "shell": "bash",
+            "statusMessage": "Checking skill..."
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",

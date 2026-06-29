@@ -1,0 +1,27 @@
+{
+  "ecuId": "203000001234",
+  "description": "Module Health — one inverter offline today only (YELLOW)",
+  "interactions": [
+    {
+      "request": {
+        "method": "GET",
+        "path": "/user/api/v2/systems/{sid}/devices/inverter/batch/energy/{eid}",
+        "pathParams": { "eid": "203000001234" },
+        "query": { "energy_level": "energy" }
+      },
+      "response": {
+        "body": {
+          "code": 0,
+          "data": {
+            "energy": [
+              "701000001001-1-0.00",
+              "701000001001-2-0.00",
+              "701000001002-1-1.10",
+              "701000001002-2-0.88"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

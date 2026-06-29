@@ -1,0 +1,12 @@
+{
+  "language": "system",
+  "emaAppId": "test0000000000000000000000000001",
+  "emaAppSecret": "testsecret01",
+  "emaSystemId": "TESTSYSTEM000001",
+  "emaEcuId": "000000000001",
+  "systemCapacity": 4.0,
+  "historicDataDays": 30,
+  "notificationsEnabled": true,
+  "baseUrl": "http://localhost:8080",
+  "displayMode": "system"
+}

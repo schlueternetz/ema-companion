@@ -1,3 +1,178 @@
 <resources>
-    <string name="placeholder_hello">Hallo Welt!</string>
+    <string name="nav_home">Startseite</string>
+    <string name="nav_settings">Einstellungen</string>
+    <string name="nav_user_guide">Benutzerhandbuch</string>
+
+    <!-- Home -->
+    <string name="home_current_production_title">Aktuelle Produktion</string>
+    <string name="home_production_updated">Aktualisiert %1$s</string>
+    <string name="home_status_network_error">Netzwerkproblem – keine Aktualisierung</string>
+    <string name="home_status_auth_error">Authentifizierung fehlgeschlagen – API-Zugangsdaten prüfen</string>
+    <string name="home_status_api_error">Produktionsdaten konnten nicht aktualisiert werden</string>
+
+    <!-- Settings section headers -->
+    <string name="settings_section_solar_array">Solaranlagen-Einstellungen</string>
+    <string name="settings_section_app">App-Einstellungen</string>
+    <string name="settings_section_configuration">Konfiguration</string>
+    <string name="settings_section_api">API-Einstellungen</string>
+    <string name="settings_section_logs">Protokolle</string>
+
+    <!-- Logs -->
+    <string name="settings_logs_empty">Noch keine API-Aufrufe aufgezeichnet</string>
+    <string name="settings_logs_success">Erfolg</string>
+    <string name="settings_logs_failure">Fehlgeschlagen</string>
+    <string name="settings_logs_row_summary">%1$s · %2$s · %3$d ms · %4$s</string>
+    <string name="settings_logs_detail_request">Anfrage</string>
+    <string name="settings_logs_detail_response">Antwort</string>
+
+    <!-- Language -->
+    <string name="settings_language_label">Sprache</string>
+    <string name="language_option_system">System</string>
+    <string name="language_option_english">Englisch</string>
+    <string name="language_option_german">Deutsch</string>
+    <string name="settings_language_dialog_title">Sprache auswählen</string>
+
+    <!-- Display mode -->
+    <string name="settings_display_mode_label">Anzeigemodus</string>
+    <string name="display_mode_option_system">System</string>
+    <string name="display_mode_option_light">Hell</string>
+    <string name="display_mode_option_dark">Dunkel</string>
+    <string name="settings_display_mode_dialog_title">Anzeigemodus auswählen</string>
+
+    <!-- Notifications -->
+    <string name="settings_notifications_label">Benachrichtigungen aktiviert</string>
+
+    <!-- Email Alerts -->
+    <string name="email_alerts_section_title">E-Mail-Benachrichtigungen</string>
+    <string name="email_alerts_toggle_title">E-Mail-Benachrichtigungen</string>
+    <string name="email_alerts_enabled_for">E-Mail-Benachrichtigungen aktiv für: %1$s</string>
+    <string name="email_alerts_instructions">Erhalte eine E-Mail, wenn ein Modul offline geht.\n\nVoraussetzungen: ein Gmail-Konto mit aktivierter 2-Schritt-Verifizierung.\n\n1. Öffne dein Google-Konto › Sicherheit › App-Passwörter.\n2. Erstelle ein App-Passwort für „Mail" auf „Anderes Gerät".\n3. Gib unten deine Gmail-Adresse und das 16-stellige App-Passwort ein.</string>
+    <string name="email_alerts_open_google_account">Google-Konto öffnen ↗</string>
+    <string name="email_alerts_address_hint">du@gmail.com</string>
+    <string name="email_alerts_app_password_hint">16-stelliges App-Passwort</string>
+    <string name="email_alerts_verify_save">Speichern</string>
+    <string name="email_alerts_cancel">Abbrechen</string>
+    <string name="email_alerts_connection_error">Gib eine gültige E-Mail-Adresse und ein 16-stelliges App-Passwort ein.</string>
+    <string name="email_alerts_edit_credentials">Zugangsdaten bearbeiten</string>
+    <string name="email_alerts_send_test">Test-E-Mail senden</string>
+    <string name="email_alerts_test_sending">Test-E-Mail wird gesendet…</string>
+    <string name="email_alerts_test_success">Test-E-Mail erfolgreich gesendet</string>
+    <string name="email_alerts_test_auth_failure">Authentifizierung fehlgeschlagen — Gmail-Adresse und App-Passwort prüfen</string>
+    <string name="email_alerts_test_network_error">Keine Verbindung möglich — SMTP-Port ist möglicherweise in diesem Netzwerk blockiert</string>
+    <string name="email_alerts_clear_credentials">Zugangsdaten löschen</string>
+    <string name="email_alerts_disable_title">Zugangsdaten löschen</string>
+    <string name="email_alerts_disable_message">Deine Gmail-Zugangsdaten werden entfernt. E-Mail-Benachrichtigungen werden gestoppt.</string>
+    <string name="email_alerts_disable_confirm">Löschen</string>
+
+    <!-- Historic data days -->
+    <string name="settings_historic_days_label">Verlaufszeitraum (Tage)</string>
+    <string name="settings_historic_days_suffix">Tage</string>
+    <string name="settings_historic_days_error">Bitte eine Zahl zwischen 1 und 90 eingeben</string>
+
+    <!-- EMA App ID -->
+    <string name="settings_ema_app_id_label">EMA App-ID</string>
+    <string name="settings_ema_app_id_error">Muss genau 32 alphanumerische Zeichen haben</string>
+    <string name="settings_ema_app_id_hint">Die APP ID, die in Einstellungen → OpenAPI-Dienst → Entwickler-Autorisierung in der EMA-App generiert wird.\n\nHinweis: Der OpenAPI-Zugang muss zuerst unter Einstellungen → OpenAPI-Dienst aktiviert werden.</string>
+
+    <!-- EMA App Secret -->
+    <string name="settings_ema_app_secret_label">EMA App-Geheimnis</string>
+    <string name="settings_ema_app_secret_error">Muss genau 12 alphanumerische Zeichen haben</string>
+    <string name="settings_ema_app_secret_hint">Das APP Secret, das in Einstellungen → OpenAPI-Dienst → Entwickler-Autorisierung in der EMA-App generiert wird.</string>
+
+    <!-- EMA System ID -->
+    <string name="settings_ema_system_id_label">EMA System-ID</string>
+    <string name="settings_ema_system_id_error">Muss genau 16 alphanumerische Zeichen haben</string>
+    <string name="settings_ema_system_id_hint">Der sid-Wert unter Einstellungen → Kontodetails in der EMA-App.</string>
+
+    <!-- EMA ECU ID -->
+    <string name="settings_ema_ecu_id_label">EMA ECU-ID</string>
+    <string name="settings_ema_ecu_id_error">Muss genau 12 Ziffern haben</string>
+    <string name="settings_ema_ecu_id_hint">Die ECU-ID unter Einstellungen → ECU in der EMA-App.</string>
+
+    <!-- System Capacity -->
+    <string name="settings_system_capacity_label">Systemleistung</string>
+    <string name="settings_system_capacity_suffix">kW</string>
+    <string name="settings_system_capacity_error">Bitte eine positive Zahl bis 2.000 mit höchstens 2 Dezimalstellen eingeben</string>
+    <string name="settings_system_capacity_hint">Der Kapazitätswert auf dem Startbildschirm der EMA-App.</string>
+
+    <!-- API Request Limit -->
+    <string name="settings_api_request_limit_label">API-Anfragelimit</string>
+    <string name="settings_api_request_limit_suffix">Anf./Monat</string>
+    <string name="settings_api_request_limit_description">Max. EMA-API-Aufrufe pro Monat</string>
+    <string name="settings_api_request_limit_error">Bitte eine Zahl zwischen 1 und 2.678.400 eingeben</string>
+    <string name="settings_api_request_limit_reset_description">API-Anfragelimit auf Standard zurücksetzen</string>
+    <string name="settings_api_request_progress_label">%1$d / %2$d Anfragen diesen Monat</string>
+
+    <!-- Base URL -->
+    <string name="settings_base_url_label">Basis-URL</string>
+    <string name="settings_base_url_error">Bitte eine gültige URL eingeben (max. 2.048 Zeichen)</string>
+    <string name="settings_base_url_reset_description">Basis-URL auf Standard zurücksetzen</string>
+
+    <!-- Import / Export / Factory Reset -->
+    <string name="settings_import_button">Einstellungen importieren</string>
+    <string name="settings_export_button">Einstellungen exportieren</string>
+    <string name="settings_factory_reset_button">Werksreset</string>
+
+    <string name="settings_export_dialog_title">Einstellungen exportieren</string>
+    <string name="settings_export_no_encryption">Ohne Verschlüsselung</string>
+    <string name="settings_export_encrypt_with_pin">Mit PIN verschlüsseln</string>
+
+    <string name="settings_pin_dialog_title_export">4-stellige PIN für Export eingeben</string>
+    <string name="settings_pin_dialog_title_import">4-stellige PIN zum Entschlüsseln eingeben</string>
+    <string name="settings_pin_hint">PIN</string>
+
+    <string name="settings_factory_reset_dialog_title">Werksreset</string>
+    <string name="settings_factory_reset_dialog_message">Dadurch werden alle Einstellungen und lokal gespeicherte Daten dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="settings_factory_reset_confirm">Zurücksetzen</string>
+    <string name="settings_factory_reset_cancel">Abbrechen</string>
+
+    <string name="settings_import_error_wrong_pin">Falsche PIN – Datei konnte nicht entschlüsselt werden</string>
+    <string name="settings_import_error_unreadable">Die ausgewählte Datei konnte nicht gelesen oder verarbeitet werden</string>
+    <string name="settings_export_error">Die Datei konnte nicht geschrieben werden</string>
+    <string name="settings_export_success">Einstellungen erfolgreich exportiert</string>
+    <string name="settings_import_success">Einstellungen erfolgreich importiert</string>
+
+    <!-- SettingRowView buttons -->
+    <string name="setting_row_required_hint">Erforderlich</string>
+    <string name="setting_row_edit_button_description">Bearbeiten</string>
+    <string name="setting_row_save_button_description">Speichern</string>
+    <string name="setting_row_cancel_button_description">Abbrechen</string>
+    <string name="setting_row_info_button_description">Info</string>
+
+    <!-- Module Health Tile -->
+    <string name="home_module_health_title">Modulstatus</string>
+    <string name="home_module_health_status_green">Alle Module produzieren</string>
+    <string name="home_module_health_status_yellow">Modul offline</string>
+    <string name="home_module_health_status_red">Modul offline – Handlungsbedarf</string>
+    <string name="home_module_health_status_unknown">Wird geprüft…</string>
+    <string name="home_module_health_checked">Geprüft am %1$s um %2$s</string>
+    <string name="home_module_health_offline_singular">Keine Produktion seit 1 Tag</string>
+    <string name="home_module_health_offline_plural">Keine Produktion seit %1$d Tagen</string>
+    <string name="home_module_health_detail_title">Offline-Module</string>
+    <string name="home_module_health_icon_description">Modulstatus</string>
+    <string name="home_module_health_error_network">Netzwerkproblem – Prüfung nicht möglich</string>
+    <string name="home_module_health_error_auth">Authentifizierung fehlgeschlagen – API-Zugangsdaten prüfen</string>
+    <string name="home_module_health_error_api">Modulstatus konnte nicht geprüft werden</string>
+
+    <!-- Array Timezone Setting -->
+    <string name="settings_array_timezone_label">Zeitzone der Anlage</string>
+    <string name="settings_array_timezone_dialog_title">Zeitzone auswählen</string>
+
+    <!-- Module Health Notifications -->
+    <string name="notification_channel_module_health_name">Modulstatus-Benachrichtigungen</string>
+    <string name="notification_channel_module_health_description">Benachrichtigungen wenn ein Solarmodul aufhört zu produzieren</string>
+    <string name="notification_module_health_yellow_title">Solarmodul offline</string>
+    <string name="notification_module_health_yellow_text">Ein oder mehrere Module haben seit 1–2 Tagen nicht produziert. Tippen für Details.</string>
+    <string name="notification_module_health_red_title">Solarmodul offline – Handlungsbedarf</string>
+    <string name="notification_module_health_red_text">Ein oder mehrere Module haben seit 3 Tagen nicht produziert. Anlage prüfen.</string>
+
+    <!-- Email alerts -->
+    <string name="email_subject_yellow">EMA Companion: Solarmodul offline</string>
+    <string name="email_body_yellow_intro">Ein oder mehrere Solarmodule in deiner Anlage haben seit 1–2 Tagen nicht produziert.</string>
+    <string name="email_subject_red">EMA Companion: Solarmodul offline – Handlungsbedarf</string>
+    <string name="email_body_red_intro">Ein oder mehrere Solarmodule haben seit 3 oder mehr Tagen nicht produziert. Anlage prüfen.</string>
+    <string name="email_subject_green">EMA Companion: Alle Module produzieren</string>
+    <string name="email_body_green">Alle Solarmodule deiner Anlage produzieren wieder.</string>
+    <string name="email_body_module_line">Modul %1$s: Keine Produktion seit %2$d Tag(en)</string>
+    <string name="email_body_cta">EMA Companion öffnen für Details.</string>
 </resources>

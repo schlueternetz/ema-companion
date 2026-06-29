@@ -1,8 +1,10 @@
 ---
 name: local-android-dev
-description: Runs the EMA Companion Android app on the local emulator in debug mode, or rebuilds and redeploys it. Use when the user asks to run, start, launch, deploy, rebuild, or update the app on the emulator.
+description: Runs the EMA Companion Android app on the local emulator in debug mode, or rebuilds and redeploys it. Use when the user asks to run, start, launch, deploy, rebuild, or update the app on the emulator. Do NOT use for running automated tests — use /ai-tdd instead.
 allowed-tools: PowerShell Read
 ---
+
+> **Scope**: manual testing and app verification only. For automated test execution (unit, Robolectric, instrumented), use `/ai-tdd`.
 
 ## Environment
 
@@ -10,7 +12,7 @@ allowed-tools: PowerShell Read
 - **Emulator:** `%LOCALAPPDATA%\Android\Sdk\emulator\emulator.exe`
 - **ADB:** `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe`
 - **AVD:** `Lenovo_Tab_11_Plus` (android-33, 1200×2000 portrait, 213 DPI — matches Lenovo Tab 11 Plus)
-- **Project root:** `d:\projects\ema-companion\code\ema-companion`
+- **Project root:** `code\ema-companion`
 - **APK output:** `app\build\outputs\apk\debug\app-debug.apk`
 - **App ID:** `com.schlueternetz.emacompanion`
 - **Main activity:** `.MainActivity`
@@ -32,14 +34,14 @@ allowed-tools: PowerShell Read
 
 3. **Build and install the debug APK:**
    ```powershell
-   Set-Location "d:\projects\ema-companion\code\ema-companion"
+   Set-Location "code\ema-companion"
    .\gradlew.bat installDebug
    ```
 
 4. **Launch the app:**
    ```powershell
    $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
-   & $adb shell am start -n "com.schlueternetz.emacompanion/.MainActivity"
+   & $adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1
    ```
 
 ## Task: Rebuild and redeploy (emulator already running)
@@ -48,18 +50,19 @@ Use this when the user asks to update, rebuild, or redeploy after a code change.
 
 1. **Build and reinstall** (handles both build and install in one step):
    ```powershell
-   Set-Location "d:\projects\ema-companion\code\ema-companion"
+   Set-Location "code\ema-companion"
    .\gradlew.bat installDebug
    ```
 
 2. **Re-launch the app:**
    ```powershell
    $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
-   & $adb shell am start -n "com.schlueternetz.emacompanion/.MainActivity"
+   & $adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1
    ```
 
 ## Gotchas
 
+- **Temp files outside the repo**: all `adb pull` outputs, screenshots, and XML dumps go to `D:\ema-debug\` — never inside the project directory. Create it first if needed: `New-Item -ItemType Directory -Force D:\ema-debug`.
 - `installDebug` combines `assembleDebug` + `adb install` — prefer it over running both separately.
 - If the emulator is already running from a previous session, skip step 1 and check `& $adb devices` first.
 - If `installDebug` fails with a `INSTALL_FAILED_UPDATE_INCOMPATIBLE` error, uninstall first: `& $adb uninstall com.schlueternetz.emacompanion`

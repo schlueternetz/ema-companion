@@ -1,0 +1,838 @@
+openapi: 3.0.3
+info:
+  title: APsystems EMA OpenAPI
+  version: "1.8"
+  description: |
+    REST API for APsystems solar monitoring data.
+
+    **Base URL:** `https://api.apsystemsema.com:9282`
+
+    **Path prefixes:**
+    - `/user/api/v2/` — end-user data (System, ECU, Meter, Inverter)
+    - `/installer/api/v2/` — installer data (Storage)
+
+    ## Authentication
+
+    Every request requires HMAC signing. Include these headers:
+
+    - `X-CA-AppId` — your App Id (32-char alphanumeric)
+    - `X-CA-Timestamp` — Unix timestamp in **milliseconds**
+    - `X-CA-Nonce` — UUID without dashes (32 chars)
+    - `X-CA-Signature-Method` — `HmacSHA256` or `HmacSHA1`
+    - `X-CA-Signature` — HMAC signature (see below)
+
+    **String to sign:**
+    ```
+    {timestamp}/{nonce}/{appId}/{lastPathSegment}/{method}/{signatureMethod}
+    ```
+    `lastPathSegment` is the final path segment after parameter substitution.
+    Sign using HMAC-SHA256 (or SHA1) with your App Secret, then Base64-encode.
+
+servers:
+  - url: https://api.apsystemsema.com:9282
+    description: Production
+
+components:
+  parameters:
+    sid:
+      name: sid
+      in: path
+      required: true
+      schema:
+        type: string
+      description: System identifier
+    eid:
+      name: eid
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ECU identifier
+    uid:
+      name: uid
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Inverter identifier
+    energy_level_system:
+      name: energy_level
+      in: query
+      required: true
+      schema:
+        type: string
+        enum: [hourly, daily, monthly, yearly]
+      description: Aggregation level
+    energy_level_device:
+      name: energy_level
+      in: query
+      required: true
+      schema:
+        type: string
+        enum: [minutely, hourly, daily, monthly, yearly]
+      description: Aggregation level
+    energy_level_batch:
+      name: energy_level
+      in: query
+      required: true
+      schema:
+        type: string
+        enum: [power, energy]
+      description: Data type to retrieve
+    date_range:
+      name: date_range
+      in: query
+      required: false
+      schema:
+        type: string
+      description: |
+        Date range — format depends on energy_level:
+        - `hourly` → `yyyy-MM-dd`
+        - `daily` → `yyyy-MM`
+        - `monthly` → `yyyy`
+        - `yearly` → omit
+        - `minutely` → `yyyy-MM-dd`
+
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: "0=success, non-zero=error (see Response Codes)"
+        msg:
+          type: string
+          nullable: true
+        data:
+          nullable: true
+
+    EnergySummary:
+      type: object
+      properties:
+        today:
+          type: string
+        month:
+          type: string
+        year:
+          type: string
+        lifetime:
+          type: string
+      description: Energy totals in kWh
+
+    PowerSummary:
+      type: object
+      properties:
+        consumed:
+          type: string
+        exported:
+          type: string
+        imported:
+          type: string
+        produced:
+          type: string
+      description: Power breakdown in kWh
+
+    StoragePeriodSummary:
+      type: object
+      properties:
+        discharge:
+          type: string
+        charge:
+          type: string
+        produced:
+          type: string
+        consumed:
+          type: string
+        exported:
+          type: string
+        imported:
+          type: string
+      description: Storage energy breakdown in kWh
+
+    StorageSeriesData:
+      type: object
+      properties:
+        discharge:
+          type: array
+          items:
+            type: string
+        charge:
+          type: array
+          items:
+            type: string
+        produced:
+          type: array
+          items:
+            type: string
+        consumed:
+          type: array
+          items:
+            type: string
+        exported:
+          type: array
+          items:
+            type: string
+        imported:
+          type: array
+          items:
+            type: string
+
+paths:
+  # ---------------------------------------------------------------------------
+  # System Details API
+  # ---------------------------------------------------------------------------
+
+  /user/api/v2/systems/details/{sid}:
+    get:
+      summary: Get system details
+      tags: [System]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+      responses:
+        '200':
+          description: System details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          sid:
+                            type: string
+                          create_date:
+                            type: string
+                            format: date
+                          capacity:
+                            type: string
+                            description: System size in kW
+                          type:
+                            type: integer
+                            description: "1=PV, 2=Storage, 3=PV+Storage"
+                          timezone:
+                            type: string
+                          ecu:
+                            type: array
+                            items:
+                              type: string
+                            description: |
+                              ECU ids. Shared sub-user format: `{mainEcu}-{virtualEcu}`.
+                              Use the virtual ECU id in device queries.
+                          light:
+                            type: integer
+                            description: "1=Green (normal), 2=Yellow (inverter alarm), 3=Red (ECU network), 4=Grey (no data)"
+                          authorization_code:
+                            type: string
+                            nullable: true
+              example:
+                code: 0
+                data:
+                  sid: AZ12649A3DFF
+                  create_date: "2022-09-01"
+                  capacity: "1.28"
+                  type: 1
+                  timezone: Asia/Shanghai
+                  ecu: ["203000001234"]
+                  light: 1
+                  authorization_code: ff80808155
+
+  /user/api/v2/systems/inverters/{sid}:
+    get:
+      summary: Get inverters for a system
+      tags: [System]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+      responses:
+        '200':
+          description: ECU and inverter list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            eid:
+                              type: string
+                            type:
+                              type: integer
+                              description: "0=ECU, 1=ECU with meter, 2=ECU with storage"
+                            timezone:
+                              type: string
+                            model:
+                              type: string
+                              nullable: true
+                            capacity:
+                              type: string
+                              nullable: true
+                              description: Storage capacity in kWh (storage ECUs only)
+                            inverter:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  uid:
+                                    type: string
+                                  type:
+                                    type: string
+              example:
+                code: 0
+                data:
+                  - eid: "203000001234"
+                    type: 0
+                    timezone: Asia/Shanghai
+                    model: null
+                    capacity: null
+                    inverter:
+                      - uid: "902000001234"
+                        type: QT2D
+                      - uid: "902000001235"
+                        type: QT2D
+
+  /user/api/v2/systems/meters/{sid}:
+    get:
+      summary: Get meter ECU ids for a system
+      tags: [System]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+      responses:
+        '200':
+          description: List of meter ECU ids
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
+              example:
+                code: 0
+                data: ["203000001234"]
+
+  # ---------------------------------------------------------------------------
+  # System-level Data API
+  # ---------------------------------------------------------------------------
+
+  /user/api/v2/systems/summary/{sid}:
+    get:
+      summary: System energy summary
+      tags: [System]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+      responses:
+        '200':
+          description: Cumulative energy totals in kWh
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/EnergySummary'
+              example:
+                code: 0
+                data:
+                  today: "12.28"
+                  month: "12.28"
+                  year: "12.28"
+                  lifetime: "12.28"
+
+  /user/api/v2/systems/energy/{sid}:
+    get:
+      summary: System energy in period
+      tags: [System]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+        - $ref: '#/components/parameters/energy_level_system'
+        - $ref: '#/components/parameters/date_range'
+      responses:
+        '200':
+          description: |
+            Array of kWh values. Length: hourly=24, daily=days-in-month, monthly=12, yearly=years-since-install.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
+              example:
+                code: 0
+                data: ["0.00", "0.00", "1.23", "5.67"]
+
+  # ---------------------------------------------------------------------------
+  # ECU-level Data API
+  # ---------------------------------------------------------------------------
+
+  /user/api/v2/systems/{sid}/devices/ecu/summary/{eid}:
+    get:
+      summary: ECU energy summary
+      tags: [ECU]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+        - $ref: '#/components/parameters/eid'
+      responses:
+        '200':
+          description: Cumulative ECU energy totals in kWh
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/EnergySummary'
+              example:
+                code: 0
+                data:
+                  today: "12.28"
+                  month: "12.28"
+                  year: "12.28"
+                  lifetime: "12.28"
+
+  /user/api/v2/systems/{sid}/devices/ecu/energy/{eid}:
+    get:
+      summary: ECU energy in period
+      tags: [ECU]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+        - $ref: '#/components/parameters/eid'
+        - $ref: '#/components/parameters/energy_level_device'
+        - $ref: '#/components/parameters/date_range'
+      responses:
+        '200':
+          description: |
+            For non-minutely levels: flat array of kWh strings (same shape as system energy).
+            For minutely: 5-minute power telemetry with today's total.
+          content:
+            application/json:
+              examples:
+                minutely:
+                  value:
+                    code: 0
+                    data:
+                      today: "18.90"
+                      time: ["05:55", "06:00", "06:05"]
+                      power: [0, 20, 19]
+                      energy: ["0.00", "0.00", "0.00"]
+                hourly:
+                  value:
+                    code: 0
+                    data: ["0.00", "1.23", "5.67"]
+
+  # ---------------------------------------------------------------------------
+  # Meter-level Data API
+  # ---------------------------------------------------------------------------
+
+  /user/api/v2/systems/{sid}/devices/meter/summary/{eid}:
+    get:
+      summary: Meter energy summary
+      tags: [Meter]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+        - $ref: '#/components/parameters/eid'
+      responses:
+        '200':
+          description: Meter energy breakdown by period (kWh)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          today:
+                            $ref: '#/components/schemas/PowerSummary'
+                          month:
+                            $ref: '#/components/schemas/PowerSummary'
+                          year:
+                            $ref: '#/components/schemas/PowerSummary'
+                          lifetime:
+                            $ref: '#/components/schemas/PowerSummary'
+              example:
+                code: 0
+                data:
+                  today:
+                    consumed: "394.41"
+                    exported: "0.00"
+                    imported: "560.52"
+                    produced: "833.88"
+                  month:
+                    consumed: "394.41"
+                    exported: "0.00"
+                    imported: "560.52"
+                    produced: "833.88"
+                  year:
+                    consumed: "6394.41"
+                    exported: "0.00"
+                    imported: "4560.52"
+                    produced: "1833.88"
+                  lifetime:
+                    consumed: "6394.46"
+                    exported: "0.00"
+                    imported: "4561.64"
+                    produced: "1833.89"
+
+  /user/api/v2/systems/{sid}/devices/meter/period/{eid}:
+    get:
+      summary: Meter energy in period
+      tags: [Meter]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+        - $ref: '#/components/parameters/eid'
+        - $ref: '#/components/parameters/energy_level_device'
+        - $ref: '#/components/parameters/date_range'
+      responses:
+        '200':
+          description: |
+            For non-minutely: parallel time/energy arrays.
+            For minutely: per-interval power (W) and energy (kWh) + today's totals.
+          content:
+            application/json:
+              examples:
+                daily:
+                  value:
+                    code: 0
+                    data:
+                      time: ["01", "02"]
+                      produced: ["40.300", "50.016"]
+                      consumed: ["40.300", "50.016"]
+                      imported: ["40.300", "50.016"]
+                      exported: ["40.300", "50.016"]
+                minutely:
+                  value:
+                    code: 0
+                    data:
+                      today:
+                        consumed: "5.997"
+                        exported: "0.072"
+                        imported: "3.712"
+                        produced: "2.356"
+                      time: ["23:57"]
+                      power:
+                        consumed: ["167.96"]
+                        imported_exported: ["167.96"]
+                        produced: ["0.00"]
+                      energy:
+                        consumed: ["0.015620"]
+                        exported: ["0"]
+                        imported: ["0.01562"]
+                        produced: ["0.00000"]
+
+  # ---------------------------------------------------------------------------
+  # Inverter-level Data API
+  # ---------------------------------------------------------------------------
+
+  /user/api/v2/systems/{sid}/devices/inverter/summary/{uid}:
+    get:
+      summary: Inverter energy summary
+      tags: [Inverter]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+        - $ref: '#/components/parameters/uid'
+      responses:
+        '200':
+          description: |
+            Per-channel energy totals. Field naming: `{period}{channel}` where
+            period is `d`=today, `m`=month, `y`=year, `t`=lifetime and
+            channel is `1`–`4`. All values in kWh.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        description: "Keys: d1/m1/y1/t1 through d4/m4/y4/t4"
+                        additionalProperties:
+                          type: string
+              example:
+                code: 0
+                data:
+                  d1: "12.28"
+                  m1: "12.28"
+                  y1: "12.28"
+                  t1: "12.28"
+                  d2: "12.28"
+                  m2: "12.28"
+                  y2: "12.28"
+                  t2: "12.28"
+
+  /user/api/v2/systems/{sid}/devices/inverter/energy/{uid}:
+    get:
+      summary: Inverter energy in period
+      tags: [Inverter]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+        - $ref: '#/components/parameters/uid'
+        - $ref: '#/components/parameters/energy_level_device'
+        - $ref: '#/components/parameters/date_range'
+      responses:
+        '200':
+          description: |
+            For non-minutely: per-channel kWh arrays (`e1`, `e2`, ...).
+            For minutely: full DC/AC telemetry with 4 DC channels and 3 AC phase voltages.
+          content:
+            application/json:
+              examples:
+                hourly:
+                  value:
+                    code: 0
+                    data:
+                      e1: ["567.23", "550.32", "320.12"]
+                      e2: ["567.23", "550.32", "320.12"]
+                minutely:
+                  value:
+                    code: 0
+                    data:
+                      t: ["06:00", "06:05"]
+                      dc_p1: [45, 56]
+                      dc_p2: [30, 42]
+                      dc_i1: [1.2, 1.4]
+                      dc_v1: [37.5, 37.8]
+                      dc_e1: [0.003, 0.004]
+                      ac_v1: [230.1, 230.2]
+                      ac_t: [42.0, 42.1]
+                      ac_p: [75.0, 98.0]
+                      ac_f: [50.0, 50.0]
+
+  /user/api/v2/systems/{sid}/devices/inverter/batch/energy/{eid}:
+    get:
+      summary: Batch inverter energy for all inverters in an ECU
+      tags: [Inverter]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+        - $ref: '#/components/parameters/eid'
+        - $ref: '#/components/parameters/energy_level_batch'
+        - name: date_range
+          in: query
+          required: true
+          schema:
+            type: string
+          description: yyyy-MM-dd
+      responses:
+        '200':
+          description: |
+            `energy`: array of `"{uid}-{channel}-{kWh}"` strings.
+            `power`: `time` array + `power` map keyed by `"{uid}-{channel}"`.
+          content:
+            application/json:
+              examples:
+                energy:
+                  value:
+                    code: 0
+                    data:
+                      energy:
+                        - "701000001234-1-1.24"
+                        - "701000001234-2-0.95"
+                power:
+                  value:
+                    code: 0
+                    data:
+                      time: ["06:00", "06:05"]
+                      power:
+                        "701000001234-1": [45, 56]
+                        "701000001234-2": [30, 45]
+
+  # ---------------------------------------------------------------------------
+  # Storage-level Data API  (uses /installer/api/v2/ prefix)
+  # ---------------------------------------------------------------------------
+
+  /installer/api/v2/systems/{sid}/devices/storage/latest/{eid}:
+    get:
+      summary: Get latest storage power data
+      tags: [Storage]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+        - $ref: '#/components/parameters/eid'
+      responses:
+        '200':
+          description: Current storage state and latest power readings
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          mode:
+                            type: string
+                            description: Storage operation mode
+                          soc:
+                            type: string
+                            description: Battery state of charge (%)
+                          time:
+                            type: string
+                            description: HH:mm of last data point
+                          discharge:
+                            type: string
+                            description: Discharge power (W)
+                          charge:
+                            type: string
+                            description: Charge power (W)
+                          produced:
+                            type: string
+                            description: Produced power (W)
+                          consumed:
+                            type: string
+                            description: Consumed power (W)
+                          exported:
+                            type: string
+                            description: Exported power (W)
+                          imported:
+                            type: string
+                            description: Imported power (W)
+              example:
+                code: 0
+                data:
+                  mode: "4"
+                  soc: "97"
+                  time: "23:57"
+                  discharge: "394.408"
+                  charge: "0.000"
+                  produced: "560.523"
+                  consumed: "560.523"
+                  exported: "560.523"
+                  imported: "833.884"
+
+  /installer/api/v2/systems/{sid}/devices/storage/summary/{eid}:
+    get:
+      summary: Storage energy summary
+      tags: [Storage]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+        - $ref: '#/components/parameters/eid'
+      responses:
+        '200':
+          description: Storage energy breakdown by period (kWh)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          today:
+                            $ref: '#/components/schemas/StoragePeriodSummary'
+                          month:
+                            $ref: '#/components/schemas/StoragePeriodSummary'
+                          year:
+                            $ref: '#/components/schemas/StoragePeriodSummary'
+                          lifetime:
+                            $ref: '#/components/schemas/StoragePeriodSummary'
+              example:
+                code: 0
+                data:
+                  today:
+                    discharge: "394.408"
+                    charge: "0.000"
+                    produced: "560.523"
+                    consumed: "560.523"
+                    exported: "560.523"
+                    imported: "833.884"
+                  month:
+                    discharge: "394.408"
+                    charge: "0.000"
+                    produced: "560.523"
+                    consumed: "560.523"
+                    exported: "560.523"
+                    imported: "833.884"
+                  year:
+                    discharge: "394.408"
+                    charge: "0.000"
+                    produced: "560.523"
+                    consumed: "560.523"
+                    exported: "560.523"
+                    imported: "833.884"
+                  lifetime:
+                    discharge: "394.408"
+                    charge: "0.000"
+                    produced: "560.523"
+                    consumed: "560.523"
+                    exported: "560.523"
+                    imported: "833.884"
+
+  /installer/api/v2/systems/{sid}/devices/storage/period/{eid}:
+    get:
+      summary: Storage energy in period
+      tags: [Storage]
+      parameters:
+        - $ref: '#/components/parameters/sid'
+        - $ref: '#/components/parameters/eid'
+        - $ref: '#/components/parameters/energy_level_device'
+        - $ref: '#/components/parameters/date_range'
+      responses:
+        '200':
+          description: |
+            For non-minutely: parallel time/energy arrays.
+            For minutely: per-interval power (W) and energy (kWh) + today's totals.
+          content:
+            application/json:
+              examples:
+                hourly:
+                  value:
+                    code: 0
+                    data:
+                      time: ["01", "02"]
+                      discharge: ["40.300", "50.016"]
+                      charge: ["40.300", "50.016"]
+                      produced: ["40.300", "50.016"]
+                      consumed: ["40.300", "50.016"]
+                      exported: ["40.300", "50.016"]
+                      imported: ["40.300", "50.016"]
+                minutely:
+                  value:
+                    code: 0
+                    data:
+                      today:
+                        discharge: "394.408"
+                        charge: "0.000"
+                        produced: "560.523"
+                        consumed: "560.523"
+                        exported: "560.523"
+                        imported: "833.884"
+                      time: ["23:57"]
+                      power:
+                        discharge: ["167.961"]
+                        charge: ["167.961"]
+                        produced: ["167.961"]
+                        consumed: ["167.961"]
+                        exported: ["167.961"]
+                        imported: ["0.000"]
+                      energy:
+                        discharge: ["167.961"]
+                        charge: ["167.961"]
+                        produced: ["167.961"]
+                        consumed: ["167.961"]
+                        exported: ["167.961"]
+                        imported: ["0.000"]

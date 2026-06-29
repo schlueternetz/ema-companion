@@ -1,4 +1,4 @@
-# EMA App Companion
+# EMA Companion
 
 An Android app to provide missing features of the [APsystems EMA app](https://play.google.com/store/apps/details?id=com.apsemaappforandroid) for solar arrays.
 
@@ -26,11 +26,9 @@ C4Context
     Rel(emaApi, solarArray, "Retrieves data")
 ```
 
-This project is currently in early development.
-
 ## Getting Started
 
-_Setup instructions will be added as the project takes shape._
+See the [User Guide](docs/user-guide/user-guide.md) for an overview of the app, or [docs/getting-started.md](docs/getting-started.md) for setup, build, and run instructions.
 
 ## Development
 This project uses [OpenSpec](https://openspec.dev/) for functional development.

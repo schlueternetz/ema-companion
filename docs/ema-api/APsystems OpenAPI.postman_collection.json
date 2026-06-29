@@ -1,0 +1,2311 @@
+{
+	"info": {
+		"_postman_id": "dd4a7ad8-5227-4357-84bb-5e39af39064f",
+		"name": "APsystems OpenAPI",
+		"description": "Version 1.6 | 2024-02-07\n\n## Overview\n\n[APsystems](https://apsystems.com) is a global leader in multi-platform module-level power electronics (MLPE) solutions for the solar PV industry. They offer a range of products including microinverters, energy storage solutions, and rapid shutdown devices.\n\nThe APsystem OpenAPI provides access to information and metrics on installed systems and underlying inverters, meters, and ECUs (Energy Communication Units).\n\n## Pre-requisites\n\nTo call the API, you will need the system identifier along with a unique application identifier and secret key.\n\nThese values must be stored as Postman variables {{systemId}}, {{appId}}, and {{appSecret}} (see collection-level variables). For consumers, these can be obtained in the [APsystems dashboard settings ](https://apsystemsema.com/apsystems/web/setting/personalSetting/openAPIService) under OpenAPI.\n\nNote that a collection level pre-script is used to compute the signature and set headers for each request.\n\n## Support\n\nFor more information, refer to the [APsystems OpenAPI User Manual ](https://file.apsystemsema.com:8083/apsystems/resource/openapi/Apsystems_OpenAPI_User_Manual_End_User_EN.pdf) or contact [apisupport@apsystems.com](https://mailto:apisupport@apsystems.com).\n\n## Response Codes\n\n| Code | Description |\n| --- | --- |\n| 0 | Succeed to request |\n| 1000 | Data exception |\n| 1001 | No data |\n| 2000 | Application account exception |\n| 2001 | Invalid application account. |\n| 2002 | The application account is not authorized. |\n| 2003 | Application account authorization expires. |\n| 2004 | The application account has no permission. |\n| 2005 | The access limit of the application account was exceeded. |\n| 3000 | Access token exception. |\n| 3001 | Missing access token. |\n| 3002 | Unable to verify access token. |\n| 3003 | Access token timeout. |\n| 3004 | Refresh token timeout. |\n| 4000 | Request parameter exception. |\n| 4001 | Invalid request parameter. |\n| 5000 | Internal server exception. |\n| 6000 | Communication exception. |\n| 7000 | Server access restriction exception. |\n| 7001 | Server access limit exceeded. |\n| 7002 | Too many requests, please request later. |\n| 7003 | The system is busy,please request later. |",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49268727",
+		"_collection_link": "https://schlueternetz-5904896.postman.co/workspace/Unknown's-Workspace~f89a9174-10f2-4725-8e50-89c5be3928a4/collection/49268727-dd4a7ad8-5227-4357-84bb-5e39af39064f?action=share&source=collection_link&creator=49268727"
+	},
+	"item": [
+		{
+			"name": "System level data",
+			"item": [
+				{
+					"name": "system details",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CA-AppId",
+								"value": "{{appId}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Timestamp",
+								"value": "{{currentTimestamp}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Nonce",
+								"value": "{{nonce}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature-Method",
+								"value": "HmacSHA256",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{apiUrl}}/systems/details/{{systemId}}",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"systems",
+								"details",
+								"{{systemId}}"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "system details",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-CA-AppId",
+										"value": "{{appId}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Timestamp",
+										"value": "{{currentTimestamp}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Nonce",
+										"value": "{{nonce}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature-Method",
+										"value": "HmacSHA256",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature",
+										"value": "{{signature}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{apiUrl}}/systems/details/{{systemId}}",
+									"host": [
+										"{{apiUrl}}"
+									],
+									"path": [
+										"systems",
+										"details",
+										"{{systemId}}"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jul 2025 18:59:58 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Server",
+									"value": "openresty/1.21.4.1"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "JSESSIONID=E6E12748FA8DD1D96D4D2C003E21959D; Path=/; HttpOnly"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n    \"code\": 0,\n    \"data\": {\n        \"light\": 1,\n        \"timezone\": \"Canada/Mountain\",\n        \"ecu\": [\n            \"123456789012\"\n        ],\n        \"create_date\": \"2023-01-01\",\n        \"type\": 1,\n        \"sid\": \"X123456789012345\",\n        \"capacity\": \"7.89\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "inverters",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CA-AppId",
+								"value": "{{appId}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Timestamp",
+								"value": "{{currentTimestamp}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Nonce",
+								"value": "{{nonce}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature-Method",
+								"value": "HmacSHA256",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{apiUrl}}/systems/inverters/:sid",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"systems",
+								"inverters",
+								":sid"
+							],
+							"variable": [
+								{
+									"key": "sid",
+									"value": "{{systemId}}"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "inverters",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-CA-AppId",
+										"value": "{{appId}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Timestamp",
+										"value": "{{currentTimestamp}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Nonce",
+										"value": "{{nonce}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature-Method",
+										"value": "HmacSHA256",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature",
+										"value": "{{signature}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{apiUrl}}/systems/inverters/:sid",
+									"host": [
+										"{{apiUrl}}"
+									],
+									"path": [
+										"systems",
+										"inverters",
+										":sid"
+									],
+									"variable": [
+										{
+											"key": "sid",
+											"value": "{{systemId}}"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jul 2025 19:01:35 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Server",
+									"value": "openresty/1.21.4.1"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "JSESSIONID=FCE0DCE873BE2DB3C4A714517999DF95; Path=/; HttpOnly"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n    \"code\": 0,\n    \"data\": [\n        {\n            \"eid\": \"123456789012\",\n            \"timezone\": \"Canada/Mountain\",\n            \"model\": null,\n            \"inverter\": [\n                {\n                    \"uid\": \"000000855330\",\n                    \"type\": \"DS3\"\n                },\n                {\n                    \"uid\": \"000000064823\",\n                    \"type\": \"DS3\"\n                },\n                {\n                    \"uid\": \"000000065214\",\n                    \"type\": \"DS3\"\n                },\n                {\n                    \"uid\": \"000000065142\",\n                    \"type\": \"DS3\"\n                },\n                {\n                    \"uid\": \"000000065183\",\n                    \"type\": \"DS3\"\n                },\n                {\n                    \"uid\": \"000000064637\",\n                    \"type\": \"DS3\"\n                },\n                {\n                    \"uid\": \"000000065398\",\n                    \"type\": \"DS3\"\n                },\n                {\n                    \"uid\": \"000000063077\",\n                    \"type\": \"DS3\"\n                },\n                {\n                    \"uid\": \"000000064824\",\n                    \"type\": \"DS3\"\n                }\n            ],\n            \"type\": 0,\n            \"capacity\": null\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "meters",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CA-AppId",
+								"value": "{{appId}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Timestamp",
+								"value": "{{currentTimestamp}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Nonce",
+								"value": "{{nonce}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature-Method",
+								"value": "HmacSHA256",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{apiUrl}}/systems/meters/:sid",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"systems",
+								"meters",
+								":sid"
+							],
+							"variable": [
+								{
+									"key": "sid",
+									"value": "{{systemId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "summary",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CA-AppId",
+								"value": "{{appId}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Timestamp",
+								"value": "{{currentTimestamp}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Nonce",
+								"value": "{{nonce}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature-Method",
+								"value": "HmacSHA256",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{apiUrl}}/systems/summary/:sid",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"systems",
+								"summary",
+								":sid"
+							],
+							"variable": [
+								{
+									"key": "sid",
+									"value": "{{systemId}}"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "summary",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-CA-AppId",
+										"value": "{{appId}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Timestamp",
+										"value": "{{currentTimestamp}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Nonce",
+										"value": "{{nonce}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature-Method",
+										"value": "HmacSHA256",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature",
+										"value": "{{signature}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{apiUrl}}/systems/summary/:sid",
+									"host": [
+										"{{apiUrl}}"
+									],
+									"path": [
+										"systems",
+										"summary",
+										":sid"
+									],
+									"variable": [
+										{
+											"key": "sid",
+											"value": "{{systemId}}"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jul 2025 19:03:25 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Server",
+									"value": "openresty/1.21.4.1"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "JSESSIONID=3E1298F7E5DB5479705CA340D0AFAAC2; Path=/; HttpOnly"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [
+								{
+									"expires": "Invalid Date",
+									"domain": "",
+									"path": ""
+								}
+							],
+							"body": "{\n    \"code\": 0,\n    \"data\": {\n        \"month\": \"123.45\",\n        \"year\": \"1234.56\",\n        \"today\": \"1.23456\",\n        \"lifetime\": \"12345.67\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "energy",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CA-AppId",
+								"value": "{{appId}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Timestamp",
+								"value": "{{currentTimestamp}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Nonce",
+								"value": "{{nonce}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature-Method",
+								"value": "HmacSHA256",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{apiUrl}}/systems/energy/:sid?energy_level=daily&date_range=2025-08",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"systems",
+								"energy",
+								":sid"
+							],
+							"query": [
+								{
+									"key": "energy_level",
+									"value": "daily",
+									"description": "The energy level to calculate the cumulative energy. Available values are “minutely”,“hourly”,“daily”, “monthly”,and“yearly”."
+								},
+								{
+									"key": "date_range",
+									"value": "2025-08",
+									"description": "The data range to calculate the cumulative energy. \nThe format needs to change according to the value of “level”.\n- When “minutely”, the format is “yyyy-MM-dd”.\n- When “hourly”, the format is “yyyy-MM-dd”.\n- When “daily”, the format is “yyyy-MM”.\n- When “monthly”, the format is “yyyy”.\n- When “yearly”, this field is not required."
+								}
+							],
+							"variable": [
+								{
+									"key": "sid",
+									"value": "{{systemId}}"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "energy yearly",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-CA-AppId",
+										"value": "{{appId}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Timestamp",
+										"value": "{{currentTimestamp}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Nonce",
+										"value": "{{nonce}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature-Method",
+										"value": "HmacSHA256",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature",
+										"value": "{{signature}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{apiUrl}}/systems/energy/:sid?energy_level=yearly",
+									"host": [
+										"{{apiUrl}}"
+									],
+									"path": [
+										"systems",
+										"energy",
+										":sid"
+									],
+									"query": [
+										{
+											"key": "energy_level",
+											"value": "yearly",
+											"description": "The energy level to calculate the cumulative energy. Available values are “minutely”,“hourly”,“daily”, “monthly”,and“yearly”."
+										},
+										{
+											"key": "date_range",
+											"value": "",
+											"description": "The data range to calculate the cumulative energy. \nThe format needs to change according to the value of “level”.\n- When “minutely”, the format is “yyyy-MM-dd”.\n- When “hourly”, the format is “yyyy-MM-dd”.\n- When “daily”, the format is “yyyy-MM”.\n- When “monthly”, the format is “yyyy”.\n- When “yearly”, this field is not required.",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "sid",
+											"value": "{{systemId}}"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jul 2025 19:04:03 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Server",
+									"value": "openresty/1.21.4.1"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 0,\n    \"data\": [\n        \"286.90\",\n        \"224.15\",\n        \"559.36\",\n        \"878.86\",\n        \"541.63\",\n        \"651.77\",\n        \"754.78\"\n    ]\n}"
+						},
+						{
+							"name": "energy monthly",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-CA-AppId",
+										"value": "{{appId}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Timestamp",
+										"value": "{{currentTimestamp}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Nonce",
+										"value": "{{nonce}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature-Method",
+										"value": "HmacSHA256",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature",
+										"value": "{{signature}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{apiUrl}}/systems/energy/:sid?energy_level=monthly&date_range=2025",
+									"host": [
+										"{{apiUrl}}"
+									],
+									"path": [
+										"systems",
+										"energy",
+										":sid"
+									],
+									"query": [
+										{
+											"key": "energy_level",
+											"value": "monthly",
+											"description": "The energy level to calculate the cumulative energy. Available values are “minutely”,“hourly”,“daily”, “monthly”,and“yearly”."
+										},
+										{
+											"key": "date_range",
+											"value": "2025",
+											"description": "The data range to calculate the cumulative energy. \nThe format needs to change according to the value of “level”.\n- When “minutely”, the format is “yyyy-MM-dd”.\n- When “hourly”, the format is “yyyy-MM-dd”.\n- When “daily”, the format is “yyyy-MM”.\n- When “monthly”, the format is “yyyy”.\n- When “yearly”, this field is not required."
+										}
+									],
+									"variable": [
+										{
+											"key": "sid",
+											"value": "{{systemId}}"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jul 2025 19:09:31 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Server",
+									"value": "openresty/1.21.4.1"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 0,\n    \"data\": [\n        \"286.90\",\n        \"224.15\",\n        \"559.36\",\n        \"878.86\",\n        \"541.63\",\n        \"685.99\",\n        \"789.01\"\n    ]\n}"
+						},
+						{
+							"name": "energy daily",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-CA-AppId",
+										"value": "{{appId}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Timestamp",
+										"value": "{{currentTimestamp}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Nonce",
+										"value": "{{nonce}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature-Method",
+										"value": "HmacSHA256",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature",
+										"value": "{{signature}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{apiUrl}}/systems/energy/:sid?energy_level=daily&date_range=2025-07",
+									"host": [
+										"{{apiUrl}}"
+									],
+									"path": [
+										"systems",
+										"energy",
+										":sid"
+									],
+									"query": [
+										{
+											"key": "energy_level",
+											"value": "daily",
+											"description": "The energy level to calculate the cumulative energy. Available values are “minutely”,“hourly”,“daily”, “monthly”,and“yearly”."
+										},
+										{
+											"key": "date_range",
+											"value": "2025-07",
+											"description": "The data range to calculate the cumulative energy. \nThe format needs to change according to the value of “level”.\n- When “minutely”, the format is “yyyy-MM-dd”.\n- When “hourly”, the format is “yyyy-MM-dd”.\n- When “daily”, the format is “yyyy-MM”.\n- When “monthly”, the format is “yyyy”.\n- When “yearly”, this field is not required."
+										}
+									],
+									"variable": [
+										{
+											"key": "sid",
+											"value": "{{systemId}}"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jul 2025 19:10:16 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Server",
+									"value": "openresty/1.21.4.1"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 0,\n    \"data\": [\n        \"27.18\",\n        \"23.63\",\n        \"23.51\",\n        \"39.84\",\n        \"38.57\",\n        \"38.43\",\n        \"18.23\",\n        \"20.72\",\n        \"33.31\",\n        \"29.98\",\n        \"40.63\",\n        \"12.48\",\n        \"28.78\",\n        \"37.58\",\n        \"36.77\",\n        \"21.13\",\n        \"32.48\",\n        \"37.04\",\n        \"21.14\",\n        \"21.05\",\n        \"6.90\",\n        \"31.47\",\n        \"29.45\",\n        \"41.68\",\n        \"42.68\",\n        \"39.97\",\n        \"12.39\",\n        \"34.30\",\n        \"25.95\",\n        \"31.63\"\n    ]\n}"
+						},
+						{
+							"name": "energy hourly",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-CA-AppId",
+										"value": "{{appId}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Timestamp",
+										"value": "{{currentTimestamp}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Nonce",
+										"value": "{{nonce}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature-Method",
+										"value": "HmacSHA256",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature",
+										"value": "{{signature}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{apiUrl}}/systems/energy/:sid?energy_level=hourly&date_range=2025-07-20",
+									"host": [
+										"{{apiUrl}}"
+									],
+									"path": [
+										"systems",
+										"energy",
+										":sid"
+									],
+									"query": [
+										{
+											"key": "energy_level",
+											"value": "hourly",
+											"description": "The energy level to calculate the cumulative energy. Available values are “minutely”,“hourly”,“daily”, “monthly”,and“yearly”."
+										},
+										{
+											"key": "date_range",
+											"value": "2025-07-20",
+											"description": "The data range to calculate the cumulative energy. \nThe format needs to change according to the value of “level”.\n- When “minutely”, the format is “yyyy-MM-dd”.\n- When “hourly”, the format is “yyyy-MM-dd”.\n- When “daily”, the format is “yyyy-MM”.\n- When “monthly”, the format is “yyyy”.\n- When “yearly”, this field is not required."
+										}
+									],
+									"variable": [
+										{
+											"key": "sid",
+											"value": "{{systemId}}"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jul 2025 19:11:05 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Server",
+									"value": "openresty/1.21.4.1"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "JSESSIONID=62F55973999321139155290B113F3BD2; Path=/; HttpOnly"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 0,\n    \"data\": [\n        \"0\",\n        \"0\",\n        \"0\",\n        \"0\",\n        \"0\",\n        \"0.00\",\n        \"0.06\",\n        \"0.32\",\n        \"0.57\",\n        \"0.59\",\n        \"0.78\",\n        \"1.07\",\n        \"1.22\",\n        \"2.91\",\n        \"2.74\",\n        \"3.39\",\n        \"2.39\",\n        \"1.39\",\n        \"0.94\",\n        \"0.28\",\n        \"0.18\",\n        \"0.02\",\n        \"0\",\n        \"0\"\n    ]\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "ECU level data",
+			"item": [
+				{
+					"name": "ecu summary",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CA-AppId",
+								"value": "{{appId}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Timestamp",
+								"value": "{{currentTimestamp}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Nonce",
+								"value": "{{nonce}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature-Method",
+								"value": "HmacSHA256",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "energy_level",
+									"value": "daily",
+									"type": "text"
+								},
+								{
+									"key": "date_range",
+									"value": "2025-07-20",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{apiUrl}}/systems/:sid/devices/ecu/summary/:eid",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"systems",
+								":sid",
+								"devices",
+								"ecu",
+								"summary",
+								":eid"
+							],
+							"variable": [
+								{
+									"key": "sid",
+									"value": "{{systemId}}"
+								},
+								{
+									"key": "eid",
+									"value": "{{ecuId}}"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "ecu summary",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-CA-AppId",
+										"value": "{{appId}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Timestamp",
+										"value": "{{currentTimestamp}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Nonce",
+										"value": "{{nonce}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature-Method",
+										"value": "HmacSHA256",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature",
+										"value": "{{signature}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "energy_level",
+											"value": "minutely",
+											"type": "text"
+										},
+										{
+											"key": "date_range",
+											"value": "2025-07-20",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{apiUrl}}/systems/:sid/devices/ecu/summary/:eid",
+									"host": [
+										"{{apiUrl}}"
+									],
+									"path": [
+										"systems",
+										":sid",
+										"devices",
+										"ecu",
+										"summary",
+										":eid"
+									],
+									"variable": [
+										{
+											"key": "sid",
+											"value": "{{systemId}}"
+										},
+										{
+											"key": "eid",
+											"value": "{{ecuId}}"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Tue, 29 Jul 2025 14:51:47 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "Server",
+									"value": "openresty/1.21.4.1"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "JSESSIONID=ACA6A1582214E2FB1E1933DBD08C7024; Path=/; HttpOnly"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 0,\n    \"data\": {\n        \"month\": \"283.90\",\n        \"year\": \"2776.78\",\n        \"today\": \"2.072822\",\n        \"lifetime\": \"18503.54\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "ecu energy",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CA-AppId",
+								"value": "{{appId}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Timestamp",
+								"value": "{{currentTimestamp}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Nonce",
+								"value": "{{nonce}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature-Method",
+								"value": "HmacSHA256",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{apiUrl}}/systems/:sid/devices/ecu/energy/:eid?energy_level=monthly&date_range=2025",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"systems",
+								":sid",
+								"devices",
+								"ecu",
+								"energy",
+								":eid"
+							],
+							"query": [
+								{
+									"key": "energy_level",
+									"value": "monthly",
+									"description": "The energy level to calculate the cumulative energy. Available values are “minutely”,“hourly”,“daily”, “monthly”,and“yearly”."
+								},
+								{
+									"key": "date_range",
+									"value": "2025",
+									"description": "The data range to calculate the cumulative energy. \nThe format needs to change according to the value of “level”.\n- When “minutely”, the format is “yyyy-MM-dd”.\n- When “hourly”, the format is “yyyy-MM-dd”.\n- When “daily”, the format is “yyyy-MM”.\n- When “monthly”, the format is “yyyy”.\n- When “yearly”, this field is not required."
+								}
+							],
+							"variable": [
+								{
+									"key": "sid",
+									"value": "{{systemId}}"
+								},
+								{
+									"key": "eid",
+									"value": "{{ecuId}}"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "ecu energy minutely",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-CA-AppId",
+										"value": "{{appId}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Timestamp",
+										"value": "{{currentTimestamp}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Nonce",
+										"value": "{{nonce}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature-Method",
+										"value": "HmacSHA256",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature",
+										"value": "{{signature}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{apiUrl}}/systems/:sid/devices/ecu/energy/:eid?energy_level=minutely&date_range=2025-07-20",
+									"host": [
+										"{{apiUrl}}"
+									],
+									"path": [
+										"systems",
+										":sid",
+										"devices",
+										"ecu",
+										"energy",
+										":eid"
+									],
+									"query": [
+										{
+											"key": "energy_level",
+											"value": "minutely",
+											"description": "The energy level to calculate the cumulative energy. Available values are “minutely”,“hourly”,“daily”, “monthly”,and“yearly”."
+										},
+										{
+											"key": "date_range",
+											"value": "2025-07-20",
+											"description": "The data range to calculate the cumulative energy. \nThe format needs to change according to the value of “level”.\n- When “minutely”, the format is “yyyy-MM-dd”.\n- When “hourly”, the format is “yyyy-MM-dd”.\n- When “daily”, the format is “yyyy-MM”.\n- When “monthly”, the format is “yyyy”.\n- When “yearly”, this field is not required."
+										}
+									],
+									"variable": [
+										{
+											"key": "sid",
+											"value": "{{systemId}}"
+										},
+										{
+											"key": "eid",
+											"value": "{{ecuId}}"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Tue, 29 Jul 2025 14:57:35 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Server",
+									"value": "openresty/1.21.4.1"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "JSESSIONID=3F912E613AC9E3023DFF2C56C5B57D46; Path=/; HttpOnly"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 0,\n    \"data\": {\n        \"today\": \"18.90\",\n        \"time\": [\n            \"05:55\",\n            \"06:00\",\n            \"06:05\",\n            \"06:10\",\n            \"06:15\",\n            \"06:20\",\n            \"06:25\",\n            \"06:30\",\n            \"06:35\",\n            \"06:40\",\n            \"06:45\",\n            \"06:50\",\n            \"06:55\",\n            \"07:00\",\n            \"07:05\",\n            \"07:10\",\n            \"07:15\",\n            \"07:20\",\n            \"07:25\",\n            \"07:30\",\n            \"07:35\",\n            \"07:40\",\n            \"07:45\",\n            \"07:50\",\n            \"07:55\",\n            \"08:00\",\n            \"08:05\",\n            \"08:10\",\n            \"08:15\",\n            \"08:20\",\n            \"08:25\",\n            \"08:30\",\n            \"08:35\",\n            \"08:40\",\n            \"08:45\",\n            \"08:50\",\n            \"08:55\",\n            \"09:00\",\n            \"09:05\",\n            \"09:10\",\n            \"09:15\",\n            \"09:20\",\n            \"09:25\",\n            \"09:30\",\n            \"09:35\",\n            \"09:40\",\n            \"09:45\",\n            \"09:50\",\n            \"09:55\",\n            \"10:00\",\n            \"10:05\",\n            \"10:10\",\n            \"10:15\",\n            \"10:20\",\n            \"10:25\",\n            \"10:30\",\n            \"10:35\",\n            \"10:40\",\n            \"10:45\",\n            \"10:50\",\n            \"10:55\",\n            \"11:00\",\n            \"11:05\",\n            \"11:10\",\n            \"11:15\",\n            \"11:20\",\n            \"11:25\",\n            \"11:30\",\n            \"11:35\",\n            \"11:40\",\n            \"11:45\",\n            \"11:50\",\n            \"11:55\",\n            \"12:00\",\n            \"12:05\",\n            \"12:10\",\n            \"12:15\",\n            \"12:20\",\n            \"12:25\",\n            \"12:30\",\n            \"12:35\",\n            \"12:40\",\n            \"12:45\",\n            \"12:50\",\n            \"12:55\",\n            \"13:00\",\n            \"13:05\",\n            \"13:10\",\n            \"13:15\",\n            \"13:20\",\n            \"13:25\",\n            \"13:30\",\n            \"13:35\",\n            \"13:40\",\n            \"13:45\",\n            \"13:50\",\n            \"13:55\",\n            \"14:00\",\n            \"14:05\",\n            \"14:10\",\n            \"14:15\",\n            \"14:20\",\n            \"14:25\",\n            \"14:30\",\n            \"14:35\",\n            \"14:40\",\n            \"14:45\",\n            \"14:50\",\n            \"14:55\",\n            \"15:00\",\n            \"15:05\",\n            \"15:10\",\n            \"15:15\",\n            \"15:20\",\n            \"15:25\",\n            \"15:30\",\n            \"15:35\",\n            \"15:40\",\n            \"15:45\",\n            \"15:50\",\n            \"15:55\",\n            \"16:00\",\n            \"16:05\",\n            \"16:10\",\n            \"16:15\",\n            \"16:20\",\n            \"16:25\",\n            \"16:30\",\n            \"16:35\",\n            \"16:40\",\n            \"16:45\",\n            \"16:50\",\n            \"16:55\",\n            \"17:00\",\n            \"17:05\",\n            \"17:10\",\n            \"17:15\",\n            \"17:20\",\n            \"17:25\",\n            \"17:30\",\n            \"17:35\",\n            \"17:40\",\n            \"17:45\",\n            \"17:50\",\n            \"17:55\",\n            \"18:00\",\n            \"18:05\",\n            \"18:10\",\n            \"18:15\",\n            \"18:20\",\n            \"18:25\",\n            \"18:30\",\n            \"18:35\",\n            \"18:40\",\n            \"18:45\",\n            \"18:50\",\n            \"18:55\",\n            \"19:00\",\n            \"19:05\",\n            \"19:10\",\n            \"19:15\",\n            \"19:20\",\n            \"19:25\",\n            \"19:30\",\n            \"19:35\",\n            \"19:40\",\n            \"19:45\",\n            \"19:50\",\n            \"19:55\",\n            \"20:00\",\n            \"20:05\",\n            \"20:10\",\n            \"20:15\",\n            \"20:20\",\n            \"20:25\",\n            \"20:30\",\n            \"20:35\",\n            \"20:40\",\n            \"20:45\",\n            \"20:50\",\n            \"20:55\",\n            \"21:00\",\n            \"21:05\",\n            \"21:10\",\n            \"21:15\",\n            \"21:20\",\n            \"21:25\",\n            \"21:30\"\n        ],\n        \"power\": [\n            0,\n            20,\n            19,\n            22,\n            32,\n            23,\n            35,\n            43,\n            50,\n            61,\n            80,\n            95,\n            114,\n            144,\n            178,\n            208,\n            223,\n            254,\n            305,\n            358,\n            396,\n            437,\n            461,\n            463,\n            440,\n            428,\n            417,\n            432,\n            501,\n            581,\n            611,\n            592,\n            612,\n            697,\n            722,\n            721,\n            758,\n            762,\n            702,\n            632,\n            715,\n            720,\n            717,\n            606,\n            435,\n            359,\n            400,\n            512,\n            673,\n            822,\n            862,\n            775,\n            675,\n            655,\n            718,\n            703,\n            604,\n            758,\n            961,\n            984,\n            1107,\n            1209,\n            1072,\n            974,\n            1013,\n            1101,\n            1231,\n            1266,\n            1380,\n            1232,\n            1047,\n            908,\n            979,\n            1159,\n            1145,\n            639,\n            483,\n            1058,\n            1620,\n            1456,\n            1119,\n            1574,\n            1868,\n            1619,\n            1469,\n            2250,\n            3091,\n            2122,\n            2797,\n            4273,\n            3730,\n            4378,\n            1460,\n            1330,\n            3234,\n            3564,\n            4412,\n            1609,\n            1013,\n            3615,\n            4430,\n            2195,\n            4441,\n            3464,\n            1705,\n            3534,\n            1547,\n            2156,\n            4666,\n            3610,\n            3620,\n            4033,\n            4652,\n            1611,\n            3646,\n            4570,\n            3461,\n            4444,\n            2303,\n            3179,\n            3555,\n            2743,\n            4215,\n            2671,\n            3305,\n            3540,\n            2628,\n            1692,\n            1844,\n            1371,\n            2558,\n            1995,\n            1501,\n            2425,\n            1489,\n            1278,\n            1512,\n            1385,\n            1265,\n            1115,\n            1875,\n            1665,\n            1025,\n            1119,\n            3109,\n            2486,\n            2020,\n            1213,\n            991,\n            860,\n            688,\n            681,\n            833,\n            736,\n            410,\n            304,\n            299,\n            245,\n            323,\n            305,\n            250,\n            333,\n            297,\n            339,\n            260,\n            253,\n            277,\n            271,\n            264,\n            255,\n            260,\n            286,\n            279,\n            273,\n            248,\n            166,\n            106,\n            76,\n            49,\n            34,\n            30,\n            113,\n            43,\n            0,\n            0,\n            0,\n            0,\n            0\n        ],\n        \"energy\": [\n            \"0.00\",\n            \"0.00\",\n            \"0.00\",\n            \"0.00\",\n            \"0.00\",\n            \"0.00\",\n            \"0.00\",\n            \"0.00\",\n            \"0.01\",\n            \"0.01\",\n            \"0.01\",\n            \"0.01\",\n            \"0.01\",\n            \"0.01\",\n            \"0.02\",\n            \"0.02\",\n            \"0.02\",\n            \"0.02\",\n            \"0.02\",\n            \"0.03\",\n            \"0.03\",\n            \"0.04\",\n            \"0.04\",\n            \"0.04\",\n            \"0.04\",\n            \"0.04\",\n            \"0.03\",\n            \"0.04\",\n            \"0.04\",\n            \"0.05\",\n            \"0.05\",\n            \"0.05\",\n            \"0.05\",\n            \"0.05\",\n            \"0.06\",\n            \"0.06\",\n            \"0.06\",\n            \"0.06\",\n            \"0.06\",\n            \"0.05\",\n            \"0.06\",\n            \"0.06\",\n            \"0.06\",\n            \"0.05\",\n            \"0.04\",\n            \"0.03\",\n            \"0.03\",\n            \"0.04\",\n            \"0.05\",\n            \"0.07\",\n            \"0.07\",\n            \"0.06\",\n            \"0.05\",\n            \"0.05\",\n            \"0.06\",\n            \"0.06\",\n            \"0.05\",\n            \"0.06\",\n            \"0.08\",\n            \"0.08\",\n            \"0.09\",\n            \"0.10\",\n            \"0.09\",\n            \"0.08\",\n            \"0.08\",\n            \"0.09\",\n            \"0.10\",\n            \"0.10\",\n            \"0.11\",\n            \"0.10\",\n            \"0.08\",\n            \"0.08\",\n            \"0.08\",\n            \"0.10\",\n            \"0.09\",\n            \"0.05\",\n            \"0.04\",\n            \"0.09\",\n            \"0.13\",\n            \"0.12\",\n            \"0.09\",\n            \"0.13\",\n            \"0.15\",\n            \"0.13\",\n            \"0.11\",\n            \"0.19\",\n            \"0.24\",\n            \"0.17\",\n            \"0.22\",\n            \"0.35\",\n            \"0.30\",\n            \"0.34\",\n            \"0.12\",\n            \"0.11\",\n            \"0.26\",\n            \"0.28\",\n            \"0.35\",\n            \"0.13\",\n            \"0.08\",\n            \"0.29\",\n            \"0.35\",\n            \"0.18\",\n            \"0.35\",\n            \"0.28\",\n            \"0.14\",\n            \"0.28\",\n            \"0.13\",\n            \"0.17\",\n            \"0.38\",\n            \"0.28\",\n            \"0.30\",\n            \"0.31\",\n            \"0.37\",\n            \"0.13\",\n            \"0.29\",\n            \"0.36\",\n            \"0.28\",\n            \"0.36\",\n            \"0.19\",\n            \"0.24\",\n            \"0.29\",\n            \"0.22\",\n            \"0.34\",\n            \"0.21\",\n            \"0.26\",\n            \"0.28\",\n            \"0.21\",\n            \"0.14\",\n            \"0.14\",\n            \"0.11\",\n            \"0.21\",\n            \"0.16\",\n            \"0.12\",\n            \"0.20\",\n            \"0.12\",\n            \"0.10\",\n            \"0.12\",\n            \"0.11\",\n            \"0.10\",\n            \"0.09\",\n            \"0.16\",\n            \"0.13\",\n            \"0.08\",\n            \"0.09\",\n            \"0.09\",\n            \"0.21\",\n            \"0.16\",\n            \"0.09\",\n            \"0.08\",\n            \"0.07\",\n            \"0.06\",\n            \"0.05\",\n            \"0.07\",\n            \"0.06\",\n            \"0.03\",\n            \"0.02\",\n            \"0.02\",\n            \"0.02\",\n            \"0.03\",\n            \"0.03\",\n            \"0.02\",\n            \"0.03\",\n            \"0.02\",\n            \"0.03\",\n            \"0.02\",\n            \"0.02\",\n            \"0.02\",\n            \"0.02\",\n            \"0.02\",\n            \"0.02\",\n            \"0.02\",\n            \"0.02\",\n            \"0.02\",\n            \"0.02\",\n            \"0.02\",\n            \"0.01\",\n            \"0.01\",\n            \"0.01\",\n            \"0.01\",\n            \"0.00\",\n            \"0.00\",\n            \"0.01\",\n            \"0.00\",\n            \"0.00\",\n            \"0.00\",\n            \"0.00\",\n            \"0.00\",\n            \"0.00\"\n        ]\n    }\n}"
+						},
+						{
+							"name": "ecu energy hourly",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-CA-AppId",
+										"value": "{{appId}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Timestamp",
+										"value": "{{currentTimestamp}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Nonce",
+										"value": "{{nonce}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature-Method",
+										"value": "HmacSHA256",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature",
+										"value": "{{signature}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{apiUrl}}/systems/:sid/devices/ecu/energy/:eid?energy_level=hourly&date_range=2025-07-20",
+									"host": [
+										"{{apiUrl}}"
+									],
+									"path": [
+										"systems",
+										":sid",
+										"devices",
+										"ecu",
+										"energy",
+										":eid"
+									],
+									"query": [
+										{
+											"key": "energy_level",
+											"value": "hourly",
+											"description": "The energy level to calculate the cumulative energy. Available values are “minutely”,“hourly”,“daily”, “monthly”,and“yearly”."
+										},
+										{
+											"key": "date_range",
+											"value": "2025-07-20",
+											"description": "The data range to calculate the cumulative energy. \nThe format needs to change according to the value of “level”.\n- When “minutely”, the format is “yyyy-MM-dd”.\n- When “hourly”, the format is “yyyy-MM-dd”.\n- When “daily”, the format is “yyyy-MM”.\n- When “monthly”, the format is “yyyy”.\n- When “yearly”, this field is not required."
+										}
+									],
+									"variable": [
+										{
+											"key": "sid",
+											"value": "{{systemId}}"
+										},
+										{
+											"key": "eid",
+											"value": "{{ecuId}}"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Tue, 29 Jul 2025 14:59:00 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Server",
+									"value": "openresty/1.21.4.1"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "JSESSIONID=48D650B99B7DA3351B55F0313E9624B2; Path=/; HttpOnly"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 0,\n    \"data\": [\n        \"0\",\n        \"0\",\n        \"0\",\n        \"0\",\n        \"0\",\n        \"0.00\",\n        \"0.06\",\n        \"0.32\",\n        \"0.57\",\n        \"0.59\",\n        \"0.78\",\n        \"1.07\",\n        \"1.22\",\n        \"2.91\",\n        \"2.74\",\n        \"3.39\",\n        \"2.39\",\n        \"1.39\",\n        \"0.94\",\n        \"0.28\",\n        \"0.18\",\n        \"0.02\",\n        \"0\",\n        \"0\"\n    ]\n}"
+						},
+						{
+							"name": "ecu daily",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-CA-AppId",
+										"value": "{{appId}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Timestamp",
+										"value": "{{currentTimestamp}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Nonce",
+										"value": "{{nonce}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature-Method",
+										"value": "HmacSHA256",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature",
+										"value": "{{signature}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{apiUrl}}/systems/:sid/devices/ecu/energy/:eid?energy_level=daily&date_range=2025-07",
+									"host": [
+										"{{apiUrl}}"
+									],
+									"path": [
+										"systems",
+										":sid",
+										"devices",
+										"ecu",
+										"energy",
+										":eid"
+									],
+									"query": [
+										{
+											"key": "energy_level",
+											"value": "daily",
+											"description": "The energy level to calculate the cumulative energy. Available values are “minutely”,“hourly”,“daily”, “monthly”,and“yearly”."
+										},
+										{
+											"key": "date_range",
+											"value": "2025-07",
+											"description": "The data range to calculate the cumulative energy. \nThe format needs to change according to the value of “level”.\n- When “minutely”, the format is “yyyy-MM-dd”.\n- When “hourly”, the format is “yyyy-MM-dd”.\n- When “daily”, the format is “yyyy-MM”.\n- When “monthly”, the format is “yyyy”.\n- When “yearly”, this field is not required."
+										}
+									],
+									"variable": [
+										{
+											"key": "sid",
+											"value": "{{systemId}}"
+										},
+										{
+											"key": "eid",
+											"value": "{{ecuId}}"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Tue, 29 Jul 2025 14:59:34 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Server",
+									"value": "openresty/1.21.4.1"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "JSESSIONID=1C03585B2D35DF18633876B92A0FD936; Path=/; HttpOnly"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 0,\n    \"data\": [\n        \"0.08\",\n        \"0.09\",\n        \"0.06\",\n        \"0.05\",\n        \"0.05\",\n        \"0.06\",\n        \"0.07\",\n        \"0.08\",\n        \"0.05\",\n        \"0.05\",\n        \"0.08\",\n        \"0.05\",\n        \"0.06\",\n        \"0.04\",\n        \"0.07\",\n        \"38.15\",\n        \"14.40\",\n        \"31.25\",\n        \"33.29\",\n        \"18.85\",\n        \"20.21\",\n        \"5.96\",\n        \"32.77\",\n        \"36.04\",\n        \"19.76\",\n        \"7.82\",\n        \"10.54\",\n        \"11.86\",\n        \"2.20\"\n    ]\n}"
+						},
+						{
+							"name": "ecu monthly",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-CA-AppId",
+										"value": "{{appId}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Timestamp",
+										"value": "{{currentTimestamp}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Nonce",
+										"value": "{{nonce}}",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature-Method",
+										"value": "HmacSHA256",
+										"type": "text"
+									},
+									{
+										"key": "X-CA-Signature",
+										"value": "{{signature}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{apiUrl}}/systems/:sid/devices/ecu/energy/:eid?energy_level=monthly&date_range=2025",
+									"host": [
+										"{{apiUrl}}"
+									],
+									"path": [
+										"systems",
+										":sid",
+										"devices",
+										"ecu",
+										"energy",
+										":eid"
+									],
+									"query": [
+										{
+											"key": "energy_level",
+											"value": "monthly",
+											"description": "The energy level to calculate the cumulative energy. Available values are “minutely”,“hourly”,“daily”, “monthly”,and“yearly”."
+										},
+										{
+											"key": "date_range",
+											"value": "2025",
+											"description": "The data range to calculate the cumulative energy. \nThe format needs to change according to the value of “level”.\n- When “minutely”, the format is “yyyy-MM-dd”.\n- When “hourly”, the format is “yyyy-MM-dd”.\n- When “daily”, the format is “yyyy-MM”.\n- When “monthly”, the format is “yyyy”.\n- When “yearly”, this field is not required."
+										}
+									],
+									"variable": [
+										{
+											"key": "sid",
+											"value": "{{systemId}}"
+										},
+										{
+											"key": "eid",
+											"value": "{{ecuId}}"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Tue, 29 Jul 2025 15:00:04 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Server",
+									"value": "openresty/1.21.4.1"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "Set-Cookie",
+									"value": "JSESSIONID=598F7CA10AB568E2ECFE6A0992C7B25F; Path=/; HttpOnly"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 0,\n    \"data\": [\n        \"286.90\",\n        \"224.15\",\n        \"559.36\",\n        \"878.86\",\n        \"541.63\",\n        \"650.99\",\n        \"284.03\"\n    ]\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Meter level data",
+			"item": [
+				{
+					"name": "meter summary",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CA-AppId",
+								"value": "{{appId}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Timestamp",
+								"value": "{{currentTimestamp}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Nonce",
+								"value": "{{nonce}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature-Method",
+								"value": "HmacSHA256",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{apiUrl}}/systems/:sid/devices/meter/summary/:eid",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"systems",
+								":sid",
+								"devices",
+								"meter",
+								"summary",
+								":eid"
+							],
+							"variable": [
+								{
+									"key": "sid",
+									"value": "{{systemId}}"
+								},
+								{
+									"key": "eid",
+									"value": "{{meterId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "meter energy in period",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CA-AppId",
+								"value": "{{appId}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Timestamp",
+								"value": "{{currentTimestamp}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Nonce",
+								"value": "{{nonce}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature-Method",
+								"value": "HmacSHA256",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{apiUrl}}/systems/:sid/devices/meter/period/:eid?energy_level=monthly&date_range=2025",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"systems",
+								":sid",
+								"devices",
+								"meter",
+								"period",
+								":eid"
+							],
+							"query": [
+								{
+									"key": "energy_level",
+									"value": "monthly",
+									"description": "The energy level to calculate the cumulative energy. Available values are “minutely”,“hourly”,“daily”, “monthly”,and“yearly”."
+								},
+								{
+									"key": "date_range",
+									"value": "2025",
+									"description": "The data range to calculate the cumulative energy. \nThe format needs to change according to the value of “level”.\n- When “minutely”, the format is “yyyy-MM-dd”.\n- When “hourly”, the format is “yyyy-MM-dd”.\n- When “daily”, the format is “yyyy-MM”.\n- When “monthly”, the format is “yyyy”.\n- When “yearly”, this field is not required."
+								}
+							],
+							"variable": [
+								{
+									"key": "sid",
+									"value": "{{systemId}}"
+								},
+								{
+									"key": "eid",
+									"value": "{{meterId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Inverter level data",
+			"item": [
+				{
+					"name": "inverter summary",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CA-AppId",
+								"value": "{{appId}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Timestamp",
+								"value": "{{currentTimestamp}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Nonce",
+								"value": "{{nonce}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature-Method",
+								"value": "HmacSHA256",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "energy_level",
+									"value": "minutely",
+									"type": "text"
+								},
+								{
+									"key": "date_range",
+									"value": "2025-07-20",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{apiUrl}}/systems/:sid/devices/inverter/summary/:uid",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"systems",
+								":sid",
+								"devices",
+								"inverter",
+								"summary",
+								":uid"
+							],
+							"variable": [
+								{
+									"key": "sid",
+									"value": "{{systemId}}"
+								},
+								{
+									"key": "uid",
+									"value": "{{inverterId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "inverter energy",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CA-AppId",
+								"value": "{{appId}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Timestamp",
+								"value": "{{currentTimestamp}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Nonce",
+								"value": "{{nonce}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature-Method",
+								"value": "HmacSHA256",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{apiUrl}}/systems/:sid/devices/inverter/energy/:uid?energy_level=minutely&date_range=2025-07-24",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"systems",
+								":sid",
+								"devices",
+								"inverter",
+								"energy",
+								":uid"
+							],
+							"query": [
+								{
+									"key": "energy_level",
+									"value": "minutely",
+									"description": "The energy level to calculate the cumulative energy. Available values are “hourly”,“daily”, “monthly”,and“yearly”."
+								},
+								{
+									"key": "date_range",
+									"value": "2025-07-24",
+									"description": "The data range to calculate the cumulative energy. \nThe format needs to change according to the value of “level”.\n- When “minutely”, the format is “yyyy-MM-dd”.\n- When “hourly”, the format is “yyyy-MM-dd”.\n- When “daily”, the format is “yyyy-MM”.\n- When “monthly”, the format is “yyyy”.\n- When “yearly”, this field is not required."
+								}
+							],
+							"variable": [
+								{
+									"key": "sid",
+									"value": "{{systemId}}"
+								},
+								{
+									"key": "uid",
+									"value": "{{inverterId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "all inverters energy for ECU",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CA-AppId",
+								"value": "{{appId}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Timestamp",
+								"value": "{{currentTimestamp}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Nonce",
+								"value": "{{nonce}}",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature-Method",
+								"value": "HmacSHA256",
+								"type": "text"
+							},
+							{
+								"key": "X-CA-Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{apiUrl}}/systems/:sid/devices/inverter/batch/energy/:eid?energy_level=power&date_range=2025-07-24",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"systems",
+								":sid",
+								"devices",
+								"inverter",
+								"batch",
+								"energy",
+								":eid"
+							],
+							"query": [
+								{
+									"key": "energy_level",
+									"value": "power",
+									"description": "Available values are “power\" or \"energy\""
+								},
+								{
+									"key": "date_range",
+									"value": "2025-07-24",
+									"description": "The format is “yyyy-MM-dd”"
+								}
+							],
+							"variable": [
+								{
+									"key": "sid",
+									"value": "{{systemId}}"
+								},
+								{
+									"key": "eid",
+									"value": "{{ecuId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"requests": {},
+				"exec": [
+					"/**",
+					" * ============================================================================",
+					" * APsystems OpenAPI Signature & Header Automation Pre-request Script",
+					" * ============================================================================",
+					" *",
+					" * This script prepares all required headers and computes the HMAC signature",
+					" * for authenticating requests to the APsystems OpenAPI in Postman.",
+					" *",
+					" * Features:",
+					" * - Automatically generates current timestamp and a random nonce (UUID hex).",
+					" * - Resolves all variable and path parameter substitutions in the request URL,",
+					" *   including both :param and {{param}} formats.",
+					" * - Extracts the final segment of the request path for use in the signature.",
+					" * - Composes the signing string per APsystems API specification.",
+					" * - Computes the signature using HmacSHA256 and Base64 encodes it.",
+					" * - Stores all derived values (timestamp, nonce, signature) as collection variables",
+					" *   for use in your request headers.",
+					" *",
+					" * Prerequisites:",
+					" * - Set your 'appId' and 'appSecret' as collection variables before using this script.",
+					" *   Example:",
+					" *     pm.collectionVariables.set('appId', 'your-app-id');",
+					" *     pm.collectionVariables.set('appSecret', 'your-app-secret');",
+					" *",
+					" * Usage:",
+					" * - Add this script as a collection-level pre-request script for all APsystems",
+					" *   API requests requiring authentication.",
+					" * - Reference the computed variables in your request headers as:",
+					" *     X-CA-AppId: {{appId}}",
+					" *     X-CA-Timestamp: {{currentTimestamp}}",
+					" *     X-CA-Nonce: {{nonce}}",
+					" *     X-CA-Signature-Method: HmacSHA256",
+					" *     X-CA-Signature: {{signature}}",
+					" *",
+					" * Dependencies:",
+					" * - Requires 'uuid' and 'crypto-js' libraries (Postman built-ins).",
+					" *",
+					" * ----------------------------------------------------------------------------",
+					" */",
+					"",
+					"// Retrieve the required APsystems App ID and App Secret from collection variables.",
+					"// These must be set in your collection variables prior to running this script.",
+					"const appId = pm.collectionVariables.get('appId');",
+					"const appSecret = pm.collectionVariables.get('appSecret');",
+					"",
+					"console.log(appId);",
+					"console.log(appSecret);",
+					"",
+					"// Validate that both required credentials are present. If not, throw an error.",
+					"if (!appId || !appSecret) {",
+					"    throw new Error(\"APsystems 'appId' and 'appSecret' collection variables must be set before making a request.\");",
+					"}",
+					"",
+					"// Generate the current timestamp in milliseconds since epoch and store as a string collection variable",
+					"var currentTimestamp = new Date().getTime().toString();",
+					"console.log(currentTimestamp);",
+					"pm.collectionVariables.set('currentTimestamp', currentTimestamp);",
+					"",
+					"// Generate a random UUID and remove dashes for the nonce, then store as a collection variable",
+					"var uuid = require('uuid');",
+					"var nonce = uuid.v4().replace(/-/g, '');",
+					"pm.collectionVariables.set('nonce', nonce);",
+					"console.log(nonce);",
+					"",
+					"// Retrieve the request URL as a string",
+					"var requestUrl = pm.request.url.toString();",
+					"",
+					"// Resolve any path parameters (/:foo) and variable placeholders ({{foo}}) in the URL",
+					"requestUrl = resolvePathParameters(requestUrl);",
+					"console.log(requestUrl);",
+					"",
+					"// Split the resolved URL into segments and extract the last segment for the signature string",
+					"// Exclude query parameters",
+					"const urlWithoutQuery = requestUrl.split('?')[0]; ",
+					"var urlSegments = urlWithoutQuery.split(\"/\");",
+					"var lastSegment = urlSegments[urlSegments.length - 1];",
+					"",
+					"console.log(lastSegment);",
+					"",
+					"// Compose the string to sign according to APsystems API specification",
+					"var stringToSign = currentTimestamp + '/' + ",
+					"                   nonce + '/' + ",
+					"                   appId + '/' + ",
+					"                   lastSegment + '/' + ",
+					"                   pm.request.method + '/HmacSHA256';",
+					"",
+					"console.log(stringToSign);",
+					"",
+					"// Compute the signature using HmacSHA256 and encode it in Base64",
+					"const appSecretBytes = CryptoJS.enc.Utf8.parse(appSecret);",
+					"const hmacSha256 = CryptoJS.HmacSHA256(stringToSign, appSecretBytes);",
+					"const signature = CryptoJS.enc.Base64.stringify(hmacSha256);",
+					"",
+					"// Store the final signature as a collection variable for use in request headers",
+					"pm.collectionVariables.set('signature', signature);",
+					"",
+					"console.log(signature);",
+					"",
+					"/**",
+					" * Resolves path parameters in a URL string.",
+					" * Handles both colon-prefixed (/:foo) and {{foo}} style path variables.",
+					" * Looks up values in path variables, then environment, collection, and globals.",
+					" *",
+					" * @param {string} rawPath - The raw URL path potentially containing path variables.",
+					" * @returns {string} - The path with all parameters replaced by their resolved values.",
+					" */",
+					"function resolvePathParameters(rawPath) {",
+					"    // First, resolve colon-prefixed params (/:foo)",
+					"    let resolvedPath = rawPath.replace(/:([a-zA-Z0-9_]+)/g, (match, varName) => {",
+					"        // Try to get from path variables",
+					"        let pathVar = pm.request.url.variables.get(varName);",
+					"        if (pathVar) return pathVar.value;",
+					"        // Try environment/collection/globals",
+					"        return pm.environment.get(varName) || pm.collectionVariables.get(varName) || pm.globals.get(varName) || match;",
+					"    });",
+					"    // Then, resolve {{foo}} style variables",
+					"    resolvedPath = resolvedPath.replace(/{{([^}]+)}}/g, (_, key) => {",
+					"        return pm.environment.get(key) || pm.collectionVariables.get(key) || pm.globals.get(key) || '';",
+					"    });",
+					"    return resolvedPath;",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "appId",
+			"value": ""
+		},
+		{
+			"key": "appSecret",
+			"value": ""
+		},
+		{
+			"key": "systemId",
+			"value": ""
+		},
+		{
+			"key": "ecuId",
+			"value": ""
+		},
+		{
+			"key": "inverterId",
+			"value": ""
+		},
+		{
+			"key": "meterdId",
+			"value": ""
+		},
+		{
+			"key": "currentTimestamp",
+			"value": ""
+		},
+		{
+			"key": "nonce",
+			"value": ""
+		},
+		{
+			"key": "signature",
+			"value": ""
+		},
+		{
+			"key": "baseUrl",
+			"value": ""
+		},
+		{
+			"key": "apiPath",
+			"value": ""
+		},
+		{
+			"key": "apiUrl",
+			"value": ""
+		}
+	]
+}

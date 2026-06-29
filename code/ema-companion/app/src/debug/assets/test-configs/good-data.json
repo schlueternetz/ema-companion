@@ -1,0 +1,13 @@
+{
+  "language": "system",
+  "emaAppId": "test-app-id",
+  "emaAppSecret": "test-app-secret",
+  "emaSystemId": "TESTSYSTEM01",
+  "emaEcuId": "203000001234",
+  "systemCapacity": 10.0,
+  "historicDataDays": 30,
+  "apiRequestLimit": 1000,
+  "notificationsEnabled": true,
+  "baseUrl": "http://localhost:8080/user/api/v2/",
+  "displayMode": "system"
+}

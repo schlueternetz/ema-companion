@@ -60,14 +60,18 @@ Implement tasks from an OpenSpec change.
    - Remaining tasks overview
    - Dynamic instruction from CLI
 
-6. **Implement tasks (loop until done or blocked)**
+6. **Implement tasks using AI-TDD (loop until done or blocked)**
 
-   For each pending task:
-   - Show which task is being worked on
-   - Make the code changes required
-   - Keep changes minimal and focused
+   For each pending task, follow the AI-TDD workflow (`ai-tdd` skill):
+   - Choose the test layer for the task per [ADR-002](../../../docs/adr/002-testing-strategy.md): unit (default), Robolectric (Android framework), integration (API/data layer), or Maestro (critical UI flows only)
+   - **Red**: Write a failing test that specifies the task's behavior
+   - Run tests to confirm the new test fails (and only that test)
+   - **Green**: Write minimal implementation to make the test pass
+   - Run tests to confirm all pass
+   - **Refactor**: Clean up without breaking tests; run tests once more
    - Mark task complete in the tasks file: `- [ ]` → `- [x]`
-   - Continue to next task
+
+   Skip Red/Green only for tasks with no testable behavior (e.g., adding string resources, bumping a dependency version). Note the skip reason explicitly.
 
    **Pause if:**
    - Task is unclear → ask for clarification
@@ -75,9 +79,11 @@ Implement tasks from an OpenSpec change.
    - Error or blocker encountered → report and wait for guidance
    - User interrupts
 
-7. **On completion or pause, show status**
+7. **On completion or pause, invoke lessons-learned then show status**
 
-   Display:
+   Invoke the `lessons-learned` skill to record what went well, what didn't, and mistakes to avoid.
+
+   Then display:
    - Tasks completed this session
    - Overall progress: "N/M tasks complete"
    - If all done: suggest archive

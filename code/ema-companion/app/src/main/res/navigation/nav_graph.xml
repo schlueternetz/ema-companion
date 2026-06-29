@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.schlueternetz.emacompanion.feature.home.HomeFragment"
+        android:label="@string/nav_home" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.schlueternetz.emacompanion.feature.settings.SettingsFragment"
+        android:label="@string/nav_settings" />
+
+    <fragment
+        android:id="@+id/userGuideFragment"
+        android:name="com.schlueternetz.emacompanion.feature.userguide.UserGuideFragment"
+        android:label="@string/nav_user_guide">
+        <argument
+            android:name="assetPath"
+            app:argType="string"
+            android:defaultValue="user-guide/user-guide.md" />
+    </fragment>
+
+</navigation>

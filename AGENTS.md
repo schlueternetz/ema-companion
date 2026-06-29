@@ -4,15 +4,94 @@ This file provides guidance to AI coding agents when working in this repository.
 
 ## Project
 Load @README.md for general project information.
+Load @ai/lessons-learned.md and apply past lessons before starting any task.
 
 ## Stack
 
-_To be defined as the project develops._
+- **Language:** Kotlin
+- **Platform:** Android (minSdk 31, targetSdk 36)
+- **UI:** View-based XML layouts, Material Design 3
+- **Build:** Gradle with version catalog (`gradle/libs.versions.toml`)
 
 ## Key Conventions
 
-_To be defined as the project develops._
+Architecture decisions are documented in [`docs/adr/`](docs/adr/). Read the relevant ADRs before making decisions in their domains. Key decisions currently in effect:
+
+**Coding standards** (ADR-001):
+- All Kotlin code must pass `./gradlew ktlintCheck` — run it before considering any task complete
+- All implementations follow AI-TDD: write a failing test first, then implement, then refactor
+
+**Testing** (ADR-002):
+- Default to unit tests (JUnit4, `src/test/`) for all pure logic
+- Use Robolectric for code that needs Android `Context` but not a real device
+- Integration tests hit the local mock API service (real HTTP, configurable base URL)
+- Maestro (`maestro/`) for a small set of critical UI flows only — not for broad UI coverage
+- No Espresso
+
+**EMA API call budget**:
+- The EMA API has a hard monthly call quota — every request counts against it and cannot be refunded
+- Before designing or implementing any feature that calls the EMA API, explicitly count the calls per trigger and propose the approach that minimises them
+- Prefer: throttle guards, persisted caches for immutable data (past days, historical summaries), and reusing data already fetched by another feature over making a fresh call
+- Flag any design that makes redundant or unbounded API calls (e.g. re-fetching data that cannot have changed) and propose an alternative before implementing
+
+**Debugging** (cost discipline):
+- For any bug or unexpected-behavior report, reproduce it at the lowest test layer first (unit, then Robolectric) before launching the emulator — a deterministic failing test is cheaper and pinpoints the cause
+- Reserve the emulator and screenshots for final confirmation or genuinely visual/layout bugs, not for exploratory "did it move?" loops (each screenshot read costs thousands of tokens)
+- For navigation/UI-state bugs, drive the real code path in the test (e.g. `NavigationUI.onNavDestinationSelected`), not just a bare `navController.navigate(id)` — the menu/tap path adds NavOptions that a plain navigate hides
+- **All emulator debug artifacts (screenshots, `adb pull` files, uiautomator XML dumps, SharedPreferences dumps) must be saved to `D:\ema-debug\` — never inside the project directory.** Create the folder if it doesn't exist (`New-Item -ItemType Directory -Force D:\ema-debug`). This keeps throwaway files out of git entirely.
+
+**Platform, localization, and accessibility** (ADR-003):
+- minSdk 31 (Android 12) — no APIs above 31 without a runtime check or AndroidX backport
+- Reference device: Lenovo Tab P11 Plus (tablet); verify layouts on that form factor
+- Supported locales: English (default) and German — all text in string resources, no hardcoded strings
+- Accessibility target: WCAG 2.1 AA; all interactive elements need content descriptions, 48dp touch targets minimum
+- UI tasks are only complete when lint passes and Robolectric tests include ATF (`AccessibilityValidator`) checks
+
+**Tile repository pattern** (ADR-007):
+- Each tile repo implements a tile-specific source interface (`currentState()` + `refresh()`) and `ThrottleResettable`
+- Add every new tile repo to `SettingsFragment.tileRepositories` (for throttle reset) and call its `clear()` in `showFactoryResetDialog()` (for factory reset)
+- Add the tile's SharedPreferences store name(s) to `SettingsFragmentTest.setUp()` so state doesn't leak across tests
+- Known gap: `ModuleHealthRepository` lacks a public `clear()` — factory reset clears its prefs directly; fix this when adding a third tile
+
+**Tile error display** (ADR-006):
+- Every Home tile must show the last known data (or a neutral placeholder) at all times — never blank on error
+- Fetch errors are shown as an inline status line below the data text; no dialog, toast, or popup for transient fetch errors
+- Each tile's state class carries a `FetchError?` field (reuse `core/api/FetchError`); persist it alongside the tile data so `currentState()` reconstructs the full rendered state
+- `ConfigurationError` is silent — show neutral placeholder only, no error line
+
+**Email alerts** (ADR-008):
+- Emails fire on module health status change only — `newStatus != UNKNOWN && newStatus != lastEmailedStatus`
+- `lastEmailedStatus` and `lastNotifiedStatus` are separate persisted fields in `ema_module_health`; do not merge them
+- RED latch: if persisted status is RED and computed status is YELLOW, final status stays RED — only GREEN clears RED
+- `lastEmailedStatus` is updated only on `EmailResult.Success`; leave it unchanged on `AuthFailure` or `NetworkError` so the next change retries
+- App Password must never appear in logs, crash reports, or `ApiCallLogRepository`; `resetThrottle()` on `ModuleHealthRepository` must clear `KEY_LAST_EMAILED_STATUS`
+
+**Package and code organization** (ADR-004):
+- Feature-first: all code lives in `feature/<name>/` (e.g. `feature/home/`, `feature/settings/`)
+- Only `MainActivity` stays at the root package
+- Shared code goes in `core/` only when used by ≥2 features
+- Test packages mirror source packages (`feature/home/HomeFragmentTest` alongside `HomeFragment`)
+
+**ADRs**:
+- When writing a new ADR or significantly updating an existing one, invoke the `write-adr` skill — it writes the file and updates all cross-references (`getting-started.md` ADR table, `AGENTS.md` Key Conventions)
+
+**User guide**:
+- After completing any UI (frontend) change — layouts, activities, fragments, menus, or navigation — invoke the `write-user-guide` skill to update the relevant pages in `docs/user-guide/`
+- The guide is split into one file per screen plus an index: `user-guide.md` (index), `home.md`, `settings.md`, `import-export.md`. Each page must stay under ~600 words (3-minute read). Only add a new page when a section is logically self-contained and too long for an existing page.
+
+**Hooks** (`.claude/settings.json` — fire automatically, but know they exist):
+- **UX file written** (`PostToolUse` on Edit/Write): fires when layout, Activity, Fragment, strings, menu, or navigation files change — injects a reminder to invoke `write-user-guide`
+- **SKILL.md written** (`PostToolUse` on Edit/Write): fires when `.claude/skills/*/SKILL.md` is written — injects a reminder to invoke `skill-check`
+- **`git commit` staged** (`PreToolUse` on Bash): scans staged diff for secrets (API keys, tokens, private keys) and blocks the commit if found
 
 ## Build & Run
 
-_To be defined as the project develops._
+```bash
+cd code/ema-companion
+./gradlew assembleDebug        # build
+./gradlew testDebugUnitTest    # unit + Robolectric tests
+./gradlew ktlintCheck          # lint
+./gradlew installDebug         # install on running emulator
+```
+
+See [docs/getting-started.md](docs/getting-started.md) for full setup instructions.

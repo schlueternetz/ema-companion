@@ -1,0 +1,18 @@
+C4Context
+    title EMA Companion – System Context
+
+    Person(owner, "APsystems Solar Owner")
+
+    Boundary(device, "Android Phone or Tablet") {
+        System_Ext(emaApp, "EMA App", "- Production<br/>- Module<br/>- Data (Reports)<br/>- Settings")
+        System(companion, "EMA Companion", "- Production<br/>- Module Health<br/>- Notifications")
+    }
+
+    System_Ext(emaApi, "EMA API")
+    System_Ext(solarArray, "Solar Array")
+
+    Rel(owner, emaApp, "Uses")
+    Rel(owner, companion, "Uses")
+    Rel(emaApp, emaApi, "Retrieves data")
+    Rel(companion, emaApi, "Retrieves data")
+    Rel(emaApi, solarArray, "Retrieves data")
