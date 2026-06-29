@@ -20,9 +20,14 @@ appId: com.schlueternetz.emacompanion
       - tapOn:
           id: "com.android.permissioncontroller:id/permission_allow_button"
 
+# Wait for the Settings content to be rendered, not just the bottom nav tab.
+# settingsFragment (the nav tab id) becomes visible as soon as the nav bar
+# appears, which can precede the fragment's ScrollView content rendering.
+# setting_ema_app_id is the first item in the Solar Array card — if it's
+# visible, the Settings fragment has inflated and is ready to scroll.
 - extendedWaitUntil:
     visible:
-      id: "settingsFragment"
+      id: "setting_ema_app_id"
     timeout: 60000
 
 # The Email Alerts section is below the fold. Scroll it into view before
@@ -31,7 +36,7 @@ appId: com.schlueternetz.emacompanion
     element:
       id: "settings_email_alerts_switch"
     direction: DOWN
-    timeout: 5000
+    timeout: 15000
 
 # Toggle is off by default on a fresh install; setup section is hidden.
 - assertNotVisible:
