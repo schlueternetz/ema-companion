@@ -22,7 +22,6 @@ import java.time.LocalDate
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class ModuleHealthRepositoryTest {
-
     private lateinit var context: Context
     private lateinit var fakeClient: FakeClient
     private lateinit var repo: ModuleHealthRepository
@@ -34,10 +33,16 @@ class ModuleHealthRepositoryTest {
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        context.getSharedPreferences(ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE)
-            .edit().clear().commit()
-        context.getSharedPreferences(ModuleHealthRepository.PREFS_DAILY, Context.MODE_PRIVATE)
-            .edit().clear().commit()
+        context
+            .getSharedPreferences(ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .commit()
+        context
+            .getSharedPreferences(ModuleHealthRepository.PREFS_DAILY, Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .commit()
         fakeClient = FakeClient()
         repo = ModuleHealthRepository.forTest(context, fakeClient, today = { today })
     }
@@ -46,11 +51,12 @@ class ModuleHealthRepositoryTest {
 
     @Test
     fun computeStatus_allProducing_returnsGreen() {
-        val window = mapOf(
-            today to mapOf("INV1" to 1.5, "INV2" to 0.8),
-            yesterday to mapOf("INV1" to 1.2, "INV2" to 0.9),
-            dayBefore to mapOf("INV1" to 1.1, "INV2" to 1.0),
-        )
+        val window =
+            mapOf(
+                today to mapOf("INV1" to 1.5, "INV2" to 0.8),
+                yesterday to mapOf("INV1" to 1.2, "INV2" to 0.9),
+                dayBefore to mapOf("INV1" to 1.1, "INV2" to 1.0),
+            )
         val state = repo.computeStatus(window)
         assertEquals(ModuleHealthStatus.GREEN, state.status)
         assertEquals(emptyList<Module>(), state.offlineModules)
@@ -58,11 +64,12 @@ class ModuleHealthRepositoryTest {
 
     @Test
     fun computeStatus_oneInverterOfflineToday_returnsYellow() {
-        val window = mapOf(
-            today to mapOf("INV1" to 0.0, "INV2" to 0.8),
-            yesterday to mapOf("INV1" to 1.2, "INV2" to 0.9),
-            dayBefore to mapOf("INV1" to 1.1, "INV2" to 1.0),
-        )
+        val window =
+            mapOf(
+                today to mapOf("INV1" to 0.0, "INV2" to 0.8),
+                yesterday to mapOf("INV1" to 1.2, "INV2" to 0.9),
+                dayBefore to mapOf("INV1" to 1.1, "INV2" to 1.0),
+            )
         val state = repo.computeStatus(window)
         assertEquals(ModuleHealthStatus.YELLOW, state.status)
         assertEquals(1, state.offlineModules.size)
@@ -72,11 +79,12 @@ class ModuleHealthRepositoryTest {
 
     @Test
     fun computeStatus_oneInverterOfflineTwoDays_returnsYellow() {
-        val window = mapOf(
-            today to mapOf("INV1" to 0.0, "INV2" to 0.8),
-            yesterday to mapOf("INV1" to 0.0, "INV2" to 0.9),
-            dayBefore to mapOf("INV1" to 1.1, "INV2" to 1.0),
-        )
+        val window =
+            mapOf(
+                today to mapOf("INV1" to 0.0, "INV2" to 0.8),
+                yesterday to mapOf("INV1" to 0.0, "INV2" to 0.9),
+                dayBefore to mapOf("INV1" to 1.1, "INV2" to 1.0),
+            )
         val state = repo.computeStatus(window)
         assertEquals(ModuleHealthStatus.YELLOW, state.status)
         assertEquals(1, state.offlineModules.size)
@@ -85,11 +93,12 @@ class ModuleHealthRepositoryTest {
 
     @Test
     fun computeStatus_oneInverterOfflineThreeDays_returnsRed() {
-        val window = mapOf(
-            today to mapOf("INV1" to 0.0, "INV2" to 0.8),
-            yesterday to mapOf("INV1" to 0.0, "INV2" to 0.9),
-            dayBefore to mapOf("INV1" to 0.0, "INV2" to 1.0),
-        )
+        val window =
+            mapOf(
+                today to mapOf("INV1" to 0.0, "INV2" to 0.8),
+                yesterday to mapOf("INV1" to 0.0, "INV2" to 0.9),
+                dayBefore to mapOf("INV1" to 0.0, "INV2" to 1.0),
+            )
         val state = repo.computeStatus(window)
         assertEquals(ModuleHealthStatus.RED, state.status)
         assertEquals(1, state.offlineModules.size)
@@ -100,11 +109,12 @@ class ModuleHealthRepositoryTest {
     @Test
     fun computeStatus_absentInverterTreatedAsZero() {
         // INV1 is present in yesterday + dayBefore but absent from today → treated as 0
-        val window = mapOf(
-            today to mapOf("INV2" to 0.8),
-            yesterday to mapOf("INV1" to 1.2, "INV2" to 0.9),
-            dayBefore to mapOf("INV1" to 1.1, "INV2" to 1.0),
-        )
+        val window =
+            mapOf(
+                today to mapOf("INV2" to 0.8),
+                yesterday to mapOf("INV1" to 1.2, "INV2" to 0.9),
+                dayBefore to mapOf("INV1" to 1.1, "INV2" to 1.0),
+            )
         val state = repo.computeStatus(window)
         assertEquals(ModuleHealthStatus.YELLOW, state.status)
         assertEquals("INV1", state.offlineModules[0].uid)
@@ -119,9 +129,10 @@ class ModuleHealthRepositoryTest {
 
     @Test
     fun computeStatus_noInvertersInWindow_returnsGreen() {
-        val window = mapOf(
-            today to emptyMap<String, Double>(),
-        )
+        val window =
+            mapOf(
+                today to emptyMap<String, Double>(),
+            )
         val state = repo.computeStatus(window)
         assertEquals(ModuleHealthStatus.GREEN, state.status)
     }
@@ -144,17 +155,24 @@ class ModuleHealthRepositoryTest {
         fakeClient.responses[dayBefore.toString()] = mapOf("INV1" to 1.1)
 
         // First refresh succeeds and starts throttle
-        val repo1 = ModuleHealthRepository.forTest(
-            context, fakeClient, today = { today }, clock = { 1000L },
-        )
+        val repo1 =
+            ModuleHealthRepository.forTest(
+                context,
+                fakeClient,
+                today = { today },
+                clock = { 1000L },
+            )
         kotlinx.coroutines.runBlocking { repo1.refresh() }
         val callsAfterFirst = fakeClient.callCount
 
         // Second call within throttle window
-        val repo2 = ModuleHealthRepository.forTest(
-            context, fakeClient, today = { today },
-            clock = { 1000L + AppConfig.MODULE_HEALTH_CHECK_INTERVAL_MS / 2 },
-        )
+        val repo2 =
+            ModuleHealthRepository.forTest(
+                context,
+                fakeClient,
+                today = { today },
+                clock = { 1000L + AppConfig.MODULE_HEALTH_CHECK_INTERVAL_MS / 2 },
+            )
         kotlinx.coroutines.runBlocking { repo2.refresh() }
         assertEquals("within throttle — no additional calls expected", callsAfterFirst, fakeClient.callCount)
     }
@@ -165,19 +183,25 @@ class ModuleHealthRepositoryTest {
         fakeClient.responses[yesterday.toString()] = mapOf("INV1" to 1.2)
         fakeClient.responses[dayBefore.toString()] = mapOf("INV1" to 1.1)
 
-        val repo1 = ModuleHealthRepository.forTest(
-            context, fakeClient, today = { today }, clock = { 0L },
-        )
+        val repo1 =
+            ModuleHealthRepository.forTest(
+                context,
+                fakeClient,
+                today = { today },
+                clock = { 0L },
+            )
         kotlinx.coroutines.runBlocking { repo1.refresh() }
 
         // Past the throttle window
         val nextDay = today.plusDays(1)
         fakeClient.responses[nextDay.toString()] = mapOf("INV1" to 1.3)
-        val repo2 = ModuleHealthRepository.forTest(
-            context, fakeClient,
-            today = { nextDay },
-            clock = { AppConfig.MODULE_HEALTH_CHECK_INTERVAL_MS + 1L },
-        )
+        val repo2 =
+            ModuleHealthRepository.forTest(
+                context,
+                fakeClient,
+                today = { nextDay },
+                clock = { AppConfig.MODULE_HEALTH_CHECK_INTERVAL_MS + 1L },
+            )
         val callsBefore = fakeClient.callCount
         kotlinx.coroutines.runBlocking { repo2.refresh() }
         assertEquals("after throttle expiry — 1 new call for today", callsBefore + 1, fakeClient.callCount)
@@ -191,7 +215,8 @@ class ModuleHealthRepositoryTest {
         fakeClient.responses[today.toString()] = mapOf("INV1" to 1.5)
         val healthPrefs = context.getSharedPreferences(ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE)
         val dailyPrefs = context.getSharedPreferences(ModuleHealthRepository.PREFS_DAILY, Context.MODE_PRIVATE)
-        dailyPrefs.edit()
+        dailyPrefs
+            .edit()
             .putString("daily_$yesterday", """{"INV1":1.2}""")
             .putString("daily_$dayBefore", """{"INV1":1.1}""")
             .commit()
@@ -254,7 +279,8 @@ class ModuleHealthRepositoryTest {
     fun refresh_apiFails_preservesPreviousState() {
         // Seed a GREEN state
         val healthPrefs = context.getSharedPreferences(ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE)
-        healthPrefs.edit()
+        healthPrefs
+            .edit()
             .putString("status", ModuleHealthStatus.GREEN.name)
             .putLong("lastCheckEpochMs", 0L) // zero so throttle is expired
             .commit()
@@ -303,10 +329,13 @@ class ModuleHealthRepositoryTest {
         fakeClient.responses[today.toString()] = mapOf("INV1" to 1.5)
         fakeClient.responses[yesterday.toString()] = mapOf("INV1" to 1.2)
         fakeClient.responses[dayBefore.toString()] = mapOf("INV1" to 1.1)
-        val repo2 = ModuleHealthRepository.forTest(
-            context, fakeClient, today = { today },
-            clock = { AppConfig.MODULE_HEALTH_CHECK_INTERVAL_MS + 1L },
-        )
+        val repo2 =
+            ModuleHealthRepository.forTest(
+                context,
+                fakeClient,
+                today = { today },
+                clock = { AppConfig.MODULE_HEALTH_CHECK_INTERVAL_MS + 1L },
+            )
         val state = kotlinx.coroutines.runBlocking { repo2.refresh() }
         assertNull(state.error)
     }
@@ -316,7 +345,8 @@ class ModuleHealthRepositoryTest {
     @Test
     fun refresh_previousRed_computedYellow_latchesToRed() {
         val healthPrefs = context.getSharedPreferences(ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE)
-        healthPrefs.edit()
+        healthPrefs
+            .edit()
             .putString("status", ModuleHealthStatus.RED.name)
             .putLong("lastCheckEpochMs", 0L)
             .commit()
@@ -333,7 +363,8 @@ class ModuleHealthRepositoryTest {
     @Test
     fun refresh_previousRed_computedGreen_clearsToGreen() {
         val healthPrefs = context.getSharedPreferences(ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE)
-        healthPrefs.edit()
+        healthPrefs
+            .edit()
             .putString("status", ModuleHealthStatus.RED.name)
             .putLong("lastCheckEpochMs", 0L)
             .commit()
@@ -447,8 +478,7 @@ class ModuleHealthRepositoryTest {
         var nextError: ApiResult<Map<String, Double>>? = null
         var callCount = 0
 
-        override suspend fun getCurrentProduction(): ProductionFetch =
-            ProductionFetch(ApiResult.Success(ProductionSnapshot(0)))
+        override suspend fun getCurrentProduction(): ProductionFetch = ProductionFetch(ApiResult.Success(ProductionSnapshot(0)))
 
         override suspend fun getBatchInverterEnergy(date: String): BatchEnergyFetch {
             callCount++

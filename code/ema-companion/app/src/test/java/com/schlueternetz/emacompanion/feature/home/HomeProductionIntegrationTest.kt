@@ -31,16 +31,16 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class HomeProductionIntegrationTest {
-
     // The `data` body from code/ema-api-stub/.../scenarios/203000001234.json, ending at 8000 W.
-    private val canonicalBody = """
+    private val canonicalBody =
+        """
         {"code":0,"data":{
           "today":"2.64",
           "time":["06:00","06:05","06:10","06:15","06:20","06:25"],
           "power":[1500,3200,5000,6500,7400,8000],
           "energy":["0.125","0.267","0.417","0.542","0.617","0.667"]
         }}
-    """.trimIndent()
+        """.trimIndent()
 
     private lateinit var server: MockWebServer
 
@@ -61,30 +61,34 @@ class HomeProductionIntegrationTest {
         server.enqueue(MockResponse().setBody(canonicalBody))
 
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val settings = SettingsRepository(
-            context.getSharedPreferences("integ_settings", Context.MODE_PRIVATE).also { it.edit().clear().apply() },
-        ).apply {
-            setEmaAppId("a".repeat(32))
-            setEmaAppSecret("secret123456")
-            setEmaSystemId("b".repeat(16))
-            setEmaEcuId("203000001234")
-            setSystemCapacity(10f)
-            setBaseUrl(server.url("/user/api/v2/").toString())
-        }
-        val usage = ApiUsageRepository(
-            context.getSharedPreferences("integ_usage", Context.MODE_PRIVATE).also { it.edit().clear().apply() },
-        )
-        val log = ApiCallLogRepository(
-            context.getSharedPreferences("integ_log", Context.MODE_PRIVATE).also { it.edit().clear().apply() },
-        )
+        val settings =
+            SettingsRepository(
+                context.getSharedPreferences("integ_settings", Context.MODE_PRIVATE).also { it.edit().clear().apply() },
+            ).apply {
+                setEmaAppId("a".repeat(32))
+                setEmaAppSecret("secret123456")
+                setEmaSystemId("b".repeat(16))
+                setEmaEcuId("203000001234")
+                setSystemCapacity(10f)
+                setBaseUrl(server.url("/user/api/v2/").toString())
+            }
+        val usage =
+            ApiUsageRepository(
+                context.getSharedPreferences("integ_usage", Context.MODE_PRIVATE).also { it.edit().clear().apply() },
+            )
+        val log =
+            ApiCallLogRepository(
+                context.getSharedPreferences("integ_log", Context.MODE_PRIVATE).also { it.edit().clear().apply() },
+            )
         // Unconfined IO dispatcher → the socket call runs inline so the test is deterministic.
         val client = OkHttpEmaApiClient(settings, ioDispatcher = Dispatchers.Unconfined)
-        HomeFragment.sourceOverride = ProductionRepository(
-            client = client,
-            usage = usage,
-            log = log,
-            appSecretProvider = { settings.getEmaAppSecret() },
-        )
+        HomeFragment.sourceOverride =
+            ProductionRepository(
+                client = client,
+                usage = usage,
+                log = log,
+                appSecretProvider = { settings.getEmaAppSecret() },
+            )
 
         val scenario = launchFragmentInContainer<HomeFragment>(themeResId = R.style.Theme_EMACompanion)
         shadowOf(Looper.getMainLooper()).idle()

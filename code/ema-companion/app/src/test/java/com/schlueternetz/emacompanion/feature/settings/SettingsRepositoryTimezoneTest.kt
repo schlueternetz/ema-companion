@@ -14,7 +14,6 @@ import java.util.TimeZone
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [32])
 class SettingsRepositoryTimezoneTest {
-
     private lateinit var repo: SettingsRepository
 
     @Before

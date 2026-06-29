@@ -17,14 +17,15 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class SettingsRepositoryTest {
-
     private lateinit var prefs: SharedPreferences
     private lateinit var repo: SettingsRepository
 
     @Before
     fun setUp() {
-        prefs = ApplicationProvider.getApplicationContext<Context>()
-            .getSharedPreferences("test_settings", Context.MODE_PRIVATE)
+        prefs =
+            ApplicationProvider
+                .getApplicationContext<Context>()
+                .getSharedPreferences("test_settings", Context.MODE_PRIVATE)
         repo = SettingsRepository(prefs)
     }
 
@@ -53,10 +54,13 @@ class SettingsRepositoryTest {
 
     @Test
     fun getLanguage_returnsDefault_onSecurityException() {
-        val brokenPrefs = object : SharedPreferences by prefs {
-            override fun getString(key: String?, defValue: String?): String? =
-                throw SecurityException("Keystore unavailable")
-        }
+        val brokenPrefs =
+            object : SharedPreferences by prefs {
+                override fun getString(
+                    key: String?,
+                    defValue: String?,
+                ): String? = throw SecurityException("Keystore unavailable")
+            }
         val repoWithBrokenPrefs = SettingsRepository(brokenPrefs)
         assertEquals(SettingsRepository.LANGUAGE_DEFAULT, repoWithBrokenPrefs.getLanguage())
     }

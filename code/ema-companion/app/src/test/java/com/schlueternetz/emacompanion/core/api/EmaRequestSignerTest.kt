@@ -4,18 +4,18 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class EmaRequestSignerTest {
-
     private val timestamp = 1_700_000_000_000L
     private val nonce = "5e36eab8295911ee90751eff13c2920b"
     private val appId = "testappid1234567890123456789012"
     private val secret = "secret123456"
 
-    private fun fixedSigner() = EmaRequestSigner(
-        appId = appId,
-        appSecret = secret,
-        clock = { timestamp },
-        nonceProvider = { nonce },
-    )
+    private fun fixedSigner() =
+        EmaRequestSigner(
+            appId = appId,
+            appSecret = secret,
+            clock = { timestamp },
+            nonceProvider = { nonce },
+        )
 
     @Test
     fun buildsExactStringToSign() {

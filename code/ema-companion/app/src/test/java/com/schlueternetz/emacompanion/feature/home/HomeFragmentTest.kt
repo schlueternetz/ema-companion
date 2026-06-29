@@ -24,9 +24,11 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class HomeFragmentTest {
-
-    private class FakeSource(var state: ProductionState) : ProductionSource {
+    private class FakeSource(
+        var state: ProductionState,
+    ) : ProductionSource {
         override fun currentState(): ProductionState = state
+
         override suspend fun refresh(): ProductionState = state
     }
 

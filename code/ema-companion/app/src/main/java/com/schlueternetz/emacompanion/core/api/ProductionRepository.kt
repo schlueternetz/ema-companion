@@ -50,7 +50,6 @@ class ProductionRepository(
     private val appSecretProvider: () -> String,
     private val clock: () -> Long = { System.currentTimeMillis() },
 ) : ProductionSource {
-
     // Seed from persisted state so the value, its timestamp, AND the error status survive Home
     // being recreated (navigating away and back) and even process death — the rendered state is
     // purely a function of what is stored, so a recreated tile looks identical.
@@ -93,7 +92,10 @@ class ProductionRepository(
         return currentState()
     }
 
-    private fun logCall(now: Long, fetch: ProductionFetch) {
+    private fun logCall(
+        now: Long,
+        fetch: ProductionFetch,
+    ) {
         log.append(
             ApiCallLog(
                 timestampMs = now,
@@ -119,8 +121,7 @@ class ProductionRepository(
         usage.setLastError(value)
     }
 
-    override fun currentState() =
-        ProductionState(snapshot = cached, updatedAtEpochMs = cachedAtEpochMs, error = error)
+    override fun currentState() = ProductionState(snapshot = cached, updatedAtEpochMs = cachedAtEpochMs, error = error)
 
     companion object {
         // EMA account/authorization and token error codes (manual §4) → treated as auth failures.

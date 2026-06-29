@@ -13,13 +13,14 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class ApiUsageRepositoryTest {
-
     private lateinit var prefs: SharedPreferences
 
     @Before
     fun setUp() {
-        prefs = ApplicationProvider.getApplicationContext<Context>()
-            .getSharedPreferences("ema_api_usage_test", Context.MODE_PRIVATE)
+        prefs =
+            ApplicationProvider
+                .getApplicationContext<Context>()
+                .getSharedPreferences("ema_api_usage_test", Context.MODE_PRIVATE)
         prefs.edit().clear().apply()
     }
 

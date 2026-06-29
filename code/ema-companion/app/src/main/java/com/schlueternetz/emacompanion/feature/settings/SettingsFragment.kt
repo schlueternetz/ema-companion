@@ -41,7 +41,6 @@ import java.util.Date
 import javax.crypto.AEADBadTagException
 
 class SettingsFragment : Fragment() {
-
     private lateinit var repository: SettingsRepository
     private lateinit var usageRepository: ApiUsageRepository
     private lateinit var moduleHealthRepository: ModuleHealthRepository
@@ -96,11 +95,12 @@ class SettingsFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View {
-        return inflater.inflate(R.layout.fragment_settings, container, false)
-    }
+    ): View = inflater.inflate(R.layout.fragment_settings, container, false)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         repository = SettingsRepository.create(requireContext())
         usageRepository = ApiUsageRepository.create(requireContext())
@@ -167,27 +167,34 @@ class SettingsFragment : Fragment() {
     }
 
     private fun buildLogRow(log: ApiCallLog): TextView {
-        val time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-            .format(Date(log.timestampMs))
-        val status = getString(
-            if (log.success) R.string.settings_logs_success else R.string.settings_logs_failure,
-        )
-        val summary = getString(
-            R.string.settings_logs_row_summary,
-            time,
-            log.endpoint,
-            log.durationMs,
-            status,
-        )
-        val verticalPadding = (12 * resources.displayMetrics.density).toInt()
-        val background = TypedValue().also {
-            requireContext().theme.resolveAttribute(android.R.attr.selectableItemBackground, it, true)
-        }.resourceId
-        return TextView(requireContext()).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT,
+        val time =
+            DateFormat
+                .getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+                .format(Date(log.timestampMs))
+        val status =
+            getString(
+                if (log.success) R.string.settings_logs_success else R.string.settings_logs_failure,
             )
+        val summary =
+            getString(
+                R.string.settings_logs_row_summary,
+                time,
+                log.endpoint,
+                log.durationMs,
+                status,
+            )
+        val verticalPadding = (12 * resources.displayMetrics.density).toInt()
+        val background =
+            TypedValue()
+                .also {
+                    requireContext().theme.resolveAttribute(android.R.attr.selectableItemBackground, it, true)
+                }.resourceId
+        return TextView(requireContext()).apply {
+            layoutParams =
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                )
             text = summary
             contentDescription = summary
             minHeight = (48 * resources.displayMetrics.density).toInt()
@@ -201,16 +208,18 @@ class SettingsFragment : Fragment() {
     }
 
     private fun showLogDetail(log: ApiCallLog) {
-        val message = buildString {
-            append(getString(R.string.settings_logs_detail_request))
-            append("\n")
-            append(prettyPrint(log.requestText))
-            append("\n\n")
-            append(getString(R.string.settings_logs_detail_response))
-            append("\n")
-            append(prettyPrint(log.responseText))
-        }
-        AlertDialog.Builder(requireContext())
+        val message =
+            buildString {
+                append(getString(R.string.settings_logs_detail_request))
+                append("\n")
+                append(prettyPrint(log.requestText))
+                append("\n\n")
+                append(getString(R.string.settings_logs_detail_response))
+                append("\n")
+                append(prettyPrint(log.responseText))
+            }
+        AlertDialog
+            .Builder(requireContext())
             .setTitle(log.endpoint)
             .setMessage(message)
             .setPositiveButton(android.R.string.ok, null)
@@ -366,18 +375,26 @@ class SettingsFragment : Fragment() {
         val limit = repository.getApiRequestLimit()
         val progress = if (limit <= 0) 0f else (consumedRequests.toFloat() / limit.toFloat()).coerceIn(0f, 1f)
         apiRequestProgressBar.progress = (progress * 100).toInt()
-        apiRequestProgressLabel.text = getString(
-            R.string.settings_api_request_progress_label,
-            consumedRequests,
-            limit,
-        )
+        apiRequestProgressLabel.text =
+            getString(
+                R.string.settings_api_request_progress_label,
+                consumedRequests,
+                limit,
+            )
     }
 
     private fun wireExclusiveEditMode() {
-        val allRows = listOf(
-            settingEmaAppId, settingEmaAppSecret, settingEmaSystemId, settingEmaEcuId,
-            settingSystemCapacity, settingHistoricDays, settingApiRequestLimit, settingBaseUrl,
-        )
+        val allRows =
+            listOf(
+                settingEmaAppId,
+                settingEmaAppSecret,
+                settingEmaSystemId,
+                settingEmaEcuId,
+                settingSystemCapacity,
+                settingHistoricDays,
+                settingApiRequestLimit,
+                settingBaseUrl,
+            )
         allRows.forEach { row ->
             val existing = row.onEditStateChanged
             row.onEditStateChanged = { editing ->
@@ -400,13 +417,15 @@ class SettingsFragment : Fragment() {
 
     private fun wireDisplayMode(view: View) {
         updateDisplayModeDisplay()
-        view.findViewById<View>(R.id.settings_display_mode_row)
+        view
+            .findViewById<View>(R.id.settings_display_mode_row)
             .setOnClickListener { showDisplayModeDialog() }
     }
 
     private fun wireArrayTimezone(view: View) {
         updateArrayTimezoneDisplay()
-        view.findViewById<View>(R.id.settings_array_timezone_row)
+        view
+            .findViewById<View>(R.id.settings_array_timezone_row)
             .setOnClickListener { showArrayTimezoneDialog() }
     }
 
@@ -415,10 +434,15 @@ class SettingsFragment : Fragment() {
     }
 
     private fun showArrayTimezoneDialog() {
-        val allZones = java.util.TimeZone.getAvailableIDs().sorted().toTypedArray()
+        val allZones =
+            java.util.TimeZone
+                .getAvailableIDs()
+                .sorted()
+                .toTypedArray()
         val current = repository.getArrayTimezone()
         val currentIndex = allZones.indexOfFirst { it == current }.coerceAtLeast(0)
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        androidx.appcompat.app.AlertDialog
+            .Builder(requireContext())
             .setTitle(R.string.settings_array_timezone_dialog_title)
             .setSingleChoiceItems(allZones, currentIndex) { dialog, which ->
                 val selected = allZones[which]
@@ -426,8 +450,7 @@ class SettingsFragment : Fragment() {
                 updateArrayTimezoneDisplay()
                 rescheduleModuleHealthWorker(selected)
                 dialog.dismiss()
-            }
-            .setNegativeButton(android.R.string.cancel, null)
+            }.setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
@@ -520,36 +543,44 @@ class SettingsFragment : Fragment() {
     private fun sendTestEmail() {
         val address = repository.getEmailAddress()
         val password = repository.getEmailAppPassword()
-        val sender = emailSenderFactory?.invoke(address, password)
-            ?: GmailSmtpEmailSender(address, password)
+        val sender =
+            emailSenderFactory?.invoke(address, password)
+                ?: GmailSmtpEmailSender(address, password)
         emailAlertsTestButton.isEnabled = false
         emailAlertsTestResult.text = getString(R.string.email_alerts_test_sending)
         emailAlertsTestResult.visibility = View.VISIBLE
         viewLifecycleOwner.lifecycleScope.launch {
-            val result = sender.send(
-                to = address,
-                subject = getString(R.string.email_alerts_test_subject),
-                body = getString(R.string.email_alerts_test_body),
-            )
+            val result =
+                sender.send(
+                    to = address,
+                    subject = getString(R.string.email_alerts_test_subject),
+                    body = getString(R.string.email_alerts_test_body),
+                )
             emailAlertsTestButton.isEnabled = true
-            emailAlertsTestResult.text = when (result) {
-                is EmailResult.Success -> getString(R.string.email_alerts_test_success)
-                is EmailResult.AuthFailure -> getString(R.string.email_alerts_test_auth_failure)
-                is EmailResult.NetworkError -> getString(R.string.email_alerts_test_network_error)
-            }
+            emailAlertsTestResult.text =
+                when (result) {
+                    is EmailResult.Success -> getString(R.string.email_alerts_test_success)
+                    is EmailResult.AuthFailure -> getString(R.string.email_alerts_test_auth_failure)
+                    is EmailResult.NetworkError -> getString(R.string.email_alerts_test_network_error)
+                }
         }
     }
 
     private fun showClearCredentialsDialog() {
-        AlertDialog.Builder(requireContext())
+        AlertDialog
+            .Builder(requireContext())
             .setTitle(R.string.email_alerts_disable_title)
             .setMessage(R.string.email_alerts_disable_message)
             .setPositiveButton(R.string.email_alerts_disable_confirm) { _, _ ->
                 repository.deleteEmailCredentials()
                 repository.setEmailAlertsEnabled(false)
-                requireContext().getSharedPreferences(
-                    ModuleHealthRepository.PREFS_HEALTH, android.content.Context.MODE_PRIVATE,
-                ).edit().remove(ModuleHealthRepository.KEY_LAST_EMAILED_STATUS).apply()
+                requireContext()
+                    .getSharedPreferences(
+                        ModuleHealthRepository.PREFS_HEALTH,
+                        android.content.Context.MODE_PRIVATE,
+                    ).edit()
+                    .remove(ModuleHealthRepository.KEY_LAST_EMAILED_STATUS)
+                    .apply()
                 suppressEmailSwitchListener = true
                 emailAlertsSwitch.isChecked = false
                 suppressEmailSwitchListener = false
@@ -559,15 +590,18 @@ class SettingsFragment : Fragment() {
                 emailAlertsClearButton.visibility = View.GONE
                 emailAlertsSetupRow.visibility = View.GONE
                 emailAlertsStatusRow.visibility = View.GONE
-            }
-            .setNegativeButton(android.R.string.cancel, null)
+            }.setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
     private fun verifyAndSaveEmailCredentials() {
         val address = emailAddressInput.text?.toString()?.trim() ?: ""
         val password = emailPasswordInput.text?.toString()?.filter { !it.isWhitespace() } ?: ""
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(address).matches() || password.length != 16) {
+        if (!android.util.Patterns.EMAIL_ADDRESS
+                .matcher(address)
+                .matches() ||
+            password.length != 16
+        ) {
             emailAlertsError.text = getString(R.string.email_alerts_connection_error)
             emailAlertsError.visibility = View.VISIBLE
             return
@@ -634,80 +668,91 @@ class SettingsFragment : Fragment() {
         languageValueView.text = languageDisplayName(current)
     }
 
-    private fun languageDisplayName(code: String): String = when (code) {
-        "en" -> getString(R.string.language_option_english)
-        "de" -> getString(R.string.language_option_german)
-        else -> getString(R.string.language_option_system)
-    }
+    private fun languageDisplayName(code: String): String =
+        when (code) {
+            "en" -> getString(R.string.language_option_english)
+            "de" -> getString(R.string.language_option_german)
+            else -> getString(R.string.language_option_system)
+        }
 
     private fun updateDisplayModeDisplay() {
         displayModeValueView.text = displayModeDisplayName(repository.getDisplayMode())
     }
 
-    private fun displayModeDisplayName(mode: String): String = when (mode) {
-        "light" -> getString(R.string.display_mode_option_light)
-        "dark" -> getString(R.string.display_mode_option_dark)
-        else -> getString(R.string.display_mode_option_system)
-    }
+    private fun displayModeDisplayName(mode: String): String =
+        when (mode) {
+            "light" -> getString(R.string.display_mode_option_light)
+            "dark" -> getString(R.string.display_mode_option_dark)
+            else -> getString(R.string.display_mode_option_system)
+        }
 
     private fun showLanguageDialog() {
-        val options = arrayOf(
-            getString(R.string.language_option_system),
-            getString(R.string.language_option_english),
-            getString(R.string.language_option_german),
-        )
+        val options =
+            arrayOf(
+                getString(R.string.language_option_system),
+                getString(R.string.language_option_english),
+                getString(R.string.language_option_german),
+            )
         val codes = arrayOf("system", "en", "de")
-        AlertDialog.Builder(requireContext())
+        AlertDialog
+            .Builder(requireContext())
             .setTitle(R.string.settings_language_dialog_title)
             .setItems(options) { _, which ->
                 applyLanguage(codes[which], repository)
                 updateLanguageDisplay()
-            }
-            .show()
+            }.show()
     }
 
     private fun showDisplayModeDialog() {
-        val options = arrayOf(
-            getString(R.string.display_mode_option_system),
-            getString(R.string.display_mode_option_light),
-            getString(R.string.display_mode_option_dark),
-        )
+        val options =
+            arrayOf(
+                getString(R.string.display_mode_option_system),
+                getString(R.string.display_mode_option_light),
+                getString(R.string.display_mode_option_dark),
+            )
         val modes = arrayOf("system", "light", "dark")
-        AlertDialog.Builder(requireContext())
+        AlertDialog
+            .Builder(requireContext())
             .setTitle(R.string.settings_display_mode_dialog_title)
             .setItems(options) { _, which ->
                 applyDisplayMode(modes[which])
                 updateDisplayModeDisplay()
-            }
-            .show()
+            }.show()
     }
 
-    fun applyLanguage(code: String, repo: SettingsRepository) {
+    fun applyLanguage(
+        code: String,
+        repo: SettingsRepository,
+    ) {
         repo.setLanguage(code)
-        val localeList = if (code == "system") {
-            LocaleListCompat.getEmptyLocaleList()
-        } else {
-            LocaleListCompat.forLanguageTags(code)
-        }
+        val localeList =
+            if (code == "system") {
+                LocaleListCompat.getEmptyLocaleList()
+            } else {
+                LocaleListCompat.forLanguageTags(code)
+            }
         AppCompatDelegate.setApplicationLocales(localeList)
     }
 
     private fun applyDisplayMode(mode: String) {
         repository.setDisplayMode(mode)
-        val nightMode = when (mode) {
-            "light" -> AppCompatDelegate.MODE_NIGHT_NO
-            "dark" -> AppCompatDelegate.MODE_NIGHT_YES
-            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-        }
+        val nightMode =
+            when (mode) {
+                "light" -> AppCompatDelegate.MODE_NIGHT_NO
+                "dark" -> AppCompatDelegate.MODE_NIGHT_YES
+                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            }
         AppCompatDelegate.setDefaultNightMode(nightMode)
     }
 
     private fun showExportDialog() {
-        val options = arrayOf(
-            getString(R.string.settings_export_no_encryption),
-            getString(R.string.settings_export_encrypt_with_pin),
-        )
-        AlertDialog.Builder(requireContext())
+        val options =
+            arrayOf(
+                getString(R.string.settings_export_no_encryption),
+                getString(R.string.settings_export_encrypt_with_pin),
+            )
+        AlertDialog
+            .Builder(requireContext())
             .setTitle(R.string.settings_export_dialog_title)
             .setItems(options) { _, which ->
                 val json = repository.exportToJson()
@@ -720,22 +765,27 @@ class SettingsFragment : Fragment() {
                         exportLauncher.launch(getString(R.string.settings_export_filename))
                     }
                 }
-            }
-            .show()
+            }.show()
     }
 
-    private fun showPinDialog(title: String, onPin: (String) -> Unit) {
-        val editText = EditText(requireContext()).apply {
-            inputType = InputType.TYPE_CLASS_NUMBER
-            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE
-            hint = getString(R.string.settings_pin_hint)
-        }
-        val dialog = AlertDialog.Builder(requireContext())
-            .setTitle(title)
-            .setView(editText)
-            .setPositiveButton(android.R.string.ok) { _, _ -> onPin(editText.text.toString()) }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
+    private fun showPinDialog(
+        title: String,
+        onPin: (String) -> Unit,
+    ) {
+        val editText =
+            EditText(requireContext()).apply {
+                inputType = InputType.TYPE_CLASS_NUMBER
+                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE
+                hint = getString(R.string.settings_pin_hint)
+            }
+        val dialog =
+            AlertDialog
+                .Builder(requireContext())
+                .setTitle(title)
+                .setView(editText)
+                .setPositiveButton(android.R.string.ok) { _, _ -> onPin(editText.text.toString()) }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
         editText.setOnEditorActionListener { _, _, _ ->
             dialog.dismiss()
             onPin(editText.text.toString())
@@ -744,22 +794,30 @@ class SettingsFragment : Fragment() {
     }
 
     private fun showFactoryResetDialog() {
-        AlertDialog.Builder(requireContext())
+        AlertDialog
+            .Builder(requireContext())
             .setTitle(R.string.settings_factory_reset_dialog_title)
             .setMessage(R.string.settings_factory_reset_dialog_message)
             .setPositiveButton(R.string.settings_factory_reset_confirm) { _, _ ->
                 repository.clearAll()
                 usageRepository.clear()
                 logRepository.clear()
-                requireContext().getSharedPreferences(
-                    ModuleHealthRepository.PREFS_HEALTH, android.content.Context.MODE_PRIVATE,
-                ).edit().clear().apply()
-                requireContext().getSharedPreferences(
-                    ModuleHealthRepository.PREFS_DAILY, android.content.Context.MODE_PRIVATE,
-                ).edit().clear().apply()
+                requireContext()
+                    .getSharedPreferences(
+                        ModuleHealthRepository.PREFS_HEALTH,
+                        android.content.Context.MODE_PRIVATE,
+                    ).edit()
+                    .clear()
+                    .apply()
+                requireContext()
+                    .getSharedPreferences(
+                        ModuleHealthRepository.PREFS_DAILY,
+                        android.content.Context.MODE_PRIVATE,
+                    ).edit()
+                    .clear()
+                    .apply()
                 refreshAllDisplayedValues()
-            }
-            .setNegativeButton(R.string.settings_factory_reset_cancel, null)
+            }.setNegativeButton(R.string.settings_factory_reset_cancel, null)
             .show()
     }
 
@@ -794,13 +852,17 @@ class SettingsFragment : Fragment() {
     }
 
     private fun handleImport(uri: Uri) {
-        val content = try {
-            requireContext().contentResolver.openInputStream(uri)
-                ?.bufferedReader()?.readText() ?: return
-        } catch (e: Exception) {
-            showSnackbar(getString(R.string.settings_import_error_unreadable))
-            return
-        }
+        val content =
+            try {
+                requireContext()
+                    .contentResolver
+                    .openInputStream(uri)
+                    ?.bufferedReader()
+                    ?.readText() ?: return
+            } catch (e: Exception) {
+                showSnackbar(getString(R.string.settings_import_error_unreadable))
+                return
+            }
         try {
             val json = JSONObject(content)
             repository.importFromJson(content)
@@ -829,9 +891,10 @@ class SettingsFragment : Fragment() {
 
     private fun logImport(json: JSONObject) {
         val sensitiveKeys = setOf("emaAppSecret")
-        val fields = json.keys().asSequence().joinToString(", ") { key ->
-            if (key in sensitiveKeys) "$key=[hidden]" else key
-        }
+        val fields =
+            json.keys().asSequence().joinToString(", ") { key ->
+                if (key in sensitiveKeys) "$key=[hidden]" else key
+            }
         logRepository.append(
             ApiCallLog(
                 timestampMs = System.currentTimeMillis(),
@@ -863,8 +926,9 @@ class SettingsFragment : Fragment() {
     }
 
     internal fun checkConfigurationAndUpdateNav() {
-        val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.bottom_nav)
-            ?: return
+        val bottomNav =
+            requireActivity().findViewById<BottomNavigationView>(R.id.bottom_nav)
+                ?: return
         val configured = repository.isConfigured()
         val menu = bottomNav.menu
         for (i in 0 until menu.size()) {

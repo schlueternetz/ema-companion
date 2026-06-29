@@ -7,11 +7,13 @@ import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 object SettingsCrypto {
-
     private const val IV_LENGTH = 12
     private const val GCM_TAG_BITS = 128
 
-    fun encrypt(json: String, pin: String): String {
+    fun encrypt(
+        json: String,
+        pin: String,
+    ): String {
         val key = deriveKey(pin)
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         cipher.init(Cipher.ENCRYPT_MODE, key)
@@ -21,7 +23,10 @@ object SettingsCrypto {
         return Base64.getEncoder().encodeToString(combined)
     }
 
-    fun decrypt(data: String, pin: String): String {
+    fun decrypt(
+        data: String,
+        pin: String,
+    ): String {
         val combined = Base64.getDecoder().decode(data)
         val iv = combined.copyOfRange(0, IV_LENGTH)
         val ciphertext = combined.copyOfRange(IV_LENGTH, combined.size)

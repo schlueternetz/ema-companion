@@ -32,7 +32,6 @@ import java.time.LocalDate
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class ModuleHealthWorkerTest {
-
     private lateinit var context: Context
     private lateinit var fakeClient: FakeClient
     private lateinit var repo: ModuleHealthRepository
@@ -46,12 +45,21 @@ class ModuleHealthWorkerTest {
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        context.getSharedPreferences(ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE)
-            .edit().clear().commit()
-        context.getSharedPreferences(ModuleHealthRepository.PREFS_DAILY, Context.MODE_PRIVATE)
-            .edit().clear().commit()
-        context.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .edit().clear().commit()
+        context
+            .getSharedPreferences(ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .commit()
+        context
+            .getSharedPreferences(ModuleHealthRepository.PREFS_DAILY, Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .commit()
+        context
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .commit()
         fakeClient = FakeClient()
         fakeEmailSender = FakeEmailSender()
         settingsRepo = SettingsRepository.create(context)
@@ -59,7 +67,8 @@ class ModuleHealthWorkerTest {
         ModuleHealthWorker.repoOverride = repo
         ModuleHealthWorker.emailSenderOverride = fakeEmailSender
 
-        Shadows.shadowOf(context as Application)
+        Shadows
+            .shadowOf(context as Application)
             .grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
     }
 
@@ -202,11 +211,17 @@ class ModuleHealthWorkerTest {
         runBlocking { worker.doWork() }
     }
 
-    class FakeEmailSender(var nextResult: EmailResult = EmailResult.Success) : EmailSender {
+    class FakeEmailSender(
+        var nextResult: EmailResult = EmailResult.Success,
+    ) : EmailSender {
         var sentCount = 0
         var lastSubject: String? = null
 
-        override suspend fun send(to: String, subject: String, body: String): EmailResult {
+        override suspend fun send(
+            to: String,
+            subject: String,
+            body: String,
+        ): EmailResult {
             sentCount++
             lastSubject = subject
             return nextResult
@@ -218,8 +233,7 @@ class ModuleHealthWorkerTest {
     class FakeClient : EmaApiClient {
         val responses = mutableMapOf<String, Map<String, Double>>()
 
-        override suspend fun getCurrentProduction(): ProductionFetch =
-            ProductionFetch(ApiResult.Success(ProductionSnapshot(0)))
+        override suspend fun getCurrentProduction(): ProductionFetch = ProductionFetch(ApiResult.Success(ProductionSnapshot(0)))
 
         override suspend fun getBatchInverterEnergy(date: String): BatchEnergyFetch {
             val data = responses[date] ?: return BatchEnergyFetch(ApiResult.NetworkError)

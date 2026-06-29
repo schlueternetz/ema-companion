@@ -2,18 +2,18 @@ package com.schlueternetz.emacompanion
 
 import android.content.Context
 import android.view.View
-import com.schlueternetz.emacompanion.feature.settings.SettingsFragment
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult
 import com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.schlueternetz.emacompanion.feature.settings.SettingsFragment
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
-import androidx.work.testing.WorkManagerTestInitHelper
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,19 +24,22 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class MainActivityTest {
-
     private lateinit var appContext: Context
 
     @Before
     fun setUp() {
         appContext = ApplicationProvider.getApplicationContext()
         WorkManagerTestInitHelper.initializeTestWorkManager(appContext)
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .edit().clear().apply()
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .apply()
     }
 
     private fun configureSettings() {
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit()
             .putString("emaAppId", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
             .putString("emaAppSecret", "bbbbbbbbbbbb")
@@ -76,8 +79,14 @@ class MainActivityTest {
 
     @Test
     fun mainActivity_hasNoAccessibilityErrors() {
-        val activity = Robolectric.buildActivity(MainActivity::class.java)
-            .create().start().resume().visible().get()
+        val activity =
+            Robolectric
+                .buildActivity(MainActivity::class.java)
+                .create()
+                .start()
+                .resume()
+                .visible()
+                .get()
         AccessibilityValidator()
             .setThrowExceptionFor(AccessibilityCheckResult.AccessibilityCheckResultType.ERROR)
             .check(activity.window.decorView)
@@ -109,7 +118,14 @@ class MainActivityTest {
     @Test
     fun factoryReset_relockNavigation() {
         // Start unconfigured so SettingsFragment is immediately the primary fragment
-        val activity = Robolectric.buildActivity(MainActivity::class.java).create().start().resume().visible().get()
+        val activity =
+            Robolectric
+                .buildActivity(MainActivity::class.java)
+                .create()
+                .start()
+                .resume()
+                .visible()
+                .get()
         val bottomNav = activity.findViewById<BottomNavigationView>(R.id.bottom_nav)
 
         // Simulate nav being enabled (as it would be after configuring the app)
@@ -120,8 +136,11 @@ class MainActivityTest {
         val navHost = activity.supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
         val settingsFragment = navHost?.childFragmentManager?.primaryNavigationFragment as? SettingsFragment
         assertNotNull("SettingsFragment must be the primary fragment", settingsFragment)
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .edit().clear().apply()
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .apply()
         settingsFragment?.checkConfigurationAndUpdateNav()
 
         // Home nav should now be disabled
@@ -130,7 +149,14 @@ class MainActivityTest {
 
     @Test
     fun afterImport_withValidSettings_homeNavIsUnlocked() {
-        val activity = Robolectric.buildActivity(MainActivity::class.java).create().start().resume().visible().get()
+        val activity =
+            Robolectric
+                .buildActivity(MainActivity::class.java)
+                .create()
+                .start()
+                .resume()
+                .visible()
+                .get()
         val bottomNav = activity.findViewById<BottomNavigationView>(R.id.bottom_nav)
         assertFalse("Home should be disabled when unconfigured", bottomNav.menu.findItem(R.id.homeFragment).isEnabled)
 
@@ -150,7 +176,14 @@ class MainActivityTest {
         // started unconfigured, tapping Home in the bottom nav does nothing. This drives
         // the exact NavigationUI code path the bottom nav uses (onNavDestinationSelected),
         // which applies popUpTo/saveState/restoreState options that a bare navigate() does not.
-        val activity = Robolectric.buildActivity(MainActivity::class.java).create().start().resume().visible().get()
+        val activity =
+            Robolectric
+                .buildActivity(MainActivity::class.java)
+                .create()
+                .start()
+                .resume()
+                .visible()
+                .get()
         val bottomNav = activity.findViewById<BottomNavigationView>(R.id.bottom_nav)
         val navController = (activity.supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment).navController
 

@@ -18,18 +18,22 @@ class GmailSmtpEmailSender(
     private val smtpPort: Int = 587,
     private val useTls: Boolean = true,
 ) : EmailSender {
-
-    override suspend fun send(to: String, subject: String, body: String): EmailResult =
+    override suspend fun send(
+        to: String,
+        subject: String,
+        body: String,
+    ): EmailResult =
         withContext(Dispatchers.IO) {
             try {
                 val session = buildSession()
                 val fromAddress = from
-                val message = MimeMessage(session).apply {
-                    setFrom(InternetAddress(fromAddress))
-                    setRecipient(Message.RecipientType.TO, InternetAddress(to))
-                    setSubject(subject)
-                    setText(body)
-                }
+                val message =
+                    MimeMessage(session).apply {
+                        setFrom(InternetAddress(fromAddress))
+                        setRecipient(Message.RecipientType.TO, InternetAddress(to))
+                        setSubject(subject)
+                        setText(body)
+                    }
                 val recipients = arrayOf<javax.mail.Address>(InternetAddress(to))
                 val transport = session.getTransport("smtp")
                 transport.connect(smtpHost, smtpPort, from, appPassword)
@@ -59,19 +63,21 @@ class GmailSmtpEmailSender(
         }
 
     private fun buildSession(): Session {
-        val props = Properties().apply {
-            put("mail.smtp.host", smtpHost)
-            put("mail.smtp.port", smtpPort.toString())
-            put("mail.smtp.auth", "true")
-            put("mail.smtp.connectiontimeout", "15000")
-            put("mail.smtp.timeout", "15000")
-            if (useTls) {
-                put("mail.smtp.starttls.enable", "true")
+        val props =
+            Properties().apply {
+                put("mail.smtp.host", smtpHost)
+                put("mail.smtp.port", smtpPort.toString())
+                put("mail.smtp.auth", "true")
+                put("mail.smtp.connectiontimeout", "15000")
+                put("mail.smtp.timeout", "15000")
+                if (useTls) {
+                    put("mail.smtp.starttls.enable", "true")
+                }
             }
-        }
-        val auth = object : Authenticator() {
-            override fun getPasswordAuthentication() = PasswordAuthentication(from, appPassword)
-        }
+        val auth =
+            object : Authenticator() {
+                override fun getPasswordAuthentication() = PasswordAuthentication(from, appPassword)
+            }
         return Session.getInstance(props, auth)
     }
 }

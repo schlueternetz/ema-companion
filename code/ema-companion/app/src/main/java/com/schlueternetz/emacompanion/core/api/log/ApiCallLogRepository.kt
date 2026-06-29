@@ -13,18 +13,23 @@ import org.json.JSONObject
  *
  * Secrets are masked at append time, so the App Secret can never be reconstructed from a log.
  */
-class ApiCallLogRepository(private val prefs: SharedPreferences) {
-
-    fun append(log: ApiCallLog, secret: String = "") {
-        val safe = if (secret.isNotEmpty()) {
-            val masked = Masking.mask(secret)
-            log.copy(
-                requestText = log.requestText.replace(secret, masked),
-                responseText = log.responseText.replace(secret, masked),
-            )
-        } else {
-            log
-        }
+class ApiCallLogRepository(
+    private val prefs: SharedPreferences,
+) {
+    fun append(
+        log: ApiCallLog,
+        secret: String = "",
+    ) {
+        val safe =
+            if (secret.isNotEmpty()) {
+                val masked = Masking.mask(secret)
+                log.copy(
+                    requestText = log.requestText.replace(secret, masked),
+                    responseText = log.responseText.replace(secret, masked),
+                )
+            } else {
+                log
+            }
         val all = getAll().toMutableList()
         all.add(0, safe)
         while (all.size > MAX_RECORDS) all.removeAt(all.size - 1)
@@ -57,14 +62,15 @@ class ApiCallLogRepository(private val prefs: SharedPreferences) {
         return array.toString()
     }
 
-    private fun deserialize(obj: JSONObject): ApiCallLog = ApiCallLog(
-        timestampMs = obj.getLong("timestampMs"),
-        endpoint = obj.getString("endpoint"),
-        durationMs = obj.getLong("durationMs"),
-        success = obj.getBoolean("success"),
-        requestText = obj.getString("requestText"),
-        responseText = obj.getString("responseText"),
-    )
+    private fun deserialize(obj: JSONObject): ApiCallLog =
+        ApiCallLog(
+            timestampMs = obj.getLong("timestampMs"),
+            endpoint = obj.getString("endpoint"),
+            durationMs = obj.getLong("durationMs"),
+            success = obj.getBoolean("success"),
+            requestText = obj.getString("requestText"),
+            responseText = obj.getString("responseText"),
+        )
 
     companion object {
         const val PREFS_NAME = "ema_api_log"

@@ -4,13 +4,11 @@ import android.Manifest
 import android.app.Application
 import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
 import androidx.test.core.app.ApplicationProvider
 import com.schlueternetz.emacompanion.core.api.modulehealth.Module
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthState
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthStatus
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -21,7 +19,6 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class ModuleHealthNotifierTest {
-
     private lateinit var context: Context
     private lateinit var manager: NotificationManager
 
@@ -35,10 +32,11 @@ class ModuleHealthNotifierTest {
 
     @Test
     fun yellowStatus_postsNotification() {
-        val state = ModuleHealthState(
-            status = ModuleHealthStatus.YELLOW,
-            offlineModules = listOf(Module("INV1", 1)),
-        )
+        val state =
+            ModuleHealthState(
+                status = ModuleHealthStatus.YELLOW,
+                offlineModules = listOf(Module("INV1", 1)),
+            )
         ModuleHealthNotifier.notify(context, state)
 
         val shadow = Shadows.shadowOf(manager)
@@ -47,10 +45,11 @@ class ModuleHealthNotifierTest {
 
     @Test
     fun yellowOnTwoConsecutiveChecks_postsNotificationBothTimes() {
-        val state = ModuleHealthState(
-            status = ModuleHealthStatus.YELLOW,
-            offlineModules = listOf(Module("INV1", 1)),
-        )
+        val state =
+            ModuleHealthState(
+                status = ModuleHealthStatus.YELLOW,
+                offlineModules = listOf(Module("INV1", 1)),
+            )
         ModuleHealthNotifier.notify(context, state)
         ModuleHealthNotifier.notify(context, state)
 
@@ -61,10 +60,11 @@ class ModuleHealthNotifierTest {
 
     @Test
     fun redStatus_postsNotification() {
-        val state = ModuleHealthState(
-            status = ModuleHealthStatus.RED,
-            offlineModules = listOf(Module("INV1", 3)),
-        )
+        val state =
+            ModuleHealthState(
+                status = ModuleHealthStatus.RED,
+                offlineModules = listOf(Module("INV1", 3)),
+            )
         ModuleHealthNotifier.notify(context, state)
 
         val shadow = Shadows.shadowOf(manager)

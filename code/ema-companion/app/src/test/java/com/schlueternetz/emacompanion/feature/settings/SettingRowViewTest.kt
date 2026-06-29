@@ -9,7 +9,6 @@ import com.google.android.apps.common.testing.accessibility.framework.Accessibil
 import com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator
 import com.schlueternetz.emacompanion.R
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -20,7 +19,6 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class SettingRowViewTest {
-
     private lateinit var context: Context
     private lateinit var view: SettingRowView
 
@@ -59,7 +57,8 @@ class SettingRowViewTest {
         view.onSave = { saved = it }
 
         view.findViewById<ImageButton>(R.id.setting_edit_button).performClick()
-        view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.setting_edit_text)
+        view
+            .findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.setting_edit_text)
             .setText("valid")
         view.findViewById<ImageButton>(R.id.setting_save_button).performClick()
 
@@ -82,7 +81,8 @@ class SettingRowViewTest {
     fun cancelButton_restoresPreviousValue() {
         view.value = "original"
         view.findViewById<ImageButton>(R.id.setting_edit_button).performClick()
-        view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.setting_edit_text)
+        view
+            .findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.setting_edit_text)
             .setText("changed")
         view.findViewById<ImageButton>(R.id.setting_cancel_button).performClick()
 
@@ -203,7 +203,8 @@ class SettingRowViewTest {
         view.validator = { true }
         view.onSave = {}
         view.findViewById<ImageButton>(R.id.setting_edit_button).performClick()
-        view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.setting_edit_text)
+        view
+            .findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.setting_edit_text)
             .setText("new value")
         view.findViewById<ImageButton>(R.id.setting_save_button).performClick()
         assertEquals(false, editState)
@@ -242,10 +243,11 @@ class SettingRowViewTest {
     @Test
     fun hintText_infoButtonClick_showsDialogWithLabelAndHint() {
         // AlertDialog.Builder requires Activity context; use buildActivity for this test
-        val activity = org.robolectric.Robolectric
-            .buildActivity(androidx.appcompat.app.AppCompatActivity::class.java)
-            .setup()
-            .get()
+        val activity =
+            org.robolectric.Robolectric
+                .buildActivity(androidx.appcompat.app.AppCompatActivity::class.java)
+                .setup()
+                .get()
         activity.setTheme(R.style.Theme_EMACompanion)
         val activityView = SettingRowView(activity)
         activityView.label = "EMA ECU ID"
@@ -254,11 +256,15 @@ class SettingRowViewTest {
         activityView.findViewById<ImageButton>(R.id.setting_info_button).performClick()
 
         // Robolectric tracks appcompat AlertDialog via ShadowDialog (not ShadowAlertDialog)
-        val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
-            as androidx.appcompat.app.AlertDialog
+        val dialog =
+            org.robolectric.shadows.ShadowDialog
+                .getLatestDialog()
+                as androidx.appcompat.app.AlertDialog
         assertTrue(dialog.isShowing)
-        val messageView = dialog.window?.decorView
-            ?.findViewById<TextView>(android.R.id.message)
+        val messageView =
+            dialog.window
+                ?.decorView
+                ?.findViewById<TextView>(android.R.id.message)
         assertEquals("Find this in Settings → ECU", messageView?.text?.toString())
     }
 

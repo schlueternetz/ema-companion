@@ -14,7 +14,6 @@ import com.schlueternetz.emacompanion.core.email.EmailResult
 import com.schlueternetz.emacompanion.core.email.EmailSender
 import com.schlueternetz.emacompanion.core.email.GmailSmtpEmailSender
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
@@ -23,7 +22,6 @@ class ModuleHealthWorker(
     context: Context,
     params: WorkerParameters,
 ) : CoroutineWorker(context, params) {
-
     override suspend fun doWork(): Result {
         val repo = repoOverride ?: ModuleHealthRepository.create(applicationContext)
         val settings = SettingsRepository.create(applicationContext)
@@ -43,16 +41,18 @@ class ModuleHealthWorker(
             settings.isEmailConfigured() &&
             settings.getEmailAlertsEnabled()
         ) {
-            val sender = emailSenderOverride ?: GmailSmtpEmailSender(
-                from = settings.getEmailAddress(),
-                appPassword = settings.getEmailAppPassword(),
-            )
+            val sender =
+                emailSenderOverride ?: GmailSmtpEmailSender(
+                    from = settings.getEmailAddress(),
+                    appPassword = settings.getEmailAppPassword(),
+                )
             val contentBuilder = EmailContentBuilder(applicationContext)
-            val result = sender.send(
-                to = settings.getEmailAddress(),
-                subject = contentBuilder.buildSubject(newStatus),
-                body = contentBuilder.buildBody(newStatus, state.offlineModules),
-            )
+            val result =
+                sender.send(
+                    to = settings.getEmailAddress(),
+                    subject = contentBuilder.buildSubject(newStatus),
+                    body = contentBuilder.buildBody(newStatus, state.offlineModules),
+                )
             if (result == EmailResult.Success) {
                 repo.setLastEmailedStatus(newStatus)
             }
@@ -81,26 +81,28 @@ class ModuleHealthWorker(
             policy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP,
         ) {
             val initialDelay = millisUntilNext8pm(arrayTimezoneId)
-            val request = PeriodicWorkRequestBuilder<ModuleHealthWorker>(
-                AppConfig.MODULE_HEALTH_CHECK_INTERVAL_MS,
-                TimeUnit.MILLISECONDS,
-                // flexInterval: allow system to run anywhere in the last hour of the period
-                AppConfig.MODULE_HEALTH_CHECK_INTERVAL_MS / 24,
-                TimeUnit.MILLISECONDS,
-            )
-                .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
-                .build()
+            val request =
+                PeriodicWorkRequestBuilder<ModuleHealthWorker>(
+                    AppConfig.MODULE_HEALTH_CHECK_INTERVAL_MS,
+                    TimeUnit.MILLISECONDS,
+                    // flexInterval: allow system to run anywhere in the last hour of the period
+                    AppConfig.MODULE_HEALTH_CHECK_INTERVAL_MS / 24,
+                    TimeUnit.MILLISECONDS,
+                ).setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
+                    .build()
 
-            WorkManager.getInstance(context)
+            WorkManager
+                .getInstance(context)
                 .enqueueUniquePeriodicWork(WORK_NAME, policy, request)
         }
 
         internal fun millisUntilNext8pm(timezoneId: String): Long {
-            val zone = try {
-                ZoneId.of(timezoneId)
-            } catch (e: Exception) {
-                ZoneId.systemDefault()
-            }
+            val zone =
+                try {
+                    ZoneId.of(timezoneId)
+                } catch (e: Exception) {
+                    ZoneId.systemDefault()
+                }
             val now = ZonedDateTime.now(zone)
             val target8pm = now.toLocalDate().atTime(20, 0).atZone(zone)
             val next8pm = if (now.isBefore(target8pm)) target8pm else target8pm.plusDays(1)

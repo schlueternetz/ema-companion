@@ -17,7 +17,6 @@ class EmaRequestSigner(
     private val clock: () -> Long = { System.currentTimeMillis() },
     private val nonceProvider: () -> String = { UUID.randomUUID().toString().replace("-", "") },
 ) {
-
     data class SignedHeaders(
         val appId: String,
         val timestamp: String,
@@ -26,7 +25,10 @@ class EmaRequestSigner(
         val signature: String,
     )
 
-    fun sign(method: String, lastPathSegment: String): SignedHeaders {
+    fun sign(
+        method: String,
+        lastPathSegment: String,
+    ): SignedHeaders {
         val timestamp = clock()
         val nonce = nonceProvider()
         val toSign = stringToSign(timestamp, nonce, appId, lastPathSegment, method)
@@ -52,7 +54,10 @@ class EmaRequestSigner(
 
         fun lastPathSegment(path: String): String = path.trimEnd('/').substringAfterLast('/')
 
-        private fun hmacSha256Base64(data: String, secret: String): String {
+        private fun hmacSha256Base64(
+            data: String,
+            secret: String,
+        ): String {
             val mac = Mac.getInstance(SIGNATURE_METHOD)
             val keyBytes = secret.toByteArray(Charsets.UTF_8)
             mac.init(SecretKeySpec(keyBytes, SIGNATURE_METHOD))

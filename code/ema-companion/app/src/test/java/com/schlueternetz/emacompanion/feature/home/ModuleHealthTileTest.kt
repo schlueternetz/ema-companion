@@ -1,17 +1,17 @@
 package com.schlueternetz.emacompanion.feature.home
 
+import android.os.Looper
 import android.view.View
 import android.widget.TextView
 import androidx.fragment.app.testing.launchFragmentInContainer
-import androidx.test.core.app.ApplicationProvider
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.FetchError
-import com.schlueternetz.emacompanion.core.api.modulehealth.Module
-import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthState
-import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthStatus
-import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthSource
 import com.schlueternetz.emacompanion.core.api.ProductionSource
 import com.schlueternetz.emacompanion.core.api.ProductionState
+import com.schlueternetz.emacompanion.core.api.modulehealth.Module
+import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthSource
+import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthState
+import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthStatus
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -21,18 +21,18 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowDialog
-import android.os.Looper
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class ModuleHealthTileTest {
-
     @Before
     fun setUp() {
-        HomeFragment.sourceOverride = object : ProductionSource {
-            override fun currentState() = ProductionState()
-            override suspend fun refresh() = ProductionState()
-        }
+        HomeFragment.sourceOverride =
+            object : ProductionSource {
+                override fun currentState() = ProductionState()
+
+                override suspend fun refresh() = ProductionState()
+            }
     }
 
     @After
@@ -42,10 +42,12 @@ class ModuleHealthTileTest {
     }
 
     private fun launchWithState(state: ModuleHealthState): View {
-        HomeFragment.moduleHealthSourceOverride = object : ModuleHealthSource {
-            override fun currentState() = state
-            override suspend fun refresh() = state
-        }
+        HomeFragment.moduleHealthSourceOverride =
+            object : ModuleHealthSource {
+                override fun currentState() = state
+
+                override suspend fun refresh() = state
+            }
         val scenario = launchFragmentInContainer<HomeFragment>(themeResId = R.style.Theme_EMACompanion)
         var fragmentView: View? = null
         scenario.onFragment { fragment ->
@@ -74,10 +76,11 @@ class ModuleHealthTileTest {
 
     @Test
     fun yellowState_showsYellowStatus() {
-        val state = ModuleHealthState(
-            status = ModuleHealthStatus.YELLOW,
-            offlineModules = listOf(Module("INV1", 1)),
-        )
+        val state =
+            ModuleHealthState(
+                status = ModuleHealthStatus.YELLOW,
+                offlineModules = listOf(Module("INV1", 1)),
+            )
         val view = launchWithState(state)
         val statusView = view.findViewById<TextView>(R.id.module_health_status)
         assert(statusView.text.contains("offline", ignoreCase = true)) {
@@ -87,10 +90,11 @@ class ModuleHealthTileTest {
 
     @Test
     fun yellowState_tileIsClickable() {
-        val state = ModuleHealthState(
-            status = ModuleHealthStatus.YELLOW,
-            offlineModules = listOf(Module("INV1", 1)),
-        )
+        val state =
+            ModuleHealthState(
+                status = ModuleHealthStatus.YELLOW,
+                offlineModules = listOf(Module("INV1", 1)),
+            )
         val view = launchWithState(state)
         val tile = view.findViewById<View>(R.id.tile_module_health)
         assertEquals(true, tile.isClickable)
@@ -98,10 +102,11 @@ class ModuleHealthTileTest {
 
     @Test
     fun yellowState_tapShowsDetailDialog() {
-        val state = ModuleHealthState(
-            status = ModuleHealthStatus.YELLOW,
-            offlineModules = listOf(Module("INV1", 2)),
-        )
+        val state =
+            ModuleHealthState(
+                status = ModuleHealthStatus.YELLOW,
+                offlineModules = listOf(Module("INV1", 2)),
+            )
         val view = launchWithState(state)
         val tile = view.findViewById<View>(R.id.tile_module_health)
         tile.performClick()
@@ -113,10 +118,11 @@ class ModuleHealthTileTest {
 
     @Test
     fun checkedTimestamp_showsCheckedLine() {
-        val state = ModuleHealthState(
-            status = ModuleHealthStatus.GREEN,
-            checkedAtEpochMs = System.currentTimeMillis(),
-        )
+        val state =
+            ModuleHealthState(
+                status = ModuleHealthStatus.GREEN,
+                checkedAtEpochMs = System.currentTimeMillis(),
+            )
         val view = launchWithState(state)
         val checkedView = view.findViewById<TextView>(R.id.module_health_checked)
         assertEquals(View.VISIBLE, checkedView.visibility)
@@ -131,10 +137,11 @@ class ModuleHealthTileTest {
 
     @Test
     fun redState_showsRedStatus() {
-        val state = ModuleHealthState(
-            status = ModuleHealthStatus.RED,
-            offlineModules = listOf(Module("INV1", 3)),
-        )
+        val state =
+            ModuleHealthState(
+                status = ModuleHealthStatus.RED,
+                offlineModules = listOf(Module("INV1", 3)),
+            )
         val view = launchWithState(state)
         val statusView = view.findViewById<TextView>(R.id.module_health_status)
         assert(statusView.text.contains("action needed", ignoreCase = true)) {
@@ -144,10 +151,11 @@ class ModuleHealthTileTest {
 
     @Test
     fun networkError_showsErrorLine() {
-        val state = ModuleHealthState(
-            status = ModuleHealthStatus.UNKNOWN,
-            error = FetchError.NETWORK,
-        )
+        val state =
+            ModuleHealthState(
+                status = ModuleHealthStatus.UNKNOWN,
+                error = FetchError.NETWORK,
+            )
         val view = launchWithState(state)
         val errorView = view.findViewById<TextView>(R.id.module_health_error)
         assertEquals(View.VISIBLE, errorView.visibility)
@@ -165,10 +173,11 @@ class ModuleHealthTileTest {
     fun fetchError_statusLabelIsEmpty() {
         // When a fetch error occurs the label next to the icon should be blank —
         // the error line below provides the detail.
-        val state = ModuleHealthState(
-            status = ModuleHealthStatus.GREEN,
-            error = FetchError.NETWORK,
-        )
+        val state =
+            ModuleHealthState(
+                status = ModuleHealthStatus.GREEN,
+                error = FetchError.NETWORK,
+            )
         val view = launchWithState(state)
         val statusView = view.findViewById<TextView>(R.id.module_health_status)
         assertEquals("status label should be empty on fetch error", "", statusView.text.toString())
@@ -178,10 +187,11 @@ class ModuleHealthTileTest {
     fun fetchError_iconHasContentDescription() {
         // Accessibility: the question-mark icon must have a content description so
         // screen readers can convey the unknown state when the label is empty.
-        val state = ModuleHealthState(
-            status = ModuleHealthStatus.GREEN,
-            error = FetchError.API,
-        )
+        val state =
+            ModuleHealthState(
+                status = ModuleHealthStatus.GREEN,
+                error = FetchError.API,
+            )
         val view = launchWithState(state)
         val iconView = view.findViewById<android.widget.ImageView>(R.id.module_health_icon)
         assert(!iconView.contentDescription.isNullOrEmpty()) {

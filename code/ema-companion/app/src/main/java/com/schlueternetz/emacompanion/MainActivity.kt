@@ -10,14 +10,12 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
-import androidx.work.ExistingPeriodicWorkPolicy
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.schlueternetz.emacompanion.feature.home.ModuleHealthNotifier
 import com.schlueternetz.emacompanion.feature.home.ModuleHealthWorker
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
 
 class MainActivity : AppCompatActivity() {
-
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             // Result is intentional no-op: the background check and status persist regardless.
@@ -27,18 +25,20 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val repository = SettingsRepository.create(this)
 
-        val nightMode = when (repository.getDisplayMode()) {
-            "light" -> AppCompatDelegate.MODE_NIGHT_NO
-            "dark" -> AppCompatDelegate.MODE_NIGHT_YES
-            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-        }
+        val nightMode =
+            when (repository.getDisplayMode()) {
+                "light" -> AppCompatDelegate.MODE_NIGHT_NO
+                "dark" -> AppCompatDelegate.MODE_NIGHT_YES
+                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            }
         AppCompatDelegate.setDefaultNightMode(nightMode)
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navHostFragment =
+            supportFragmentManager
+                .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
 
         val configured = repository.isConfigured()

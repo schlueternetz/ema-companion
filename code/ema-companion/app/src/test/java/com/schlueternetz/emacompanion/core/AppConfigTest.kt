@@ -4,7 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class AppConfigTest {
-
     @Test
     fun productionFetchInterval_isTenMinutes() {
         assertEquals(10 * 60 * 1000L, AppConfig.PRODUCTION_FETCH_INTERVAL_MS)

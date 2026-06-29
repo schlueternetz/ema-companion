@@ -1,7 +1,6 @@
 package com.schlueternetz.emacompanion.core.email
 
 import androidx.test.core.app.ApplicationProvider
-import android.content.Context
 import com.schlueternetz.emacompanion.core.api.modulehealth.Module
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthStatus
 import org.junit.Assert.assertEquals
@@ -16,7 +15,6 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], qualifiers = "en")
 class EmailContentBuilderEnTest {
-
     private lateinit var builder: EmailContentBuilder
 
     @Before
@@ -90,7 +88,6 @@ class EmailContentBuilderEnTest {
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], qualifiers = "de")
 class EmailContentBuilderDeTest {
-
     private lateinit var builder: EmailContentBuilder
 
     @Before

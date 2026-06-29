@@ -24,7 +24,6 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class UserGuideFragmentTest {
-
     @Test
     fun assetsSmokeTest_userGuideMdExists() {
         val assets = ApplicationProvider.getApplicationContext<android.content.Context>().assets
@@ -37,10 +36,11 @@ class UserGuideFragmentTest {
 
     @Test
     fun userGuideFragment_rendersNonEmptyText() {
-        val scenario = launchFragmentInContainer<UserGuideFragment>(
-            fragmentArgs = bundleOf("assetPath" to "feature/userguide/index.md"),
-            themeResId = R.style.Theme_EMACompanion,
-        )
+        val scenario =
+            launchFragmentInContainer<UserGuideFragment>(
+                fragmentArgs = bundleOf("assetPath" to "feature/userguide/index.md"),
+                themeResId = R.style.Theme_EMACompanion,
+            )
         scenario.onFragment { fragment ->
             val tv = fragment.requireView().findViewById<TextView>(R.id.user_guide_content)
             assertNotNull(tv)
@@ -58,10 +58,11 @@ class UserGuideFragmentTest {
 
     @Test
     fun userGuideFragment_rendersTableNotRawSource() {
-        val scenario = launchFragmentInContainer<UserGuideFragment>(
-            fragmentArgs = bundleOf("assetPath" to "feature/userguide/index.md"),
-            themeResId = R.style.Theme_EMACompanion,
-        )
+        val scenario =
+            launchFragmentInContainer<UserGuideFragment>(
+                fragmentArgs = bundleOf("assetPath" to "feature/userguide/index.md"),
+                themeResId = R.style.Theme_EMACompanion,
+            )
         scenario.onFragment { fragment ->
             val tv = fragment.requireView().findViewById<TextView>(R.id.user_guide_content)
             val rendered = tv.text.toString()
@@ -85,10 +86,11 @@ class UserGuideFragmentTest {
     @Test
     fun userGuideFragment_mdLinkNavigatesToLinkedPage() {
         val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
-        val scenario = launchFragmentInContainer<UserGuideFragment>(
-            fragmentArgs = bundleOf("assetPath" to "feature/userguide/index.md"),
-            themeResId = R.style.Theme_EMACompanion,
-        )
+        val scenario =
+            launchFragmentInContainer<UserGuideFragment>(
+                fragmentArgs = bundleOf("assetPath" to "feature/userguide/index.md"),
+                themeResId = R.style.Theme_EMACompanion,
+            )
         scenario.onFragment { fragment ->
             navController.setGraph(R.navigation.nav_graph)
             navController.setCurrentDestination(R.id.userGuideFragment, bundleOf("assetPath" to "feature/userguide/index.md"))
@@ -115,10 +117,11 @@ class UserGuideFragmentTest {
     @Test
     @Config(sdk = [33], qualifiers = "de")
     fun userGuideFragment_germanLocaleLoadsLocalizedAsset() {
-        val scenario = launchFragmentInContainer<UserGuideFragment>(
-            fragmentArgs = bundleOf("assetPath" to "feature/userguide/index.md"),
-            themeResId = R.style.Theme_EMACompanion,
-        )
+        val scenario =
+            launchFragmentInContainer<UserGuideFragment>(
+                fragmentArgs = bundleOf("assetPath" to "feature/userguide/index.md"),
+                themeResId = R.style.Theme_EMACompanion,
+            )
         scenario.onFragment { fragment ->
             val tv = fragment.requireView().findViewById<TextView>(R.id.user_guide_content)
             // index-de.md exists alongside index.md, so the German locale must load it.
@@ -135,10 +138,11 @@ class UserGuideFragmentTest {
     @Test
     @Config(sdk = [33], qualifiers = "de")
     fun userGuideFragment_germanLocaleFallsBackToEnglishWhenNoLocalizedAsset() {
-        val scenario = launchFragmentInContainer<UserGuideFragment>(
-            fragmentArgs = bundleOf("assetPath" to "feature/userguide/linked-page.md"),
-            themeResId = R.style.Theme_EMACompanion,
-        )
+        val scenario =
+            launchFragmentInContainer<UserGuideFragment>(
+                fragmentArgs = bundleOf("assetPath" to "feature/userguide/linked-page.md"),
+                themeResId = R.style.Theme_EMACompanion,
+            )
         scenario.onFragment { fragment ->
             val tv = fragment.requireView().findViewById<TextView>(R.id.user_guide_content)
             // No linked-page-de.md exists, so the German locale must fall back to the English file.
@@ -154,10 +158,11 @@ class UserGuideFragmentTest {
 
     @Test
     fun userGuideFragment_imageInFixtureLoadsWithoutThrowing() {
-        val scenario = launchFragmentInContainer<UserGuideFragment>(
-            fragmentArgs = bundleOf("assetPath" to "feature/userguide/index.md"),
-            themeResId = R.style.Theme_EMACompanion,
-        )
+        val scenario =
+            launchFragmentInContainer<UserGuideFragment>(
+                fragmentArgs = bundleOf("assetPath" to "feature/userguide/index.md"),
+                themeResId = R.style.Theme_EMACompanion,
+            )
         // If the custom AsyncDrawableLoader throws when resolving the image reference, this test fails.
         scenario.onFragment { fragment ->
             val tv = fragment.requireView().findViewById<TextView>(R.id.user_guide_content)

@@ -6,7 +6,6 @@ import org.junit.Test
 import javax.crypto.AEADBadTagException
 
 class SettingsCryptoTest {
-
     private val json = """{"emaAppId":"test","displayMode":"dark"}"""
     private val pin = "1234"
 

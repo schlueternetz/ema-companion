@@ -1,18 +1,15 @@
 package com.schlueternetz.emacompanion.core.email
 
 import com.icegreen.greenmail.util.GreenMail
-import com.icegreen.greenmail.util.GreenMailUtil
 import com.icegreen.greenmail.util.ServerSetup
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
 class GmailSmtpEmailSenderTest {
-
     private lateinit var greenMail: GreenMail
     private var smtpPort = 0
 
@@ -32,21 +29,23 @@ class GmailSmtpEmailSenderTest {
 
     @Test
     fun send_deliversMessageWithCorrectToSubjectAndBody() {
-        val sender = GmailSmtpEmailSender(
-            from = "sender@test.com",
-            appPassword = "testpass",
-            smtpHost = "127.0.0.1",
-            smtpPort = smtpPort,
-            useTls = false,
-        )
-
-        val result = runBlocking {
-            sender.send(
-                to = "recipient@test.com",
-                subject = "EMA Companion: Solar module offline",
-                body = "One or more modules are offline.",
+        val sender =
+            GmailSmtpEmailSender(
+                from = "sender@test.com",
+                appPassword = "testpass",
+                smtpHost = "127.0.0.1",
+                smtpPort = smtpPort,
+                useTls = false,
             )
-        }
+
+        val result =
+            runBlocking {
+                sender.send(
+                    to = "recipient@test.com",
+                    subject = "EMA Companion: Solar module offline",
+                    body = "One or more modules are offline.",
+                )
+            }
 
         assertEquals(EmailResult.Success, result)
         greenMail.waitForIncomingEmail(1000, 1)
@@ -58,47 +57,52 @@ class GmailSmtpEmailSenderTest {
 
     @Test
     fun send_returnsAuthFailure_onWrongPassword() {
-        val sender = GmailSmtpEmailSender(
-            from = "sender@test.com",
-            appPassword = "wrongpassword",
-            smtpHost = "127.0.0.1",
-            smtpPort = smtpPort,
-            useTls = false,
-        )
+        val sender =
+            GmailSmtpEmailSender(
+                from = "sender@test.com",
+                appPassword = "wrongpassword",
+                smtpHost = "127.0.0.1",
+                smtpPort = smtpPort,
+                useTls = false,
+            )
 
-        val result = runBlocking {
-            sender.send(to = "recipient@test.com", subject = "test", body = "body")
-        }
+        val result =
+            runBlocking {
+                sender.send(to = "recipient@test.com", subject = "test", body = "body")
+            }
 
         assertEquals(EmailResult.AuthFailure, result)
     }
 
     @Test
     fun send_returnsNetworkError_whenServerUnreachable() {
-        val sender = GmailSmtpEmailSender(
-            from = "sender@test.com",
-            appPassword = "testpass",
-            smtpHost = "127.0.0.1",
-            smtpPort = 9999,
-            useTls = false,
-        )
+        val sender =
+            GmailSmtpEmailSender(
+                from = "sender@test.com",
+                appPassword = "testpass",
+                smtpHost = "127.0.0.1",
+                smtpPort = 9999,
+                useTls = false,
+            )
 
-        val result = runBlocking {
-            sender.send(to = "recipient@test.com", subject = "test", body = "body")
-        }
+        val result =
+            runBlocking {
+                sender.send(to = "recipient@test.com", subject = "test", body = "body")
+            }
 
         assertEquals(EmailResult.NetworkError, result)
     }
 
     @Test
     fun testConnection_returnsSuccess_onValidCredentials() {
-        val sender = GmailSmtpEmailSender(
-            from = "sender@test.com",
-            appPassword = "testpass",
-            smtpHost = "127.0.0.1",
-            smtpPort = smtpPort,
-            useTls = false,
-        )
+        val sender =
+            GmailSmtpEmailSender(
+                from = "sender@test.com",
+                appPassword = "testpass",
+                smtpHost = "127.0.0.1",
+                smtpPort = smtpPort,
+                useTls = false,
+            )
 
         val result = runBlocking { sender.testConnection() }
 
@@ -108,13 +112,14 @@ class GmailSmtpEmailSenderTest {
 
     @Test
     fun testConnection_returnsAuthFailure_onWrongPassword() {
-        val sender = GmailSmtpEmailSender(
-            from = "sender@test.com",
-            appPassword = "wrongpassword",
-            smtpHost = "127.0.0.1",
-            smtpPort = smtpPort,
-            useTls = false,
-        )
+        val sender =
+            GmailSmtpEmailSender(
+                from = "sender@test.com",
+                appPassword = "wrongpassword",
+                smtpHost = "127.0.0.1",
+                smtpPort = smtpPort,
+                useTls = false,
+            )
 
         val result = runBlocking { sender.testConnection() }
 

@@ -15,19 +15,23 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class ApiCallLogRepositoryTest {
-
     private lateinit var prefs: SharedPreferences
 
     @Before
     fun setUp() {
-        prefs = ApplicationProvider.getApplicationContext<Context>()
-            .getSharedPreferences("ema_api_log_test", Context.MODE_PRIVATE)
+        prefs =
+            ApplicationProvider
+                .getApplicationContext<Context>()
+                .getSharedPreferences("ema_api_log_test", Context.MODE_PRIVATE)
         prefs.edit().clear().apply()
     }
 
     private fun repo() = ApiCallLogRepository(prefs)
 
-    private fun log(endpoint: String, success: Boolean = true) = ApiCallLog(
+    private fun log(
+        endpoint: String,
+        success: Boolean = true,
+    ) = ApiCallLog(
         timestampMs = 1_000L,
         endpoint = endpoint,
         durationMs = 42L,
@@ -69,14 +73,15 @@ class ApiCallLogRepositoryTest {
     @Test
     fun append_masksSecretInStoredText() {
         val secret = "secret123456"
-        val entry = ApiCallLog(
-            timestampMs = 1L,
-            endpoint = "ecu/energy",
-            durationMs = 1L,
-            success = true,
-            requestText = "App Secret: $secret in plain text",
-            responseText = "no secret here",
-        )
+        val entry =
+            ApiCallLog(
+                timestampMs = 1L,
+                endpoint = "ecu/energy",
+                durationMs = 1L,
+                success = true,
+                requestText = "App Secret: $secret in plain text",
+                responseText = "no secret here",
+            )
         repo().append(entry, secret = secret)
         val stored = repo().getAll()[0]
         assertFalse("Secret must not appear in plain text", stored.requestText.contains(secret))

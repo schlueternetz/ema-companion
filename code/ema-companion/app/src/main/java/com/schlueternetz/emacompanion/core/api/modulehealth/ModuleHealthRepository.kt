@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.schlueternetz.emacompanion.core.AppConfig
 import com.schlueternetz.emacompanion.core.api.ApiResult
-import com.schlueternetz.emacompanion.core.api.BatchEnergyFetch
 import com.schlueternetz.emacompanion.core.api.EmaApiClient
 import com.schlueternetz.emacompanion.core.api.FetchError
 import com.schlueternetz.emacompanion.core.api.OkHttpEmaApiClient
@@ -29,17 +28,20 @@ class ModuleHealthRepository(
     private val appSecretProvider: () -> String,
     private val clock: () -> Long = { System.currentTimeMillis() },
     private val today: () -> LocalDate = { LocalDate.now() },
-) : ModuleHealthSource, ThrottleResettable {
-
+) : ModuleHealthSource,
+    ThrottleResettable {
     override fun currentState(): ModuleHealthState {
         val statusName = healthPrefs.getString(KEY_STATUS, null)
-        val status = statusName
-            ?.let { runCatching { ModuleHealthStatus.valueOf(it) }.getOrNull() }
-            ?: ModuleHealthStatus.UNKNOWN
+        val status =
+            statusName
+                ?.let { runCatching { ModuleHealthStatus.valueOf(it) }.getOrNull() }
+                ?: ModuleHealthStatus.UNKNOWN
         val offlineModules = parseOfflineModules(healthPrefs.getString(KEY_OFFLINE_MODULES, null))
         val checkedAt = healthPrefs.getLong(KEY_LAST_CHECK, -1L).takeIf { it >= 0 }
-        val error = healthPrefs.getString(KEY_FETCH_ERROR, null)
-            ?.let { runCatching { FetchError.valueOf(it) }.getOrNull() }
+        val error =
+            healthPrefs
+                .getString(KEY_FETCH_ERROR, null)
+                ?.let { runCatching { FetchError.valueOf(it) }.getOrNull() }
         return ModuleHealthState(status, offlineModules, checkedAt, error)
     }
 
@@ -55,11 +57,12 @@ class ModuleHealthRepository(
 
         val window = mutableMapOf<LocalDate, Map<String, Double>>()
         for (date in dates) {
-            val cached = if (date == todayDate) {
-                null // today is always re-fetched
-            } else {
-                dailyPrefs.getString("$KEY_PREFIX$date", null)?.let { parseDailyJson(it) }
-            }
+            val cached =
+                if (date == todayDate) {
+                    null // today is always re-fetched
+                } else {
+                    dailyPrefs.getString("$KEY_PREFIX$date", null)?.let { parseDailyJson(it) }
+                }
             if (cached != null) {
                 window[date] = cached
                 continue
@@ -95,19 +98,23 @@ class ModuleHealthRepository(
             }
         }
 
-        val previousStatus = healthPrefs.getString(KEY_STATUS, null)
-            ?.let { runCatching { ModuleHealthStatus.valueOf(it) }.getOrNull() }
+        val previousStatus =
+            healthPrefs
+                .getString(KEY_STATUS, null)
+                ?.let { runCatching { ModuleHealthStatus.valueOf(it) }.getOrNull() }
         val computed = computeStatus(window)
-        val finalStatus = if (previousStatus == ModuleHealthStatus.RED &&
-            computed.status == ModuleHealthStatus.YELLOW
-        ) {
-            ModuleHealthStatus.RED
-        } else {
-            computed.status
-        }
+        val finalStatus =
+            if (previousStatus == ModuleHealthStatus.RED &&
+                computed.status == ModuleHealthStatus.YELLOW
+            ) {
+                ModuleHealthStatus.RED
+            } else {
+                computed.status
+            }
         val state = computed.copy(status = finalStatus)
 
-        healthPrefs.edit()
+        healthPrefs
+            .edit()
             .putString(KEY_STATUS, state.status.name)
             .putString(KEY_OFFLINE_MODULES, encodeOfflineModules(state.offlineModules))
             .putLong(KEY_LAST_CHECK, now)
@@ -141,33 +148,36 @@ class ModuleHealthRepository(
             if (consecutive > 0) offlineModules.add(Module(uid, consecutive))
         }
 
-        val status = when {
-            offlineModules.isEmpty() -> ModuleHealthStatus.GREEN
-            offlineModules.any { it.offlineDays >= WINDOW_DAYS } -> ModuleHealthStatus.RED
-            else -> ModuleHealthStatus.YELLOW
-        }
+        val status =
+            when {
+                offlineModules.isEmpty() -> ModuleHealthStatus.GREEN
+                offlineModules.any { it.offlineDays >= WINDOW_DAYS } -> ModuleHealthStatus.RED
+                else -> ModuleHealthStatus.YELLOW
+            }
         return ModuleHealthState(status, offlineModules.sortedByDescending { it.offlineDays })
     }
 
     private fun pruneCache(todayDate: LocalDate) {
         val cutoff = todayDate.minusDays(WINDOW_DAYS.toLong())
-        val toRemove = dailyPrefs.all.keys.filter { key ->
-            key.startsWith(KEY_PREFIX) &&
-                runCatching {
-                    LocalDate.parse(key.removePrefix(KEY_PREFIX)) < cutoff
-                }.getOrDefault(false)
-        }
+        val toRemove =
+            dailyPrefs.all.keys.filter { key ->
+                key.startsWith(KEY_PREFIX) &&
+                    runCatching {
+                        LocalDate.parse(key.removePrefix(KEY_PREFIX)) < cutoff
+                    }.getOrDefault(false)
+            }
         if (toRemove.isNotEmpty()) {
             dailyPrefs.edit().apply { toRemove.forEach { remove(it) } }.apply()
         }
     }
 
-    private fun parseDailyJson(json: String): Map<String, Double> = try {
-        val obj = JSONObject(json)
-        obj.keys().asSequence().associateWith { obj.getDouble(it) }
-    } catch (e: JSONException) {
-        emptyMap()
-    }
+    private fun parseDailyJson(json: String): Map<String, Double> =
+        try {
+            val obj = JSONObject(json)
+            obj.keys().asSequence().associateWith { obj.getDouble(it) }
+        } catch (e: JSONException) {
+            emptyMap()
+        }
 
     private fun encodeDailyJson(data: Map<String, Double>): String =
         JSONObject().also { obj -> data.forEach { (uid, kWh) -> obj.put(uid, kWh) } }.toString()
@@ -186,12 +196,14 @@ class ModuleHealthRepository(
     }
 
     private fun encodeOfflineModules(modules: List<Module>): String =
-        JSONArray().also { arr ->
-            modules.forEach { arr.put(JSONObject().put("uid", it.uid).put("days", it.offlineDays)) }
-        }.toString()
+        JSONArray()
+            .also { arr ->
+                modules.forEach { arr.put(JSONObject().put("uid", it.uid).put("days", it.offlineDays)) }
+            }.toString()
 
     fun getLastNotifiedStatus(): ModuleHealthStatus? =
-        healthPrefs.getString(KEY_LAST_NOTIFIED_STATUS, null)
+        healthPrefs
+            .getString(KEY_LAST_NOTIFIED_STATUS, null)
             ?.let { runCatching { ModuleHealthStatus.valueOf(it) }.getOrNull() }
 
     fun setLastNotifiedStatus(status: ModuleHealthStatus) {
@@ -199,7 +211,8 @@ class ModuleHealthRepository(
     }
 
     fun getLastEmailedStatus(): ModuleHealthStatus? =
-        healthPrefs.getString(KEY_LAST_EMAILED_STATUS, null)
+        healthPrefs
+            .getString(KEY_LAST_EMAILED_STATUS, null)
             ?.let { runCatching { ModuleHealthStatus.valueOf(it) }.getOrNull() }
 
     fun setLastEmailedStatus(status: ModuleHealthStatus) {
@@ -207,7 +220,8 @@ class ModuleHealthRepository(
     }
 
     override fun resetThrottle() {
-        healthPrefs.edit()
+        healthPrefs
+            .edit()
             .remove(KEY_LAST_CHECK)
             .remove(KEY_FETCH_ERROR)
             .remove(KEY_LAST_NOTIFIED_STATUS)
@@ -256,14 +270,15 @@ class ModuleHealthRepository(
             client: EmaApiClient,
             clock: () -> Long = { System.currentTimeMillis() },
             today: () -> LocalDate = { LocalDate.now() },
-        ): ModuleHealthRepository = ModuleHealthRepository(
-            client = client,
-            log = ApiCallLogRepository.create(context),
-            healthPrefs = context.getSharedPreferences(PREFS_HEALTH, Context.MODE_PRIVATE),
-            dailyPrefs = context.getSharedPreferences(PREFS_DAILY, Context.MODE_PRIVATE),
-            appSecretProvider = { "" },
-            clock = clock,
-            today = today,
-        )
+        ): ModuleHealthRepository =
+            ModuleHealthRepository(
+                client = client,
+                log = ApiCallLogRepository.create(context),
+                healthPrefs = context.getSharedPreferences(PREFS_HEALTH, Context.MODE_PRIVATE),
+                dailyPrefs = context.getSharedPreferences(PREFS_DAILY, Context.MODE_PRIVATE),
+                appSecretProvider = { "" },
+                clock = clock,
+                today = today,
+            )
     }
 }

@@ -33,7 +33,6 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class SettingsFragmentTest {
-
     private lateinit var appContext: Context
 
     @Before
@@ -41,16 +40,31 @@ class SettingsFragmentTest {
         AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
         appContext = ApplicationProvider.getApplicationContext()
         // Clear settings between tests
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .edit().clear().apply()
-        appContext.getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
-            .edit().clear().apply()
-        appContext.getSharedPreferences("ema_api_log", Context.MODE_PRIVATE)
-            .edit().clear().apply()
-        appContext.getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
-            .edit().clear().apply()
-        appContext.getSharedPreferences("ema_module_health_daily", Context.MODE_PRIVATE)
-            .edit().clear().apply()
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .apply()
+        appContext
+            .getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .apply()
+        appContext
+            .getSharedPreferences("ema_api_log", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .apply()
+        appContext
+            .getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .apply()
+        appContext
+            .getSharedPreferences("ema_module_health_daily", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .apply()
     }
 
     @After
@@ -58,24 +72,43 @@ class SettingsFragmentTest {
         SettingsFragment.emailSenderFactory = null
     }
 
-    private class FakeEmailSender(private val result: EmailResult) : EmailSender {
-        override suspend fun send(to: String, subject: String, body: String) = result
+    private class FakeEmailSender(
+        private val result: EmailResult,
+    ) : EmailSender {
+        override suspend fun send(
+            to: String,
+            subject: String,
+            body: String,
+        ) = result
+
         override suspend fun testConnection() = result
     }
 
     private fun seedLogs(json: String) {
-        appContext.getSharedPreferences("ema_api_log", Context.MODE_PRIVATE)
-            .edit().putString("log", json).apply()
+        appContext
+            .getSharedPreferences("ema_api_log", Context.MODE_PRIVATE)
+            .edit()
+            .putString("log", json)
+            .apply()
     }
 
     private fun dialogMessage(dialog: androidx.appcompat.app.AlertDialog): String =
-        dialog.window?.decorView?.findViewById<TextView>(android.R.id.message)?.text?.toString() ?: ""
+        dialog.window
+            ?.decorView
+            ?.findViewById<TextView>(android.R.id.message)
+            ?.text
+            ?.toString() ?: ""
 
     private fun seedUsageCount(count: Int) {
-        appContext.getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
+        appContext
+            .getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
             .edit()
-            .putString("apiRequestCountMonth", java.time.YearMonth.now().toString())
-            .putInt("apiRequestCount", count)
+            .putString(
+                "apiRequestCountMonth",
+                java.time.YearMonth
+                    .now()
+                    .toString(),
+            ).putInt("apiRequestCount", count)
             .apply()
     }
 
@@ -116,8 +149,10 @@ class SettingsFragmentTest {
     fun settingsFragment_savesLanguageSelection() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val prefs = fragment.requireContext()
-                .getSharedPreferences("test_settings", Context.MODE_PRIVATE)
+            val prefs =
+                fragment
+                    .requireContext()
+                    .getSharedPreferences("test_settings", Context.MODE_PRIVATE)
             val repo = SettingsRepository(prefs)
             fragment.applyLanguage("en", repo)
             assertEquals("en", repo.getLanguage())
@@ -127,8 +162,11 @@ class SettingsFragmentTest {
     @Test
     fun refresh_appliesImportedDisplayModeImmediately() {
         // Imported settings set display mode to dark.
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .edit().putString("displayMode", "dark").apply()
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putString("displayMode", "dark")
+            .apply()
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
             // Simulate a prior manual override that differs from the imported value.
@@ -146,8 +184,11 @@ class SettingsFragmentTest {
     @Config(sdk = [32])
     fun refresh_appliesImportedLanguageImmediately() {
         // Imported settings set language to German.
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .edit().putString("language", "de").apply()
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putString("language", "de")
+            .apply()
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
             // Simulate current locale being the system default.
@@ -171,8 +212,11 @@ class SettingsFragmentTest {
 
     @Test
     fun settingsFragment_displaysStoredEmaAppId() {
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .edit().putString("emaAppId", "storedappid12345678901234567890ab").apply()
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putString("emaAppId", "storedappid12345678901234567890ab")
+            .apply()
 
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
@@ -183,13 +227,18 @@ class SettingsFragmentTest {
 
     @Test
     fun settingsFragment_notificationsToggleReflectsStoredValue() {
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .edit().putBoolean("notificationsEnabled", false).apply()
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean("notificationsEnabled", false)
+            .apply()
 
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val switch = fragment.requireView()
-                .findViewById<MaterialSwitch>(R.id.settings_notifications_switch)
+            val switch =
+                fragment
+                    .requireView()
+                    .findViewById<MaterialSwitch>(R.id.settings_notifications_switch)
             assertEquals(false, switch.isChecked)
         }
     }
@@ -198,8 +247,10 @@ class SettingsFragmentTest {
     fun settingsFragment_notificationsToggle_persistsChange() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val switch = fragment.requireView()
-                .findViewById<MaterialSwitch>(R.id.settings_notifications_switch)
+            val switch =
+                fragment
+                    .requireView()
+                    .findViewById<MaterialSwitch>(R.id.settings_notifications_switch)
             switch.isChecked = false
         }
 
@@ -212,8 +263,10 @@ class SettingsFragmentTest {
     fun apiRequestLimit_showsDefaultValue_whenNotExplicitlySet() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val row = fragment.requireView()
-                .findViewById<SettingRowView>(R.id.setting_api_request_limit)
+            val row =
+                fragment
+                    .requireView()
+                    .findViewById<SettingRowView>(R.id.setting_api_request_limit)
             assertNotNull(row)
             assertEquals("${SettingsRepository.API_REQUEST_LIMIT_DEFAULT}", row.value)
         }
@@ -221,14 +274,19 @@ class SettingsFragmentTest {
 
     @Test
     fun apiRequestLimit_resetButton_restoresToDefault() {
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .edit().putInt("apiRequestLimit", 500).apply()
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putInt("apiRequestLimit", 500)
+            .apply()
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
             fragment.requireView().findViewById<View>(R.id.setting_api_request_limit_reset).performClick()
         }
-        val stored = appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .getInt("apiRequestLimit", -1)
+        val stored =
+            appContext
+                .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+                .getInt("apiRequestLimit", -1)
         assertEquals(SettingsRepository.API_REQUEST_LIMIT_DEFAULT, stored)
     }
 
@@ -236,8 +294,10 @@ class SettingsFragmentTest {
     fun apiRequestLimit_savesValue() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val row = fragment.requireView()
-                .findViewById<SettingRowView>(R.id.setting_api_request_limit)
+            val row =
+                fragment
+                    .requireView()
+                    .findViewById<SettingRowView>(R.id.setting_api_request_limit)
             row.onSave?.invoke("500")
         }
         val prefs = appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
@@ -248,8 +308,10 @@ class SettingsFragmentTest {
     fun apiRequestLimit_rejectsAboveMax() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val row = fragment.requireView()
-                .findViewById<SettingRowView>(R.id.setting_api_request_limit)
+            val row =
+                fragment
+                    .requireView()
+                    .findViewById<SettingRowView>(R.id.setting_api_request_limit)
             assertFalse(row.validator?.invoke((SettingsRepository.API_REQUEST_LIMIT_MAX_PER_MONTH + 1).toString()) ?: true)
             assertFalse(row.validator?.invoke("10009999999999999999999999999999999") ?: true)
             assertTrue(row.validator?.invoke(SettingsRepository.API_REQUEST_LIMIT_MAX_PER_MONTH.toString()) ?: false)
@@ -260,8 +322,10 @@ class SettingsFragmentTest {
     fun systemCapacity_rejectsAboveMax() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val row = fragment.requireView()
-                .findViewById<SettingRowView>(R.id.setting_system_capacity)
+            val row =
+                fragment
+                    .requireView()
+                    .findViewById<SettingRowView>(R.id.setting_system_capacity)
             assertFalse(row.validator?.invoke("2001") ?: true)
             assertTrue(row.validator?.invoke("2000.00") ?: false)
         }
@@ -271,8 +335,10 @@ class SettingsFragmentTest {
     fun baseUrl_rejectsTooLong() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val row = fragment.requireView()
-                .findViewById<SettingRowView>(R.id.setting_base_url)
+            val row =
+                fragment
+                    .requireView()
+                    .findViewById<SettingRowView>(R.id.setting_base_url)
             val tooLong = "http://example.com/" + "a".repeat(SettingsRepository.BASE_URL_MAX_LENGTH)
             assertFalse(row.validator?.invoke(tooLong) ?: true)
         }
@@ -282,8 +348,10 @@ class SettingsFragmentTest {
     fun apiRequestLimit_rejectsZeroOrNegative() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val row = fragment.requireView()
-                .findViewById<SettingRowView>(R.id.setting_api_request_limit)
+            val row =
+                fragment
+                    .requireView()
+                    .findViewById<SettingRowView>(R.id.setting_api_request_limit)
             assertFalse(row.validator?.invoke("0") ?: true)
             assertFalse(row.validator?.invoke("-5") ?: true)
         }
@@ -292,12 +360,17 @@ class SettingsFragmentTest {
     @Test
     fun progressBar_showsConsumedRatio() {
         seedUsageCount(800)
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .edit().putInt("apiRequestLimit", 1000).apply()
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putInt("apiRequestLimit", 1000)
+            .apply()
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val bar = fragment.requireView()
-                .findViewById<LinearProgressIndicator>(R.id.api_request_progress_bar)
+            val bar =
+                fragment
+                    .requireView()
+                    .findViewById<LinearProgressIndicator>(R.id.api_request_progress_bar)
             // consumed=800, limit=1000 → 80% → progress=80 out of max=100
             assertEquals(80, bar.progress)
         }
@@ -307,8 +380,10 @@ class SettingsFragmentTest {
     fun progressBar_showsZeroProgress_whenNoRequestsMade() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val bar = fragment.requireView()
-                .findViewById<LinearProgressIndicator>(R.id.api_request_progress_bar)
+            val bar =
+                fragment
+                    .requireView()
+                    .findViewById<LinearProgressIndicator>(R.id.api_request_progress_bar)
             // No requests recorded yet → consumed=0 → 0%
             assertEquals(0, bar.progress)
         }
@@ -317,12 +392,17 @@ class SettingsFragmentTest {
     @Test
     fun progressBar_usesPersistedCount_notHardcodedValue() {
         seedUsageCount(123)
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .edit().putInt("apiRequestLimit", 1000).apply()
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putInt("apiRequestLimit", 1000)
+            .apply()
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val bar = fragment.requireView()
-                .findViewById<LinearProgressIndicator>(R.id.api_request_progress_bar)
+            val bar =
+                fragment
+                    .requireView()
+                    .findViewById<LinearProgressIndicator>(R.id.api_request_progress_bar)
             // consumed=123, limit=1000 → 12%
             assertEquals(12, bar.progress)
             val label = fragment.requireView().findViewById<TextView>(R.id.api_request_progress_label)
@@ -335,8 +415,11 @@ class SettingsFragmentTest {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
             val resetBtn = fragment.requireView().findViewById<View>(R.id.setting_api_request_limit_reset)
-            fragment.requireView().findViewById<SettingRowView>(R.id.setting_api_request_limit)
-                .findViewById<android.widget.ImageButton>(R.id.setting_edit_button).performClick()
+            fragment
+                .requireView()
+                .findViewById<SettingRowView>(R.id.setting_api_request_limit)
+                .findViewById<android.widget.ImageButton>(R.id.setting_edit_button)
+                .performClick()
             assertEquals(false, resetBtn.isEnabled)
         }
     }
@@ -356,12 +439,17 @@ class SettingsFragmentTest {
     @Test
     fun progressBarLabel_showsConsumedAndLimit() {
         seedUsageCount(800)
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .edit().putInt("apiRequestLimit", 1000).apply()
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putInt("apiRequestLimit", 1000)
+            .apply()
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val label = fragment.requireView()
-                .findViewById<TextView>(R.id.api_request_progress_label)
+            val label =
+                fragment
+                    .requireView()
+                    .findViewById<TextView>(R.id.api_request_progress_label)
             assertNotNull(label)
             val text = label.text.toString()
             assertTrue("Label should mention 800", text.contains("800"))
@@ -371,7 +459,9 @@ class SettingsFragmentTest {
 
     @Test
     fun changingCredential_resetsThrottleAndClearsError() {
-        appContext.getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE).edit()
+        appContext
+            .getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
+            .edit()
             .putLong("lastFetchEpochMs", 12345L)
             .putString("lastFetchError", "API")
             .apply()
@@ -389,7 +479,9 @@ class SettingsFragmentTest {
     fun importingSettings_resetsThrottleAndClearsError() {
         // Import can change connection settings, so the post-import refresh must reset the
         // throttle and clear the stale error just like a manual credential edit does.
-        appContext.getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE).edit()
+        appContext
+            .getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
+            .edit()
             .putLong("lastFetchEpochMs", 12345L)
             .putString("lastFetchError", "API")
             .apply()
@@ -406,8 +498,11 @@ class SettingsFragmentTest {
     fun importingSettings_resetsModuleHealthThrottle() {
         // An import can change EMA credentials, so the module health throttle must be reset
         // (just like the production tile throttle) so the next Home visit re-checks immediately.
-        appContext.getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
-            .edit().putLong("lastCheckEpochMs", System.currentTimeMillis()).apply()
+        appContext
+            .getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
+            .edit()
+            .putLong("lastCheckEpochMs", System.currentTimeMillis())
+            .apply()
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
             fragment.refreshAllDisplayedValues()
@@ -423,12 +518,18 @@ class SettingsFragmentTest {
     fun changingCredential_resetsModuleHealthThrottle() {
         // A per-field credential save must also reset the module health throttle so the next
         // Home visit re-checks with the new credentials, not the old 24-hour throttle.
-        appContext.getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
-            .edit().putLong("lastCheckEpochMs", System.currentTimeMillis()).apply()
+        appContext
+            .getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
+            .edit()
+            .putLong("lastCheckEpochMs", System.currentTimeMillis())
+            .apply()
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            fragment.requireView().findViewById<SettingRowView>(R.id.setting_ema_app_id)
-                .onSave.invoke("a".repeat(32))
+            fragment
+                .requireView()
+                .findViewById<SettingRowView>(R.id.setting_ema_app_id)
+                .onSave
+                .invoke("a".repeat(32))
         }
         val health = appContext.getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
         assertFalse(
@@ -449,8 +550,10 @@ class SettingsFragmentTest {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
             fragment.requireView().findViewById<View>(R.id.settings_factory_reset_button).performClick()
-            val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
-                as androidx.appcompat.app.AlertDialog
+            val dialog =
+                org.robolectric.shadows.ShadowDialog
+                    .getLatestDialog()
+                    as androidx.appcompat.app.AlertDialog
             shadowOf(Looper.getMainLooper()).idle()
             dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).performClick()
             shadowOf(Looper.getMainLooper()).idle()
@@ -472,8 +575,11 @@ class SettingsFragmentTest {
 
     @Test
     fun historicDays_suffixStrippedFromEditField() {
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .edit().putInt("historicDataDays", 30).apply()
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putInt("historicDataDays", 30)
+            .apply()
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
             val row = fragment.requireView().findViewById<SettingRowView>(R.id.setting_historic_days)
@@ -543,8 +649,10 @@ class SettingsFragmentTest {
         scenario.onFragment { fragment ->
             val list = fragment.requireView().findViewById<android.widget.LinearLayout>(R.id.settings_logs_list)
             list.getChildAt(0).performClick()
-            val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
-                as androidx.appcompat.app.AlertDialog
+            val dialog =
+                org.robolectric.shadows.ShadowDialog
+                    .getLatestDialog()
+                    as androidx.appcompat.app.AlertDialog
             val message = dialogMessage(dialog)
             assertTrue("Detail should contain response body", message.contains("power"))
             assertTrue("Detail should be pretty-printed across lines", message.contains("\n"))
@@ -563,8 +671,10 @@ class SettingsFragmentTest {
         scenario.onFragment { fragment ->
             val list = fragment.requireView().findViewById<android.widget.LinearLayout>(R.id.settings_logs_list)
             list.getChildAt(0).performClick()
-            val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
-                as androidx.appcompat.app.AlertDialog
+            val dialog =
+                org.robolectric.shadows.ShadowDialog
+                    .getLatestDialog()
+                    as androidx.appcompat.app.AlertDialog
             val message = dialogMessage(dialog)
             assertTrue("Masked value should remain masked in detail", message.contains("••••3456"))
             assertFalse("Plain secret must not appear", message.contains("secret123456"))
@@ -574,16 +684,25 @@ class SettingsFragmentTest {
     @Test
     fun factoryReset_clearsBothModuleHealthStores() {
         // Seed data in both health and daily prefs
-        appContext.getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
-            .edit().putString("status", "GREEN").putLong("lastCheckEpochMs", 12345L).apply()
-        appContext.getSharedPreferences("ema_module_health_daily", Context.MODE_PRIVATE)
-            .edit().putString("daily_2025-07-24", """{"INV1":1.5}""").apply()
+        appContext
+            .getSharedPreferences("ema_module_health", Context.MODE_PRIVATE)
+            .edit()
+            .putString("status", "GREEN")
+            .putLong("lastCheckEpochMs", 12345L)
+            .apply()
+        appContext
+            .getSharedPreferences("ema_module_health_daily", Context.MODE_PRIVATE)
+            .edit()
+            .putString("daily_2025-07-24", """{"INV1":1.5}""")
+            .apply()
 
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
             fragment.requireView().findViewById<View>(R.id.settings_factory_reset_button).performClick()
-            val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
-                as androidx.appcompat.app.AlertDialog
+            val dialog =
+                org.robolectric.shadows.ShadowDialog
+                    .getLatestDialog()
+                    as androidx.appcompat.app.AlertDialog
             shadowOf(Looper.getMainLooper()).idle()
             dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).performClick()
             shadowOf(Looper.getMainLooper()).idle()
@@ -601,10 +720,14 @@ class SettingsFragmentTest {
     fun emailAlerts_toggleOffByDefault_enablingShowsSetupRow() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val switch = fragment.requireView()
-                .findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
-            val setupRow = fragment.requireView()
-                .findViewById<View>(R.id.settings_email_alerts_setup_row)
+            val switch =
+                fragment
+                    .requireView()
+                    .findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
+            val setupRow =
+                fragment
+                    .requireView()
+                    .findViewById<View>(R.id.settings_email_alerts_setup_row)
 
             assertFalse("email alerts toggle should be off by default", switch.isChecked)
             assertEquals(View.GONE, setupRow.visibility)
@@ -617,7 +740,8 @@ class SettingsFragmentTest {
 
     @Test
     fun emailAlerts_whenConfigured_showsEnabledForAddress() {
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "mysecretpassword1")
@@ -626,10 +750,14 @@ class SettingsFragmentTest {
 
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val statusRow = fragment.requireView()
-                .findViewById<View>(R.id.settings_email_alerts_status_row)
-            val statusText = fragment.requireView()
-                .findViewById<TextView>(R.id.settings_email_alerts_status_text)
+            val statusRow =
+                fragment
+                    .requireView()
+                    .findViewById<View>(R.id.settings_email_alerts_status_row)
+            val statusText =
+                fragment
+                    .requireView()
+                    .findViewById<TextView>(R.id.settings_email_alerts_status_text)
 
             assertEquals(View.VISIBLE, statusRow.visibility)
             assertTrue(
@@ -641,7 +769,8 @@ class SettingsFragmentTest {
 
     @Test
     fun emailAlerts_disableFlow_showsDialogAndClearsCredentials() {
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "mysecretpassword1")
@@ -652,8 +781,10 @@ class SettingsFragmentTest {
         scenario.onFragment { fragment ->
             fragment.requireView().findViewById<View>(R.id.email_alerts_edit_button).performClick()
             fragment.requireView().findViewById<View>(R.id.email_alerts_clear_button).performClick()
-            val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
-                as androidx.appcompat.app.AlertDialog
+            val dialog =
+                org.robolectric.shadows.ShadowDialog
+                    .getLatestDialog()
+                    as androidx.appcompat.app.AlertDialog
             shadowOf(Looper.getMainLooper()).idle()
             dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).performClick()
             shadowOf(Looper.getMainLooper()).idle()
@@ -669,10 +800,13 @@ class SettingsFragmentTest {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
             // Enable the toggle so the setup row appears
-            fragment.requireView().findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
+            fragment
+                .requireView()
+                .findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
                 .performClick()
 
-            fragment.requireView()
+            fragment
+                .requireView()
                 .findViewById<View>(R.id.settings_email_alerts_open_google_account)
                 .performClick()
 
@@ -690,13 +824,21 @@ class SettingsFragmentTest {
     fun emailAlerts_save_withValidInput_savesAndTransitions() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            fragment.requireView().findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
+            fragment
+                .requireView()
+                .findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
                 .performClick()
-            fragment.requireView().findViewById<TextInputEditText>(R.id.email_address_input)
+            fragment
+                .requireView()
+                .findViewById<TextInputEditText>(R.id.email_address_input)
                 .setText("user@gmail.com")
-            fragment.requireView().findViewById<TextInputEditText>(R.id.email_password_input)
+            fragment
+                .requireView()
+                .findViewById<TextInputEditText>(R.id.email_password_input)
                 .setText("abcdefghijklmnop")
-            fragment.requireView().findViewById<View>(R.id.settings_email_alerts_verify_save)
+            fragment
+                .requireView()
+                .findViewById<View>(R.id.settings_email_alerts_verify_save)
                 .performClick()
 
             val setupRow = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_setup_row)
@@ -713,13 +855,21 @@ class SettingsFragmentTest {
     fun emailAlerts_save_stripsPasswordWhitespaceBeforeSaving() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            fragment.requireView().findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
+            fragment
+                .requireView()
+                .findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
                 .performClick()
-            fragment.requireView().findViewById<TextInputEditText>(R.id.email_address_input)
+            fragment
+                .requireView()
+                .findViewById<TextInputEditText>(R.id.email_address_input)
                 .setText("user@gmail.com")
-            fragment.requireView().findViewById<TextInputEditText>(R.id.email_password_input)
+            fragment
+                .requireView()
+                .findViewById<TextInputEditText>(R.id.email_password_input)
                 .setText("qbnh wsnp gwpt jeaf")
-            fragment.requireView().findViewById<View>(R.id.settings_email_alerts_verify_save)
+            fragment
+                .requireView()
+                .findViewById<View>(R.id.settings_email_alerts_verify_save)
                 .performClick()
         }
         val prefs = appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
@@ -730,13 +880,21 @@ class SettingsFragmentTest {
     fun emailAlerts_save_withInvalidEmail_showsError() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            fragment.requireView().findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
+            fragment
+                .requireView()
+                .findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
                 .performClick()
-            fragment.requireView().findViewById<TextInputEditText>(R.id.email_address_input)
+            fragment
+                .requireView()
+                .findViewById<TextInputEditText>(R.id.email_address_input)
                 .setText("notanemail")
-            fragment.requireView().findViewById<TextInputEditText>(R.id.email_password_input)
+            fragment
+                .requireView()
+                .findViewById<TextInputEditText>(R.id.email_password_input)
                 .setText("abcdefghijklmnop")
-            fragment.requireView().findViewById<View>(R.id.settings_email_alerts_verify_save)
+            fragment
+                .requireView()
+                .findViewById<View>(R.id.settings_email_alerts_verify_save)
                 .performClick()
 
             val error = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_error)
@@ -750,13 +908,21 @@ class SettingsFragmentTest {
     fun emailAlerts_save_withPasswordWrongLength_showsError() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            fragment.requireView().findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
+            fragment
+                .requireView()
+                .findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
                 .performClick()
-            fragment.requireView().findViewById<TextInputEditText>(R.id.email_address_input)
+            fragment
+                .requireView()
+                .findViewById<TextInputEditText>(R.id.email_address_input)
                 .setText("user@gmail.com")
-            fragment.requireView().findViewById<TextInputEditText>(R.id.email_password_input)
+            fragment
+                .requireView()
+                .findViewById<TextInputEditText>(R.id.email_password_input)
                 .setText("tooshort")
-            fragment.requireView().findViewById<View>(R.id.settings_email_alerts_verify_save)
+            fragment
+                .requireView()
+                .findViewById<View>(R.id.settings_email_alerts_verify_save)
                 .performClick()
 
             val error = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_error)
@@ -768,7 +934,8 @@ class SettingsFragmentTest {
     fun emailAlerts_configured_managementSectionAlwaysVisible_whenToggleOff() {
         // Management section must remain visible even when alerts are paused so the user can
         // edit credentials or disable without having to re-enable first.
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "mysecretpassword1")
@@ -784,7 +951,8 @@ class SettingsFragmentTest {
 
     @Test
     fun emailAlerts_editButton_showsSetupFormWithPrefilledEmail() {
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "abcdefghijklmnop")
@@ -815,7 +983,8 @@ class SettingsFragmentTest {
 
     @Test
     fun emailAlerts_editCancel_returnsToManagementSection() {
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "abcdefghijklmnop")
@@ -836,7 +1005,8 @@ class SettingsFragmentTest {
 
     @Test
     fun emailAlerts_editSave_updatesCredentialsAndReturnsToManagement() {
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit()
             .putString("emailAddress", "old@gmail.com")
             .putString("emailAppPassword", "abcdefghijklmnop")
@@ -846,9 +1016,13 @@ class SettingsFragmentTest {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
             fragment.requireView().findViewById<View>(R.id.email_alerts_edit_button).performClick()
-            fragment.requireView().findViewById<TextInputEditText>(R.id.email_address_input)
+            fragment
+                .requireView()
+                .findViewById<TextInputEditText>(R.id.email_address_input)
                 .setText("new@gmail.com")
-            fragment.requireView().findViewById<TextInputEditText>(R.id.email_password_input)
+            fragment
+                .requireView()
+                .findViewById<TextInputEditText>(R.id.email_password_input)
                 .setText("zyxwvutsrqponmlk")
             fragment.requireView().findViewById<View>(R.id.settings_email_alerts_verify_save).performClick()
 
@@ -864,7 +1038,8 @@ class SettingsFragmentTest {
 
     @Test
     fun emailAlerts_testButton_success_showsSuccessResult() {
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "abcdefghijklmnop")
@@ -882,14 +1057,18 @@ class SettingsFragmentTest {
             assertEquals(View.VISIBLE, result.visibility)
             assertTrue(
                 "success result should contain 'sent'",
-                result.text.toString().lowercase().contains("sent"),
+                result.text
+                    .toString()
+                    .lowercase()
+                    .contains("sent"),
             )
         }
     }
 
     @Test
     fun emailAlerts_testButton_authFailure_showsAuthError() {
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "abcdefghijklmnop")
@@ -907,14 +1086,18 @@ class SettingsFragmentTest {
             assertEquals(View.VISIBLE, result.visibility)
             assertTrue(
                 "auth failure result should mention authentication",
-                result.text.toString().lowercase().contains("authentication"),
+                result.text
+                    .toString()
+                    .lowercase()
+                    .contains("authentication"),
             )
         }
     }
 
     @Test
     fun emailAlerts_testButton_networkError_showsNetworkError() {
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "abcdefghijklmnop")
@@ -932,15 +1115,21 @@ class SettingsFragmentTest {
             assertEquals(View.VISIBLE, result.visibility)
             assertTrue(
                 "network error result should mention connect",
-                result.text.toString().lowercase().contains("connect"),
+                result.text
+                    .toString()
+                    .lowercase()
+                    .contains("connect"),
             )
         }
     }
 
     @Test
     fun settingsFragment_factoryReset_cancelMakesNoChanges() {
-        appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-            .edit().putString("emaAppId", "originalid1234567890123456789012").apply()
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putString("emaAppId", "originalid1234567890123456789012")
+            .apply()
 
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->

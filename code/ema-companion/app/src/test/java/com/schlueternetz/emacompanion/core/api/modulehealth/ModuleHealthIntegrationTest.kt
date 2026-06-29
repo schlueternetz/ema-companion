@@ -26,7 +26,6 @@ import java.time.LocalDate
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class ModuleHealthIntegrationTest {
-
     private lateinit var server: MockWebServer
     private lateinit var context: Context
     private lateinit var repo: ModuleHealthRepository
@@ -47,42 +46,61 @@ class ModuleHealthIntegrationTest {
         server = MockWebServer()
         server.start()
 
-        context.getSharedPreferences(ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE)
-            .edit().clear().commit()
-        context.getSharedPreferences(ModuleHealthRepository.PREFS_DAILY, Context.MODE_PRIVATE)
-            .edit().clear().commit()
-        context.getSharedPreferences("integ_mh_settings", Context.MODE_PRIVATE)
-            .edit().clear().commit()
-        context.getSharedPreferences("integ_mh_log", Context.MODE_PRIVATE)
-            .edit().clear().commit()
+        context
+            .getSharedPreferences(ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .commit()
+        context
+            .getSharedPreferences(ModuleHealthRepository.PREFS_DAILY, Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .commit()
+        context
+            .getSharedPreferences("integ_mh_settings", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .commit()
+        context
+            .getSharedPreferences("integ_mh_log", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .commit()
 
-        val settings = SettingsRepository(
-            context.getSharedPreferences("integ_mh_settings", Context.MODE_PRIVATE),
-        ).apply {
-            setEmaAppId("a".repeat(32))
-            setEmaAppSecret("secret123456")
-            setEmaSystemId("b".repeat(16))
-            setEmaEcuId("203000001234")
-            setSystemCapacity(10f)
-            setBaseUrl(server.url("/user/api/v2/").toString())
-        }
+        val settings =
+            SettingsRepository(
+                context.getSharedPreferences("integ_mh_settings", Context.MODE_PRIVATE),
+            ).apply {
+                setEmaAppId("a".repeat(32))
+                setEmaAppSecret("secret123456")
+                setEmaSystemId("b".repeat(16))
+                setEmaEcuId("203000001234")
+                setSystemCapacity(10f)
+                setBaseUrl(server.url("/user/api/v2/").toString())
+            }
 
         val client = OkHttpEmaApiClient(settings, ioDispatcher = Dispatchers.Unconfined)
-        val log = ApiCallLogRepository(
-            context.getSharedPreferences("integ_mh_log", Context.MODE_PRIVATE),
-        )
-        repo = ModuleHealthRepository(
-            client = client,
-            log = log,
-            healthPrefs = context.getSharedPreferences(
-                ModuleHealthRepository.PREFS_HEALTH, Context.MODE_PRIVATE,
-            ),
-            dailyPrefs = context.getSharedPreferences(
-                ModuleHealthRepository.PREFS_DAILY, Context.MODE_PRIVATE,
-            ),
-            appSecretProvider = { settings.getEmaAppSecret() },
-            today = { today },
-        )
+        val log =
+            ApiCallLogRepository(
+                context.getSharedPreferences("integ_mh_log", Context.MODE_PRIVATE),
+            )
+        repo =
+            ModuleHealthRepository(
+                client = client,
+                log = log,
+                healthPrefs =
+                    context.getSharedPreferences(
+                        ModuleHealthRepository.PREFS_HEALTH,
+                        Context.MODE_PRIVATE,
+                    ),
+                dailyPrefs =
+                    context.getSharedPreferences(
+                        ModuleHealthRepository.PREFS_DAILY,
+                        Context.MODE_PRIVATE,
+                    ),
+                appSecretProvider = { settings.getEmaAppSecret() },
+                today = { today },
+            )
     }
 
     @After
@@ -146,7 +164,8 @@ class ModuleHealthIntegrationTest {
     @Test
     fun refresh_pastDaysCached_makesOnlyOneApiCall() {
         // Pre-seed yesterday and dayBefore in the daily cache
-        context.getSharedPreferences(ModuleHealthRepository.PREFS_DAILY, Context.MODE_PRIVATE)
+        context
+            .getSharedPreferences(ModuleHealthRepository.PREFS_DAILY, Context.MODE_PRIVATE)
             .edit()
             .putString("daily_$yesterday", """{"INV1":1.4,"INV2":1.1}""")
             .putString("daily_$dayBefore", """{"INV1":1.5,"INV2":1.2}""")
