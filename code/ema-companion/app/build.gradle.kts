@@ -12,17 +12,12 @@ tasks.named("preBuild") { dependsOn("copyUserGuideAssets") }
 
 android {
     namespace = "com.schlueternetz.emacompanion"
-    compileSdk {
-        version =
-            release(36) {
-                minorApiLevel = 1
-            }
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.schlueternetz.emacompanion"
         minSdk = 31
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
