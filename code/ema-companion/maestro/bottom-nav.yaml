@@ -17,6 +17,13 @@ appId: com.schlueternetz.emacompanion
 # activity that takes the foreground — Maestro cannot see the app's bottom-nav
 # behind it until the dialog is dismissed. Tapping Allow brings the app back to
 # the foreground. Using the resource-id so this is locale-independent.
+#
+# waitForAnimationToEnd lets the permissioncontroller activity fully slide in
+# before the when:visible check. Without it the check fires before the dialog
+# process takes the foreground on a cold CI emulator, the condition evaluates
+# false, the dialog arrives a moment later, and extendedWaitUntil times out.
+- waitForAnimationToEnd:
+    timeout: 5000
 - runFlow:
     when:
       visible:

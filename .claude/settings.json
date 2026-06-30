@@ -37,7 +37,13 @@
       "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1 2>&1 | Select-String \"injected\")",
       "PowerShell(Get-Command gh -ErrorAction SilentlyContinue)",
       "PowerShell(gh --version)",
-      "Bash(grep -E \"\\\\.\\(xml|yaml\\)$\")"
+      "Bash(grep -E \"\\\\.\\(xml|yaml\\)$\")",
+      "PowerShell(maestro --version 2>&1)",
+      "PowerShell(adb devices 2>&1)",
+      "Read(//c/Users/micro/.maestro/bin/**)",
+      "Read(//c/Users/micro/AppData/Local/Android/Sdk/platform-tools/**)",
+      "Bash(/c/Users/micro/AppData/Local/Android/Sdk/platform-tools/adb.exe devices *)",
+      "Bash(~/.maestro/bin/maestro test *)"
     ]
   },
   "enabledMcpjsonServers": [

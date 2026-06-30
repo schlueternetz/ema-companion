@@ -12,6 +12,10 @@ appId: com.schlueternetz.emacompanion
 
 # Dismiss the POST_NOTIFICATIONS permission dialog if it appears.
 # Same pattern as bottom-nav.yaml — pm clear resets runtime permissions.
+# waitForAnimationToEnd gives the permissioncontroller activity time to slide
+# in before the when:visible check fires (see bottom-nav.yaml for full rationale).
+- waitForAnimationToEnd:
+    timeout: 5000
 - runFlow:
     when:
       visible:
@@ -45,6 +49,13 @@ appId: com.schlueternetz.emacompanion
 # Enable email alerts — setup section must appear with all required fields.
 - tapOn:
     id: "settings_email_alerts_switch"
+# The setup section expands below the switch. Scroll to the save button (the
+# last element in the section) so the full expanded form is in the viewport.
+- scrollUntilVisible:
+    element:
+      id: "settings_email_alerts_verify_save"
+    direction: DOWN
+    timeout: 10000
 - assertVisible:
     id: "settings_email_alerts_setup_row"
 - assertVisible:
