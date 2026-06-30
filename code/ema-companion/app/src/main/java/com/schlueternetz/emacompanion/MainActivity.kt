@@ -8,6 +8,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -54,6 +57,11 @@ class MainActivity : AppCompatActivity() {
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_nav)
         bottomNav.setupWithNavController(navController)
+        ViewCompat.setOnApplyWindowInsetsListener(bottomNav) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.updatePadding(bottom = systemBars.bottom)
+            insets
+        }
 
         if (!configured) {
             applyUnconfiguredNavState(bottomNav)

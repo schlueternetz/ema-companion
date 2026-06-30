@@ -34,7 +34,10 @@
       "Bash(jar xf *)",
       "Bash(javap -p com/icegreen/greenmail/server/AbstractServer.class)",
       "Bash(javap -p com/icegreen/greenmail/util/GreenMail.class)",
-      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1 2>&1 | Select-String \"injected\")"
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1 2>&1 | Select-String \"injected\")",
+      "PowerShell(Get-Command gh -ErrorAction SilentlyContinue)",
+      "PowerShell(gh --version)",
+      "Bash(grep -E \"\\\\.\\(xml|yaml\\)$\")"
     ]
   },
   "enabledMcpjsonServers": [
