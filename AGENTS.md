@@ -27,12 +27,13 @@ Architecture decisions are documented in [`docs/adr/`](docs/adr/). Read the rele
 - Integration tests hit the local mock API service (real HTTP, configurable base URL)
 - Maestro (`maestro/`) for a small set of critical UI flows only — not for broad UI coverage
 - No Espresso
+- **Definition of done**: before marking any code change or OpenSpec task/implementation complete, run `/qa` (or at minimum `maestro test maestro/` against a running emulator) and confirm all Maestro flows pass locally — do not mark work done or push with failing or unrun Maestro flows
 
-**EMA API call budget**:
-- The EMA API has a hard monthly call quota — every request counts against it and cannot be refunded
-- Before designing or implementing any feature that calls the EMA API, explicitly count the calls per trigger and propose the approach that minimises them
-- Prefer: throttle guards, persisted caches for immutable data (past days, historical summaries), and reusing data already fetched by another feature over making a fresh call
-- Flag any design that makes redundant or unbounded API calls (e.g. re-fetching data that cannot have changed) and propose an alternative before implementing
+**EMA API call budget** (ADR-009):
+- Monthly budget: **1,000 successful calls** — only `ApiResult.Success` counts; failures are free and retry
+- Before designing any feature that calls the EMA API, check the allocation table in [ADR-009](docs/adr/009-ema-api-call-budget.md), verify headroom, and add a row for the new feature before implementing
+- Prefer in order: reuse already-fetched data → cache immutable past data → throttle guards → fresh fetch
+- Flag any design that makes redundant or unbounded API calls and propose an alternative before implementing
 
 **Debugging** (cost discipline):
 - For any bug or unexpected-behavior report, reproduce it at the lowest test layer first (unit, then Robolectric) before launching the emulator — a deterministic failing test is cheaper and pinpoints the cause

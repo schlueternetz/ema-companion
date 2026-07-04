@@ -20,6 +20,8 @@ coroutines = "1.8.1"
 workmanager = "2.9.1"
 javamail = "1.6.7"
 greenmail = "1.6.15"
+mpandroidchart = "v3.1.0"
+swiperefreshlayout = "1.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -50,6 +52,8 @@ androidx-work-testing = { group = "androidx.work", name = "work-testing", versio
 android-mail = { group = "com.sun.mail", name = "android-mail", version.ref = "javamail" }
 android-activation = { group = "com.sun.mail", name = "android-activation", version.ref = "javamail" }
 greenmail = { group = "com.icegreen", name = "greenmail", version.ref = "greenmail" }
+mpandroidchart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "mpandroidchart" }
+swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

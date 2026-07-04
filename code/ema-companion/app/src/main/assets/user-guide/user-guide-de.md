@@ -27,12 +27,11 @@ Wenn die App nicht vollständig konfiguriert ist, sind nur **Einstellungen** und
 
 ## Abschnitte
 
-- [Startseite](home.md) — Kacheln für aktuelle Produktion, Modulstatus und Push-Benachrichtigungen
+- [Startseite](home.md) — aktuelle Produktion, heutige Stundengrafik, Produktionsverlauf, Modulstatus und Push-Benachrichtigungen
 - [Einstellungen](settings.md) — Zugangsdaten, Anlage-Zeitzone, App-Einstellungen und API-Konfiguration
 
 ## Geplante Funktionen
 
 Für zukünftige Versionen geplant:
 
-- Produktionsstatistiken und Grafiken auf der Startseite
 - Startbildschirm-Widgets mit Live-Ausgabe

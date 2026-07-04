@@ -1,5 +1,54 @@
 # AI Lessons Learned
 
+## 2026-07-03: home-screen Maestro flow (SettingRowView + driver ordering)
+
+### Went Well
+* `hideSoftInputFromWindow(windowToken, 0)` in `exitEditMode()` — dismisses keyboard explicitly after each save; without it keyboard stays open and shifts Maestro index-based selectors
+* `requestFocus()` in `enterEditMode()` — connects IME to the correct `TextInputEditText`; without it `hideSoftInputFromWindow()` has the wrong window token and can't close the keyboard
+* Screenshot from Maestro debug artifacts (`commands-(flow).json` + `.png`) — revealed exact failure step and state in one read; always check `C:\Users\micro\.maestro\tests\<timestamp>\` first
+* `commands-(flow).json` `duration` field — `tapOn` taking 11700ms confirmed driver was under load before `inputText` timed out; much faster diagnosis than re-running
+* Naming flow file `a-home-screen.yaml` (alphabetically first) — runs before other flows stress the Maestro driver; all 3 flows pass consistently
+
+### Didn't Work
+* `requestFocus()` in `enterEditMode()` causes gRPC `DEADLINE_EXCEEDED` on `inputText` when flow runs AFTER other flows — keyboard animation triggered by `requestFocus()` + stressed driver = `ACTION_SET_TEXT` deadlocks for 120s
+* `hideKeyboard` in Maestro after each save — Maestro presses Back when keyboard is already gone, navigating app to the launcher; screenshot showed home screen of emulator, not the app
+* `waitForAnimationToEnd` before `inputText` to let keyboard settle — didn't fix the gRPC deadlock; driver was stuck, not slow
+* `waitForAnimationToEnd` at end of `email-alerts.yaml` to drain driver — didn't fix it either; driver stays in degraded state regardless
+* `adb reboot` when emulator is frozen — timed out (2m) with no response; need `Get-Process qemu-system-x86_64 | Stop-Process -Force` then re-launch emulator
+* Running many suite iterations with 120s gRPC timeouts — accumulates emulator degradation; cold-boot all flows eventually fail
+
+### Avoid
+* `hideKeyboard` in a Maestro flow after saving a `SettingRowView` — `exitEditMode()` already calls `hideSoftInputFromWindow()`; if keyboard is already gone, Maestro's `hideKeyboard` presses Back and sends app to launcher
+* Asserting `hourly_placeholder` / `history_placeholder` in Maestro — these are `gone` by default; once a fetch is attempted (even failed) the chart renders with MPAndroidChart's empty-state message; assert `hourly_chart` / `history_chart` instead
+* Running `home-screen` (Settings form-filling) after any other Maestro flow — Maestro accessibility driver becomes unresponsive to `ACTION_SET_TEXT` after clearState+relaunch cycles; flow must be named to sort first alphabetically
+* Removing `requestFocus()` from `SettingRowView.enterEditMode()` to fix Maestro timing — without it `hideSoftInputFromWindow(windowToken, 0)` fails silently (IME connected to different window), keyboard stays open, index-based selectors break for all fields after the first
+* Trusting emulator after many failed Maestro runs (each with 120s timeout) — kill emulator process and cold-boot; `adb reboot` may not work if frozen
+
+## 2026-07-01: production-data-and-graphs (charts + new repos)
+
+### Went Well
+* Default interface methods (`= HourlyEnergyFetch(ApiResult.ConfigurationError)`) on new `EmaApiClient` methods — zero existing FakeClients broke
+* Per-repo prefs for throttle timestamps instead of shared `ApiUsageRepository` — repos stay independent, no throttle cross-contamination
+* `currentHourOverride: Int?` companion seam in `HomeFragment` — chart tests deterministic at any wall-clock hour
+* `HourlyEnergySource` / `DailyEnergySource` interfaces for Fragment seams — clean Robolectric injection without heavyweight repo constructors
+* `ktlintFormat` auto-fixed all violations in one pass after writing new files
+* `getDailyEnergy` making one HTTP call per unique calendar month internally — keeps repository interface clean while matching real API (`yyyy-MM` date range format)
+
+### Didn't Work
+* `android:flexWrap="wrap"` on `LinearLayout` — resource linker error; attribute only valid on `FlexboxLayout`
+* Test clock `now = 1_000_000L` (1s) is below `THROTTLE_MS = 3_600_000L` — all 7 hourly throttle tests failed until raised to `3_700_000L`
+* Seeding `SharedPreferences` AFTER constructing `DailyEnergyRepository` — `loadDays()` runs in constructor so in-memory cache was empty; all "past days cached" tests failed
+* Comparing dash characters with string literals in tests (`"–"` en-dash vs `"—"` em-dash in strings.xml) — use `fragment.getString(R.string.xxx)` instead
+* First `HourlyEnergyRepository` implementation used `ApiUsageRepository.getLastFetchEpochMs()` for hourly throttle — production throttle and hourly throttle shared state
+
+### Avoid
+* `android:flexWrap` on `LinearLayout` — use plain `LinearLayout` for month legend; 2 months max so one row is fine
+* Test `now` below the throttle window — must be `>= THROTTLE_MS` for first-call tests to pass through the gate
+* Seed SharedPreferences BEFORE constructing repos — `loadDays()` / `loadSnapshot()` run in the constructor
+* Literal dash characters in test assertions — always `getString(R.string.x)` for any string defined in resources
+* Storing per-repo throttle in shared `ApiUsageRepository` — each repo owns its own `KEY_LAST_FETCH` in its own prefs file
+* Binding `LineChart` to `LocalTime.now().hour` without an injectable seam — makes tests flaky (fail at night when `currentHour < 6`)
+
 ## 2026-06-27: Maestro permission dialog + GreenMail port
 
 ### Went Well

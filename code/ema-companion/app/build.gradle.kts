@@ -67,6 +67,8 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.android.mail)
     implementation(libs.android.activation)
+    implementation(libs.mpandroidchart)
+    implementation(libs.swiperefreshlayout)
     testImplementation(libs.junit)
     testImplementation(libs.greenmail)
     testImplementation(libs.androidx.navigation.testing)

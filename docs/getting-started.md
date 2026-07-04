@@ -47,3 +47,4 @@ Key decisions are documented in [`docs/adr/`](adr/):
 | [ADR-006](adr/006-tile-error-display.md) | Tile Error Display Pattern |
 | [ADR-007](adr/007-tile-repository-pattern.md) | Tile Repository Pattern |
 | [ADR-008](adr/008-email-alerts.md) | Email Alerts for Module Health |
+| [ADR-009](adr/009-ema-api-call-budget.md) | EMA API Call Budget |

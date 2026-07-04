@@ -26,12 +26,11 @@ When the app is not fully configured, only **Settings** and **User Guide** are r
 
 ## Sections
 
-- [Home](home.md) — current production tile, module health tile, and push notifications
+- [Home](home.md) — current production, today's hourly chart, production history, module health, and push notifications
 - [Settings](settings.md) — credentials, array timezone, app preferences, and API configuration
 
 ## What's Coming
 
 Features planned for future releases:
 
-- Production statistics and graphs on the Home screen
 - Home screen widgets showing live output

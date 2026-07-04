@@ -31,7 +31,7 @@ class ModuleHealthTileTest {
             object : ProductionSource {
                 override fun currentState() = ProductionState()
 
-                override suspend fun refresh() = ProductionState()
+                override suspend fun refresh(force: Boolean) = ProductionState()
             }
     }
 

@@ -33,8 +33,8 @@ interface ProductionSource {
     /** The state to show immediately (reconstructed from persisted state), before any new fetch. */
     fun currentState(): ProductionState
 
-    /** Fetch if due, then return the new state. */
-    suspend fun refresh(): ProductionState
+    /** Fetch if due (or unconditionally when [force]=true), then return the new state. */
+    suspend fun refresh(force: Boolean = false): ProductionState
 }
 
 /**
@@ -58,10 +58,10 @@ class ProductionRepository(
     private var cachedAtEpochMs: Long? = usage.getLastProductionEpochMs().takeIf { it > 0 }
     private var error: FetchError? = usage.getLastError()
 
-    override suspend fun refresh(): ProductionState {
+    override suspend fun refresh(force: Boolean): ProductionState {
         val now = clock()
         // Only a successful read starts the throttle, so a previous failure never blocks a retry.
-        if (now - usage.getLastFetchEpochMs() < AppConfig.PRODUCTION_FETCH_INTERVAL_MS) {
+        if (!force && now - usage.getLastFetchEpochMs() < AppConfig.PRODUCTION_FETCH_INTERVAL_MS) {
             return currentState()
         }
 

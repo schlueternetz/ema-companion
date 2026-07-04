@@ -19,3 +19,6 @@ captures/
 
 # Claude Code
 .claude/settings.local.json
+
+# CodeGraph (generated SQLite index — rebuilt locally by the file watcher)
+.codegraph/

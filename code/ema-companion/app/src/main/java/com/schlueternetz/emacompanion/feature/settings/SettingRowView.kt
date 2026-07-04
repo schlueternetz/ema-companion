@@ -5,6 +5,7 @@ import android.text.InputType
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.TextView
@@ -128,6 +129,7 @@ class SettingRowView
             saveButton.visibility = View.VISIBLE
             cancelButton.visibility = View.VISIBLE
             errorView.visibility = View.GONE
+            editText.requestFocus()
             onEditStateChanged?.invoke(true)
         }
 
@@ -150,6 +152,8 @@ class SettingRowView
         }
 
         private fun exitEditMode() {
+            val imm = context.getSystemService(InputMethodManager::class.java)
+            imm?.hideSoftInputFromWindow(windowToken, 0)
             inputLayout.visibility = View.GONE
             saveButton.visibility = View.GONE
             cancelButton.visibility = View.GONE

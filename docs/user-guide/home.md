@@ -2,7 +2,7 @@
 
 # Home
 
-The Home screen is a dashboard of tiles. Each tile fetches live data when you open the app or return to this screen.
+The Home screen is a scrollable dashboard of tiles. Pull down anywhere on the screen to force a fresh fetch of all data. Each tile refreshes automatically when you open the app or return to this screen.
 
 ## Current Production tile
 
@@ -14,7 +14,36 @@ If a refresh fails, the tile shows a short status line beneath the value and kee
 - **Authentication failed — check your API credentials** — your credentials were rejected; check them in Settings
 - **Couldn't update production data** — another error, such as an invalid System/ECU ID or a server problem
 
-The status clears automatically when a later fetch succeeds. A failed fetch does **not** count against your monthly request limit and is retried the next time you open or return to Home. Fixing your credentials or connection settings in Settings triggers an immediate retry on return to Home.
+The status clears automatically when a later fetch succeeds.
+
+## Today's Production tile
+
+Shows today's hourly energy output as a line chart and a morning/afternoon table, plus summary cards.
+
+**Chart:** Plots each recorded hour from 06:00 up to the current hour. Past hours are drawn with a solid line; the current (in-progress) hour is drawn with a dashed line to indicate it is still accumulating. Hours with no data are omitted. The Y-axis maximum equals your configured System Capacity (kW) when set; otherwise it scales to the data.
+
+**Morning / Afternoon tables:** Two side-by-side columns list every hour from 00:00 to 23:00 with its kWh value. Missing hours show "—".
+
+**Summary cards** (below the tables):
+
+- **Today** — sum of all non-null hourly values, formatted to two decimal places
+- **Best day this month** — date and kWh total of the highest-producing day in the current calendar month
+- **Best day (N days)** — date and kWh total of the highest-producing day in the configured history window
+
+A "Updated HH:mm" line appears below the chart after the first successful fetch. Data is cached and refreshed at most once per hour; pull to refresh forces an immediate update.
+
+## Production History tile
+
+Shows daily energy totals as a colour-coded bar chart over your history window.
+
+**Chart:** One bar per calendar day. Bars are colour-coded by calendar month, with a legend below the chart identifying each month's colour. The X-axis labels every other day number. The Y-axis maximum follows the same System Capacity rule as the Today chart.
+
+**Period totals** (below the legend):
+
+- **This month** — total kWh for all days in the current calendar month
+- **Last 30 days** — total kWh for the 30-day window ending today
+
+Daily totals for past days are cached permanently and never re-fetched. Only today's bar is refreshed on each visit (at most once per hour). Pull to refresh forces today's bar to update immediately.
 
 ## Module Health tile
 
@@ -37,14 +66,14 @@ A "Checked [date] at [time]" line appears below the status once a check has comp
 
 ![Detail dialog: lists each offline module ID with the number of days without production](home-module-health-detail.png)
 
-If a check fails, the status icon changes to a **?** (gray) and the status text is hidden — the last known status is not shown to avoid confusion. A short error line appears beneath the checked timestamp instead:
+If a check fails, the status icon changes to a **?** (gray) and a short error line appears beneath the checked timestamp:
 
 - **Network issue — couldn't check** — the app could not reach the EMA service
 - **Authentication failed — check your API credentials** — your credentials were rejected; check them in Settings
 - **Couldn't check module status** — another error, such as an invalid ECU ID or a server problem
 
-**Viewing details:** Tap the tile when it shows yellow or red to open an **Offline Modules** dialog. The dialog lists each affected module by its ID and how many consecutive days it has had no production. The tile is not tappable when all modules are green or the status is not yet known.
+**Viewing details:** Tap the tile when it shows yellow or red to open an **Offline Modules** dialog listing each affected module and how many consecutive days it had no production. The tile is not tappable when green or unknown.
 
-**How the check works:** A background job runs automatically once per day at 8 pm in your array's timezone (configured in Settings). It retrieves the last three days of per-module energy from the EMA API and classifies each module individually. Yesterday's and the day-before's data are cached; only today's data is re-fetched. The tile shows the result of the most recent completed check immediately when you open Home; the background job refreshes it silently at 8 pm without requiring the app to be open.
+**How the check works:** A background job runs once per day at 8 pm in your array's timezone. It fetches three days of per-module energy, classifies each module, and caches past days permanently. The tile shows the result immediately when you open Home.
 
-**Notifications:** When the Module Health check finds a yellow or red status, EMA Companion sends a push notification so you know even when the app is closed. The notification is replaced (not stacked) on each daily check until the status returns to green. On Android 13 and later, the app asks for notification permission the first time it starts — granting it is recommended so you receive these alerts.
+**Notifications:** When Module Health finds a yellow or red status, EMA Companion sends a push notification. On Android 13 and later, the app requests notification permission on first launch — granting it is recommended.

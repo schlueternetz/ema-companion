@@ -154,6 +154,31 @@
     <string name="home_module_health_error_auth">Authentifizierung fehlgeschlagen – API-Zugangsdaten prüfen</string>
     <string name="home_module_health_error_api">Modulstatus konnte nicht geprüft werden</string>
 
+    <!-- Today section -->
+    <string name="home_today_title">Heutige Produktion</string>
+    <string name="home_today_morning">Vormittag</string>
+    <string name="home_today_afternoon">Nachmittag</string>
+    <string name="home_today_total_label">Heute</string>
+    <string name="home_today_updated">Aktualisiert %1$s</string>
+    <string name="home_today_no_data">Noch keine Daten</string>
+    <string name="home_today_status_network_error">Netzwerkproblem – Stundendaten konnten nicht aktualisiert werden</string>
+    <string name="home_today_status_auth_error">Authentifizierung fehlgeschlagen – API-Zugangsdaten prüfen</string>
+    <string name="home_today_status_api_error">Heutige Produktionsdaten konnten nicht aktualisiert werden</string>
+
+    <!-- Best-day cards -->
+    <string name="home_best_day_month_label">Bester Tag diesen Monat</string>
+    <string name="home_best_day_window_label">Bester Tag (%1$d Tage)</string>
+
+    <!-- History section -->
+    <string name="home_history_title">Produktionsverlauf</string>
+    <string name="home_history_updated">Aktualisiert %1$s</string>
+    <string name="home_history_no_data">Noch keine Daten</string>
+    <string name="home_history_this_month_label">Diesen Monat</string>
+    <string name="home_history_last_30_label">Letzte 30 Tage</string>
+    <string name="home_history_status_network_error">Netzwerkproblem – Verlauf konnte nicht aktualisiert werden</string>
+    <string name="home_history_status_auth_error">Authentifizierung fehlgeschlagen – API-Zugangsdaten prüfen</string>
+    <string name="home_history_status_api_error">Produktionsverlauf konnte nicht aktualisiert werden</string>
+
     <!-- Array Timezone Setting -->
     <string name="settings_array_timezone_label">Zeitzone der Anlage</string>
     <string name="settings_array_timezone_dialog_title">Zeitzone auswählen</string>

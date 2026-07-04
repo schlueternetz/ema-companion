@@ -162,6 +162,35 @@
     <string name="home_module_health_error_auth">Authentication failed — check your API credentials</string>
     <string name="home_module_health_error_api">Couldn\'t check module status</string>
 
+    <!-- Today section -->
+    <string name="home_today_title">Today\'s Production</string>
+    <string name="home_today_morning">Morning</string>
+    <string name="home_today_afternoon">Afternoon</string>
+    <string name="home_today_total_label">Today</string>
+    <string name="home_today_updated">Updated %1$s</string>
+    <string name="home_today_no_data">No data yet</string>
+    <string name="home_today_value_kwh">%.2f kWh</string>
+    <string name="home_today_neutral" translatable="false">—</string>
+    <string name="home_today_status_network_error">Network issue — couldn\'t update hourly data</string>
+    <string name="home_today_status_auth_error">Authentication failed — check your API credentials</string>
+    <string name="home_today_status_api_error">Couldn\'t update today\'s production data</string>
+
+    <!-- Best-day cards -->
+    <string name="home_best_day_month_label">Best day this month</string>
+    <string name="home_best_day_window_label">Best day (%1$d days)</string>
+    <string name="home_best_day_neutral" translatable="false">–</string>
+
+    <!-- History section -->
+    <string name="home_history_title">Production History</string>
+    <string name="home_history_updated">Updated %1$s</string>
+    <string name="home_history_no_data">No data yet</string>
+    <string name="home_history_this_month_label">This month</string>
+    <string name="home_history_last_30_label">Last 30 days</string>
+    <string name="home_history_neutral" translatable="false">–</string>
+    <string name="home_history_status_network_error">Network issue — couldn\'t update history</string>
+    <string name="home_history_status_auth_error">Authentication failed — check your API credentials</string>
+    <string name="home_history_status_api_error">Couldn\'t update production history</string>
+
     <!-- Array Timezone Setting -->
     <string name="settings_array_timezone_label">Array Timezone</string>
     <string name="settings_array_timezone_dialog_title">Select Timezone</string>

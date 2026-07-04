@@ -72,3 +72,9 @@ appId: com.schlueternetz.emacompanion
     id: "settings_email_alerts_switch"
 - assertNotVisible:
     id: "settings_email_alerts_setup_row"
+# Let the collapse animation finish and the accessibility driver drain its
+# event queue before the next Maestro flow starts. Without this, the driver
+# becomes slow under load and inputText in the following flow hits a 120s
+# gRPC DEADLINE_EXCEEDED.
+- waitForAnimationToEnd:
+    timeout: 3000

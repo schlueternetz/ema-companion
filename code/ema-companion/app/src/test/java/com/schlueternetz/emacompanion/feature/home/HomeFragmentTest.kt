@@ -29,7 +29,7 @@ class HomeFragmentTest {
     ) : ProductionSource {
         override fun currentState(): ProductionState = state
 
-        override suspend fun refresh(): ProductionState = state
+        override suspend fun refresh(force: Boolean): ProductionState = state
     }
 
     @After

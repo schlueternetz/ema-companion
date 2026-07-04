@@ -81,4 +81,5 @@ Do not use Maestro for exhaustive UI coverage. ViewModel unit tests + manual tes
 - `./gradlew testDebugUnitTest` covers layers 1 and 2 and is the primary fast-feedback loop
 - Integration tests require the mock API service running locally; document startup in the service's README
 - Maestro flows run locally via `/qa` and in CI on every push to `main` (see Layer 4 "Execution"); the self-hosted emulator path avoids Maestro Cloud's paid tier
+- Maestro flows are a required local gate, not just commit-time discretion: a code change or OpenSpec implementation is not done until `/qa`'s E2E step (or a direct `maestro test`) passes locally
 - All implementation follows AI-TDD (see [ADR-001](001-coding-standards.md)); the test layer for each task is chosen according to this strategy

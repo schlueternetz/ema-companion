@@ -65,6 +65,16 @@ class SettingsFragmentTest {
             .edit()
             .clear()
             .apply()
+        appContext
+            .getSharedPreferences("ema_hourly", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .apply()
+        appContext
+            .getSharedPreferences("ema_daily", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .apply()
     }
 
     @After

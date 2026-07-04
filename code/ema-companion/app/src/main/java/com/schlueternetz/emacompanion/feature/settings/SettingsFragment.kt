@@ -25,6 +25,8 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.ApiUsageRepository
+import com.schlueternetz.emacompanion.core.api.DailyEnergyRepository
+import com.schlueternetz.emacompanion.core.api.HourlyEnergyRepository
 import com.schlueternetz.emacompanion.core.api.ThrottleResettable
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLog
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLogRepository
@@ -44,6 +46,8 @@ class SettingsFragment : Fragment() {
     private lateinit var repository: SettingsRepository
     private lateinit var usageRepository: ApiUsageRepository
     private lateinit var moduleHealthRepository: ModuleHealthRepository
+    private lateinit var hourlyEnergyRepository: HourlyEnergyRepository
+    private lateinit var dailyEnergyRepository: DailyEnergyRepository
     private lateinit var tileRepositories: List<ThrottleResettable>
     private lateinit var logRepository: ApiCallLogRepository
     private lateinit var languageValueView: TextView
@@ -105,7 +109,9 @@ class SettingsFragment : Fragment() {
         repository = SettingsRepository.create(requireContext())
         usageRepository = ApiUsageRepository.create(requireContext())
         moduleHealthRepository = ModuleHealthRepository.create(requireContext())
-        tileRepositories = listOf(usageRepository, moduleHealthRepository)
+        hourlyEnergyRepository = HourlyEnergyRepository.create(requireContext())
+        dailyEnergyRepository = DailyEnergyRepository.create(requireContext())
+        tileRepositories = listOf(usageRepository, moduleHealthRepository, hourlyEnergyRepository, dailyEnergyRepository)
         logRepository = ApiCallLogRepository.create(requireContext())
 
         settingEmaAppId = view.findViewById(R.id.setting_ema_app_id)
@@ -816,6 +822,8 @@ class SettingsFragment : Fragment() {
                     ).edit()
                     .clear()
                     .apply()
+                hourlyEnergyRepository.clear()
+                dailyEnergyRepository.clear()
                 refreshAllDisplayedValues()
             }.setNegativeButton(R.string.settings_factory_reset_cancel, null)
             .show()

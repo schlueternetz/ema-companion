@@ -1,0 +1,147 @@
+# Critical flow: Home screen section reachability (ADR-002).
+# Named a-home-screen.yaml so it runs first in the suite (alphabetically before
+# bottom-nav and email-alerts). Maestro's accessibility driver becomes unresponsive
+# to ACTION_SET_TEXT after prior flows stress it with clearState+relaunch cycles;
+# running this flow first avoids the gRPC DEADLINE_EXCEEDED.
+#
+# The Home tab is disabled until the app is configured (isConfigured() requires
+# App-ID, App-Secret, System-ID, ECU-ID, and System Capacity to be non-empty).
+# This flow fills in the five required fields via the Settings UI, then navigates
+# to Home and verifies all three tile sections render — current production, today
+# hourly, and history — each showing its neutral placeholder (no live API needed).
+#
+# Field validators (from SettingsFragment):
+#   App-ID       [a-zA-Z0-9]{32}
+#   App-Secret   [a-zA-Z0-9]{12}
+#   System-ID    [a-zA-Z0-9]{16}
+#   ECU-ID       \d{12}
+#   Capacity     positive decimal ≤ 2 dp
+#
+# Index-based edit-button selection works because the Solar Array Settings card
+# is always above the App Settings card, and no other SettingRowViews appear
+# between them on the tablet viewport without scrolling. Indices 0–4 are the
+# five solar-array fields in layout order. Historic Days (index 5) is in the
+# next card and is never edited here, so its index doesn't interfere.
+#
+# Selectors use resource IDs (locale-independent).
+appId: com.schlueternetz.emacompanion
+---
+- launchApp:
+    clearState: true
+
+# Dismiss the POST_NOTIFICATIONS permission dialog if it appears.
+# clearState resets runtime permissions, so the dialog fires on every run.
+# waitForAnimationToEnd lets the permissioncontroller activity slide in before
+# the when:visible check fires (same pattern as bottom-nav.yaml / email-alerts.yaml).
+- waitForAnimationToEnd:
+    timeout: 5000
+- runFlow:
+    when:
+      visible:
+        id: "com.android.permissioncontroller:id/permission_allow_button"
+    commands:
+      - tapOn:
+          id: "com.android.permissioncontroller:id/permission_allow_button"
+
+# Wait for Settings content to be ready (first field in the Solar Array card).
+- extendedWaitUntil:
+    visible:
+      id: "setting_ema_app_id"
+    timeout: 60000
+
+# ── Fill the five required fields to enable the Home tab ────────────────────
+
+# All-digit values avoid IME autocorrect.
+# SettingRowView.exitEditMode() calls hideSoftInputFromWindow() so the keyboard is
+# dismissed by the app on every save — indices stay stable for the next tap.
+# App-ID (index 0) — 32 alphanumeric chars
+- tapOn:
+    id: "setting_edit_button"
+    index: 0
+- assertVisible:
+    id: "setting_save_button"
+- inputText: "12345678901234567890123456789012"
+- tapOn:
+    id: "setting_save_button"
+
+# App-Secret (index 1) — 12 alphanumeric chars
+- tapOn:
+    id: "setting_edit_button"
+    index: 1
+- assertVisible:
+    id: "setting_save_button"
+- inputText: "123456789012"
+- tapOn:
+    id: "setting_save_button"
+
+# System-ID (index 2) — 16 alphanumeric chars
+- tapOn:
+    id: "setting_edit_button"
+    index: 2
+- assertVisible:
+    id: "setting_save_button"
+- inputText: "1234567890123456"
+- tapOn:
+    id: "setting_save_button"
+
+# ECU-ID (index 3) — 12 digits
+- tapOn:
+    id: "setting_edit_button"
+    index: 3
+- assertVisible:
+    id: "setting_save_button"
+- inputText: "123456789012"
+- tapOn:
+    id: "setting_save_button"
+
+# System Capacity (index 4) — positive decimal ≤ 2 dp
+- tapOn:
+    id: "setting_edit_button"
+    index: 4
+- assertVisible:
+    id: "setting_save_button"
+- inputText: "5"
+- tapOn:
+    id: "setting_save_button"
+
+# ── Navigate to Home ─────────────────────────────────────────────────────────
+
+# The Home tab is now enabled. Tap it and wait for the first tile to render.
+- tapOn:
+    id: "homeFragment"
+- extendedWaitUntil:
+    visible:
+      id: "tile_current_production"
+    timeout: 15000
+
+# ── Assert all three tile sections are present ───────────────────────────────
+
+# Current-production tile — visible at the top without scrolling.
+- assertVisible:
+    id: "tile_current_production"
+
+# Today section — scroll to it and assert the card and the chart.
+# With dummy credentials, the fetch fails and the chart renders empty
+# (MPAndroidChart shows its own "No chart data available." message).
+# hourly_placeholder is only shown in the never-fetched state; once a
+# fetch is attempted the chart becomes visible regardless of result.
+- scrollUntilVisible:
+    element:
+      id: "tile_today_production"
+    direction: DOWN
+    timeout: 10000
+- assertVisible:
+    id: "tile_today_production"
+- assertVisible:
+    id: "hourly_chart"
+
+# History section — scroll further and assert the card and the chart.
+- scrollUntilVisible:
+    element:
+      id: "tile_history_production"
+    direction: DOWN
+    timeout: 10000
+- assertVisible:
+    id: "tile_history_production"
+- assertVisible:
+    id: "history_chart"
