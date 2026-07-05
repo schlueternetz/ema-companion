@@ -1,5 +1,18 @@
 # AI Lessons Learned
 
+## 2026-07-04: a-home-screen CI flake — "8000 W" race after stub switch
+
+### Went Well
+* `ColorBuffer` emulator error + abnormal 1m42s flow duration (vs 23-29s others) pointed at CI resource contention, not app logic — cross-checked against known `ReactiveCircus/android-emulator-runner` ColorBuffer reports
+* Reading `HomeFragment.onViewCreated`/`onResume` confirmed the exact race: `render(source.currentState())` shows stale persisted value synchronously, "8000 W" only lands after async `refresh()` completes a real HTTP round-trip
+
+### Didn't Work
+* Bare `assertVisible: text: "8000 W"` right after switching to the local stub — Maestro's default `assertVisible` timeout is 7s, too tight for a real network fetch under CI load (flow's own other checks already use 10-15s `extendedWaitUntil`)
+
+### Avoid
+* Any Maestro assertion on data that arrives via async `refresh()` (not the synchronous `currentState()` seed) needs `extendedWaitUntil` with a real timeout, not bare `assertVisible` — the tile being visible does NOT mean its data has finished refreshing
+* Don't chase a `ColorBuffer`/GPU emulator error as the root cause before checking for an ordinary async-timing race in the flow itself — the two often co-occur because both stem from CI load, but only one is fixable in the repo
+
 ## 2026-07-04: ema-stub-integration (composite build + cleartext + embedded stub)
 
 ### Went Well

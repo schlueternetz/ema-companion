@@ -195,8 +195,14 @@ appId: com.schlueternetz.emacompanion
     visible:
       id: "tile_current_production"
     timeout: 15000
-- assertVisible:
-    text: "8000 W"
+# tile_current_production is visible immediately (seeded from persisted state in
+# onViewCreated), but "8000 W" only appears after onResume's async refresh() completes
+# a real HTTP round-trip to the stub. assertVisible's default 7s timeout races that
+# fetch under CI load; extendedWaitUntil gives it room like the other checks below.
+- extendedWaitUntil:
+    visible:
+      text: "8000 W"
+    timeout: 15000
 
 - scrollUntilVisible:
     element:
