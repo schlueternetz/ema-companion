@@ -8,7 +8,10 @@
 # App-ID, App-Secret, System-ID, ECU-ID, and System Capacity to be non-empty).
 # This flow fills in the five required fields via the Settings UI, then navigates
 # to Home and verifies all three tile sections render — current production, today
-# hourly, and history — each showing its neutral placeholder (no live API needed).
+# hourly, and history — each showing its neutral placeholder (dummy, unreachable
+# credentials; no live API needed). It then switches to the local ema-api-stub
+# (debug-only "Use local stub" action) and its canonical Good Data ECU id, re-opens
+# Home, and asserts the same three sections render real, populated data instead.
 #
 # Field validators (from SettingsFragment):
 #   App-ID       [a-zA-Z0-9]{32}
@@ -143,5 +146,70 @@ appId: com.schlueternetz.emacompanion
     timeout: 10000
 - assertVisible:
     id: "tile_history_production"
+- assertVisible:
+    id: "history_chart"
+
+# ── Point at the local stub and switch to the stub's canonical Good Data ECU ─
+# Extends the flow (dev-stub-shortcut) to also verify real, populated data
+# renders — not just the placeholder/error path the dummy credentials above
+# exercise. App-ID/App-Secret/System-ID stay at their dummy values: the stub
+# wildcards sid and never verifies HMAC signing, so only the ECU-ID needs to
+# match the bundled Good Data scenario.
+- tapOn:
+    id: "settingsFragment"
+- extendedWaitUntil:
+    visible:
+      id: "setting_ema_app_id"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: "setting_use_local_stub"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "setting_use_local_stub"
+
+# ECU-ID (index 3) — replace the dummy value with the stub's Good Data id.
+# Scroll back up: the Use local stub tap above left the API Settings card
+# (further down the page) in view, but the ECU-ID edit button lives in the
+# Solar Array Settings card above it.
+- scrollUntilVisible:
+    element:
+      id: "setting_ema_ecu_id"
+    direction: UP
+    timeout: 10000
+- tapOn:
+    id: "setting_edit_button"
+    index: 3
+- assertVisible:
+    id: "setting_save_button"
+- eraseText: 50
+- inputText: "203000001234"
+- tapOn:
+    id: "setting_save_button"
+
+# ── Re-open Home and assert real, populated data renders ─────────────────────
+- tapOn:
+    id: "homeFragment"
+- extendedWaitUntil:
+    visible:
+      id: "tile_current_production"
+    timeout: 15000
+- assertVisible:
+    text: "8000 W"
+
+- scrollUntilVisible:
+    element:
+      id: "tile_today_production"
+    direction: DOWN
+    timeout: 10000
+- assertVisible:
+    id: "hourly_chart"
+
+- scrollUntilVisible:
+    element:
+      id: "tile_history_production"
+    direction: DOWN
+    timeout: 10000
 - assertVisible:
     id: "history_chart"

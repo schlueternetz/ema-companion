@@ -1,18 +1,4 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(find /d/projects/ema-companion/.claude/skills -maxdepth 1 -type d 2>/dev/null; echo \"---\"; find ~/.claude/skills -maxdepth 1 -type d 2>/dev/null)",
-      "Read(//c/Users/micro/.claude/skills/**)",
-      "Bash(find / -iname \"*sync-spec*\" -not -path \"*/node_modules/*\" 2>/dev/null | head -50)",
-      "Read(//d//**)",
-      "Bash(mkdir -p d:/projects/ema-companion/openspec/specs/ema-api-stub)",
-      "Bash(xargs grep -l \"failure\")",
-      "Bash(xargs -I{} sh -c 'echo \"== {} ==\"; cat {}')"
-    ],
-    "additionalDirectories": [
-      "d:\\projects\\ema-companion\\openspec\\specs"
-    ]
-  },
   "enabledMcpjsonServers": [
     "github"
   ],

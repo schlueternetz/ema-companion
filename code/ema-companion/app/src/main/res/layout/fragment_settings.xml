@@ -263,6 +263,16 @@
 
                 </LinearLayout>
 
+                <!-- Debug-only: one-tap Base URL to the local ema-api-stub; gone in release builds -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/setting_use_local_stub"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="48dp"
+                    android:text="@string/settings_use_local_stub" />
+
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>

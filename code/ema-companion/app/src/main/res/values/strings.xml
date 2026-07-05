@@ -112,6 +112,7 @@
     <string name="settings_base_url_label">Base URL</string>
     <string name="settings_base_url_error">Enter a valid URL (max 2,048 characters)</string>
     <string name="settings_base_url_reset_description">Reset Base URL to default</string>
+    <string name="settings_use_local_stub">Use local stub</string>
 
     <!-- Import / Export / Factory Reset -->
     <string name="settings_import_button">Import Settings</string>

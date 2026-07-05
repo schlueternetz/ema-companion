@@ -66,6 +66,30 @@ jobs:
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
         working-directory: .
 
+      - name: Make ema-api-stub gradlew executable
+        run: chmod +x ./gradlew
+        working-directory: code/ema-api-stub
+
+      # Starts the stub on the runner host (default port 8080, matching the app's
+      # BuildConfig.STUB_PORT default) in the background, then polls until it
+      # responds — the a-home-screen.yaml flow drives the emulator at 10.0.2.2,
+      # which maps back to this host. A stub that never comes up fails the job
+      # loudly here instead of Maestro racing an unready server later.
+      - name: Start ema-api-stub
+        working-directory: code/ema-api-stub
+        run: |
+          ./gradlew run > /tmp/ema-api-stub.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS -X POST "http://localhost:8080/__stub__/reset" >/dev/null 2>&1; then
+              echo "ema-api-stub is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "ema-api-stub did not become ready in time"
+          cat /tmp/ema-api-stub.log
+          exit 1
+
       # Boots an API-33 emulator (matches the Lenovo_Tab_11_Plus AVD / test sdk),
       # installs the debug APK, then runs the Maestro flows black-box.
       - name: Run Maestro flows

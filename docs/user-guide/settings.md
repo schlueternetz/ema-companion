@@ -55,6 +55,8 @@ Changing the **Array Timezone** immediately reschedules the background Module He
 | **API Request Limit** | Maximum EMA API calls permitted per month (1–2,678,400; default 1,000). A progress bar below the field shows how many of this month's **successful** reads have been used. The count resets automatically at the start of each calendar month. Tap ↺ to restore the default. |
 | **Base URL** | The API endpoint (default `https://api.apsystemsema.com:9282/user/api/v2/`). Must be a valid URL up to 2,048 characters. Tap ↺ to restore the default. |
 
+> **Developer builds only:** a **Use local stub** button appears below Base URL in debug builds, pointing the app at a local test server instead of the real EMA API. It is not present in the released app.
+
 ## Email Alerts
 
 Sends an email when your module health status changes (GREEN → YELLOW or RED, and back to GREEN). Emails are sent from your own Gmail account using an App Password — no third-party relay involved.

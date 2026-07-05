@@ -33,6 +33,28 @@ cd code/ema-companion
 adb shell monkey -p com.schlueternetz.emacompanion -c android.intent.category.LAUNCHER 1
 ```
 
+## Development vs Production API
+
+By default the app talks to the real EMA API (production) — every successful call counts
+against [ADR-009](adr/009-ema-api-call-budget.md)'s 1,000-call/month budget. For local
+development and testing, use `ema-api-stub` — a free, deterministic local mock — instead:
+
+```bash
+cd code/ema-api-stub
+./gradlew run    # starts on port 8080 by default
+```
+
+In a **debug build**, Settings → API Settings has a **Use local stub** action (not present
+in release builds) that one-taps the Base URL to `http://10.0.2.2:{STUB_PORT}/user/api/v2/`.
+`STUB_PORT` defaults to `8080` on both the app and the stub; if you run the stub on a
+different port, set the same `STUB_PORT` Gradle property (`-PSTUB_PORT=<port>` or
+`local.properties`) so both sides agree.
+
+Start the stub before running `/qa`'s Maestro step (or `maestro test maestro/`) locally —
+`a-home-screen.yaml` drives the app against it to verify real, populated data renders. See
+[`docs/ema-api-stub/README.md`](ema-api-stub/README.md) for the stub's full scenario format
+and for manual setup on a physical device (which can't reach `10.0.2.2`).
+
 ## Architecture Decision Records
 
 Key decisions are documented in [`docs/adr/`](adr/):

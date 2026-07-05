@@ -1,12 +1,12 @@
 {
-  "ecuId": "203000001234",
+  "ecuId": "203000003456",
   "description": "Module Health — one inverter offline 3 days (RED) — replay this interaction 3 times for day-before, yesterday, today",
   "interactions": [
     {
       "request": {
         "method": "GET",
         "path": "/user/api/v2/systems/{sid}/devices/inverter/batch/energy/{eid}",
-        "pathParams": { "eid": "203000001234" },
+        "pathParams": { "eid": "203000003456" },
         "query": { "energy_level": "energy" }
       },
       "response": {
@@ -27,7 +27,7 @@
       "request": {
         "method": "GET",
         "path": "/user/api/v2/systems/{sid}/devices/inverter/batch/energy/{eid}",
-        "pathParams": { "eid": "203000001234" },
+        "pathParams": { "eid": "203000003456" },
         "query": { "energy_level": "energy" }
       },
       "response": {
@@ -48,7 +48,7 @@
       "request": {
         "method": "GET",
         "path": "/user/api/v2/systems/{sid}/devices/inverter/batch/energy/{eid}",
-        "pathParams": { "eid": "203000001234" },
+        "pathParams": { "eid": "203000003456" },
         "query": { "energy_level": "energy" }
       },
       "response": {

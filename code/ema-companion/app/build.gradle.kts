@@ -22,6 +22,13 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val stubPort = (project.findProperty("STUB_PORT") ?: System.getenv("STUB_PORT") ?: "8080").toString()
+        buildConfigField("String", "STUB_PORT", "\"$stubPort\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -78,6 +85,7 @@ dependencies {
     testImplementation(libs.okhttp.mockwebserver)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.work.testing)
+    testImplementation("com.schlueternetz.emaapistub:ema-api-stub:1.0")
     debugImplementation(libs.androidx.fragment.testing)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)

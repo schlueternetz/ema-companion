@@ -25,3 +25,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "EMA Companion"
 include(":app")
+
+// Embeds the standalone ema-api-stub project (its own Gradle build) so Android tests can
+// construct the real MatchingEngine/ScenarioLoader against a real local port.
+includeBuild("../ema-api-stub")

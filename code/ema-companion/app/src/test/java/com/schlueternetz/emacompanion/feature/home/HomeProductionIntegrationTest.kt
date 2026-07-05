@@ -5,6 +5,7 @@ import android.os.Looper
 import android.widget.TextView
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.core.app.ApplicationProvider
+import com.schlueternetz.emaapistub.Scenario
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.ApiUsageRepository
 import com.schlueternetz.emacompanion.core.api.OkHttpEmaApiClient
@@ -12,6 +13,7 @@ import com.schlueternetz.emacompanion.core.api.ProductionRepository
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLogRepository
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.serialization.json.Json
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
@@ -31,16 +33,20 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class HomeProductionIntegrationTest {
-    // The `data` body from code/ema-api-stub/.../scenarios/203000001234.json, ending at 8000 W.
+    // Read straight from the stub's own bundled scenario file, so this fixture cannot
+    // silently drift from what the real stub actually serves. Read as a classpath resource
+    // (not ScenarioLoader.loadDefault(), which requires an exploded directory and cannot list
+    // a packaged jar's contents) since the composite-build dependency supplies a jar here.
     private val canonicalBody =
-        """
-        {"code":0,"data":{
-          "today":"2.64",
-          "time":["06:00","06:05","06:10","06:15","06:20","06:25"],
-          "power":[1500,3200,5000,6500,7400,8000],
-          "energy":["0.125","0.267","0.417","0.542","0.617","0.667"]
-        }}
-        """.trimIndent()
+        javaClass.classLoader!!
+            .getResourceAsStream("scenarios/203000001234.json")!!
+            .bufferedReader()
+            .readText()
+            .let { Json { ignoreUnknownKeys = true }.decodeFromString<Scenario>(it) }
+            .interactions
+            .first()
+            .response.body
+            .toString()
 
     private lateinit var server: MockWebServer
 

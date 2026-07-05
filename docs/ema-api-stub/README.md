@@ -124,10 +124,18 @@ scenario directory — no rebuild needed. The bundled set currently ships:
 
 | ECU id | Scenario | Implemented endpoints |
 |---|---|---|
-| `203000001234` | Good Data (healthy 10 kW array at 80%) | ECU energy in period, `energy_level=minutely` → current production **8000 W** |
+| `203000001234` | Good Data (healthy 10 kW array at 80%) | ECU energy in period, in order: `energy_level=minutely` → current production **8000 W**, `energy_level=hourly`, `energy_level=daily` |
+| `203000005678` | Module Health — all inverters producing (GREEN) | Batch inverter energy, `energy_level=energy` |
+| `203000009012` | Module Health — one inverter offline today only (YELLOW) | Batch inverter energy, `energy_level=energy` |
+| `203000003456` | Module Health — one inverter offline 3 days (RED) | Batch inverter energy, `energy_level=energy` (3 interactions, replayed for day-before/yesterday/today) |
 
 Future scenarios (e.g. a faulty module or an offline ECU) are added as additional
 per-ECU files that script the relevant responses (including EMA error bodies).
+
+Dedicated no-data (`code:1001`) and two-calendar-month `daily` fixtures for `hourly`/`daily`
+are not part of the bundled set above — they're written directly into scoped test
+directories (not `loadDefault()`) by the tests that need them, so they stay decoupled from
+the bundled scenario files.
 
 ## Using the stub from the Companion app / integration tests
 
@@ -135,9 +143,24 @@ per-ECU files that script the relevant responses (including EMA error bodies).
   integration tests per [ADR-002](../adr/002-testing-strategy.md) hit a local mock with a
   configurable base URL). Use `http://10.0.2.2:<port>` from an Android emulator to reach
   the host.
+- In debug builds only, Settings has a one-tap **Use local stub** action that points the
+  Base URL at `http://10.0.2.2:{STUB_PORT}/user/api/v2/`. `STUB_PORT` is a Gradle property
+  (`-PSTUB_PORT=` or `local.properties`) read by `code/ema-companion/app/build.gradle.kts`
+  into `BuildConfig.STUB_PORT` — the same name the stub server itself reads, defaulting to
+  `8080` on both sides.
+- The Companion app's `code/ema-companion/settings.gradle.kts` uses `includeBuild("../ema-api-stub")`
+  so its `app` module can depend on this project directly (`testImplementation`) and embed
+  the real `MatchingEngine`/`ScenarioLoader` in JVM/Robolectric tests — a real `embeddedServer`
+  bound to an ephemeral port (`port = 0`), not a real deployed process, so `OkHttpEmaApiClient`
+  can hit it over an actual (but in-process, no external port to manage) socket.
 - For embedded Ktor tests, construct a fresh `MatchingEngine(ScenarioLoader.loadDefault())`
-  per test (no shared cursor state). For a long-lived server, call `POST /__stub__/reset`
-  before each scenario.
+  (or `loadFromDirectory` against a scoped directory — the pattern this project's own tests
+  and the Companion app's embedded-stub tests use) per test (no shared cursor state). For a
+  long-lived server, call `POST /__stub__/reset` before each scenario.
+- `ScenarioLoader.loadDefault()` requires an exploded resources directory on the classpath —
+  it cannot list a packaged jar's contents. Code consuming this project as a packaged jar
+  (as the Companion app does via the composite build) should read bundled scenario files as
+  a classpath resource (`getResourceAsStream`) instead, not `loadDefault()`.
 
 ## Caveats
 

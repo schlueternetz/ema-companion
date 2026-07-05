@@ -1,12 +1,12 @@
 {
-  "ecuId": "203000001234",
+  "ecuId": "203000005678",
   "description": "Module Health — all inverters producing (GREEN)",
   "interactions": [
     {
       "request": {
         "method": "GET",
         "path": "/user/api/v2/systems/{sid}/devices/inverter/batch/energy/{eid}",
-        "pathParams": { "eid": "203000001234" },
+        "pathParams": { "eid": "203000005678" },
         "query": { "energy_level": "energy" }
       },
       "response": {

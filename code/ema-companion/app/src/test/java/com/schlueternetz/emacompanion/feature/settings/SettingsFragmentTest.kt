@@ -80,6 +80,7 @@ class SettingsFragmentTest {
     @After
     fun tearDownEmailSeam() {
         SettingsFragment.emailSenderFactory = null
+        SettingsFragment.debugBuildOverride = null
     }
 
     private class FakeEmailSender(
@@ -351,6 +352,43 @@ class SettingsFragmentTest {
                     .findViewById<SettingRowView>(R.id.setting_base_url)
             val tooLong = "http://example.com/" + "a".repeat(SettingsRepository.BASE_URL_MAX_LENGTH)
             assertFalse(row.validator?.invoke(tooLong) ?: true)
+        }
+    }
+
+    @Test
+    fun useLocalStub_isVisible_inDebugBuild() {
+        SettingsFragment.debugBuildOverride = true
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val button = fragment.requireView().findViewById<View>(R.id.setting_use_local_stub)
+            assertEquals(View.VISIBLE, button.visibility)
+        }
+    }
+
+    @Test
+    fun useLocalStub_isGone_inReleaseBuild() {
+        SettingsFragment.debugBuildOverride = false
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val button = fragment.requireView().findViewById<View>(R.id.setting_use_local_stub)
+            assertEquals(View.GONE, button.visibility)
+        }
+    }
+
+    @Test
+    fun useLocalStub_activation_setsAndPersistsLocalStubUrl_withoutTouchingDefault() {
+        SettingsFragment.debugBuildOverride = true
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<View>(R.id.setting_use_local_stub).performClick()
+
+            val row = fragment.requireView().findViewById<SettingRowView>(R.id.setting_base_url)
+            val expected = "http://10.0.2.2:${com.schlueternetz.emacompanion.BuildConfig.STUB_PORT}/user/api/v2/"
+            assertEquals(expected, row.value)
+
+            val repository = SettingsRepository.create(appContext)
+            assertEquals(expected, repository.getBaseUrl())
+            assertEquals("https://api.apsystemsema.com:9282/user/api/v2/", SettingsRepository.BASE_URL_DEFAULT)
         }
     }
 

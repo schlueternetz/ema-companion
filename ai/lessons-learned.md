@@ -1,5 +1,26 @@
 # AI Lessons Learned
 
+## 2026-07-04: ema-stub-integration (composite build + cleartext + embedded stub)
+
+### Went Well
+* `includeBuild("../ema-api-stub")` in ema-companion's `settings.gradle.kts` + `testImplementation("com.schlueternetz.emaapistub:ema-api-stub:1.0")` in `app/build.gradle.kts` — Gradle dependency substitution resolves the sibling standalone project cleanly, no version conflicts
+* Promoting ema-api-stub's ktor/kotlinx-serialization deps `implementation`→`api` (needed `` `java-library` `` plugin added alongside `kotlin("jvm")`, which alone has no `api` config) — exposes `MatchingEngine`/`ScenarioLoader`/`stubModule`'s own dependency types to the Android app's compile classpath
+* Real `embeddedServer(CIO, port = 0)` bound to an ephemeral port (same pattern as GreenMail `ServerSetup(0, ...)`) for Android-side embedded-stub tests — `OkHttpEmaApiClient` needs an actual socket; Ktor's `testApplication` in-memory test client only works for Ktor's own `HttpClient`, not raw OkHttp
+* Reading the bundled scenario file via `getResourceAsStream` + `kotlinx.serialization.decodeFromString<Scenario>` instead of `ScenarioLoader.loadDefault()` in Android tests — works whether the resource is exploded or inside a jar
+* Screenshot from Maestro debug artifacts caught two distinct real bugs in one look each: element needing scroll, then a real network error banner (not a flaky assertion)
+
+### Didn't Work
+* `ScenarioLoader.loadDefault()` throws `IllegalArgumentException: URI is not hierarchical` when the stub's resources arrive as a packaged jar (composite-build project dependency, not `gradlew test`'s exploded `build/resources/main`) — `File(url.toURI())` can't handle a `jar:` URI
+* Maestro flow taps `setting_use_local_stub` without scrolling first — it's below the Base URL row, off-screen; `assertVisible`/`tapOn` on an off-screen-but-present element fails
+* After tapping the local-stub action, the flow tried to edit ECU-ID (Solar Array card, near top) without scrolling back up — the local-stub tap left the API Settings card (further down) in view
+* App had zero `network_security_config` / `usesCleartextTraffic` anywhere — `http://10.0.2.2:8080` request from the emulator silently failed as a generic NetworkError (Android blocks cleartext HTTP by default at targetSdk 28+); looked exactly like a real fetch failure, not a config gap, until checked
+
+### Avoid
+* Don't assume "embed the real engine, no real socket" from a design doc applies uniformly — a client built on raw OkHttp always needs a real (even if in-process/ephemeral) socket; only a pure-Ktor-to-Ktor test can truly avoid one
+* Don't use `ScenarioLoader.loadDefault()` from any consumer that isn't guaranteed an exploded resources directory — packaged-jar consumers must read the resource as a stream instead
+* Don't add a debug-only "point at localhost/10.0.2.2" shortcut without also adding a debug-only network security config permitting cleartext to that specific host — targetSdk 28+ blocks it silently and the failure looks identical to an unrelated NetworkError
+* When a Maestro step taps an action that scrolls the page (or is itself reached by scrolling), always re-`scrollUntilVisible` before the next tap that assumes a different part of the page — one card's action can leave a different, distant card in view
+
 ## 2026-07-03: home-screen Maestro flow (SettingRowView + driver ordering)
 
 ### Went Well
@@ -335,34 +356,4 @@
 * Don't push gated screen over start dest — breaks `popUpTo`; set it AS start dest instead
 * `navController.navigate(id)` passing ≠ bottom-nav works — test via `NavigationUI.onNavDestinationSelected`
 
----
-
-## 2026-06-11: api-settings-improvements
-
-### Went Well
-* Read all source files before writing — prevented mid-task surprises
-
-### Didn't Work
-* PostToolUse hook fires every Edit to a UX file — 5 interruptions for one task
-* Edit requires fresh `Read` in current tool sequence even if file is visible in context
-
-### Avoid
-* Always `Read` before `Edit` in current sequence — tool enforces this independently
-* After adding field to `isConfigured()`, find all test helpers that build settings config
-* Batch UX edits; invoke `write-user-guide` once at end, not per edit
-
----
-
-## 2026-06-10: required-settings-indicators
-
-### Went Well
-* `TextView.hint` for "Required" indicator — auto-shows/hides with text, zero extra logic
-
-### Didn't Work
-* PostToolUse hook fires per-edit, not per-task — batching avoids interruption
-* Gradle caches tests → `--rerun` needed for targeted runs after new property
-
-### Avoid
-* Batch UX edits; invoke `write-user-guide` once at end
-* Add `--rerun` for targeted Robolectric tests when verifying red/green cycle
-* Set `isRequired` before `value` in SettingsFragment — hint reads value at set time
+* Batch UX edits; invoke `write-user-guide` once at end, not per edit (recurring lesson — PostToolUse hook fires per-edit, not per-task)

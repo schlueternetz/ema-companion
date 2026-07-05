@@ -23,6 +23,7 @@ import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
+import com.schlueternetz.emacompanion.BuildConfig
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.ApiUsageRepository
 import com.schlueternetz.emacompanion.core.api.DailyEnergyRepository
@@ -78,6 +79,7 @@ class SettingsFragment : Fragment() {
     private lateinit var apiRequestProgressBar: LinearProgressIndicator
     private lateinit var apiRequestProgressLabel: TextView
     private lateinit var settingBaseUrl: SettingRowView
+    private lateinit var useLocalStubButton: View
     private lateinit var logsList: LinearLayout
     private lateinit var logsEmptyState: View
 
@@ -124,6 +126,7 @@ class SettingsFragment : Fragment() {
         apiRequestProgressBar = view.findViewById(R.id.api_request_progress_bar)
         apiRequestProgressLabel = view.findViewById(R.id.api_request_progress_label)
         settingBaseUrl = view.findViewById(R.id.setting_base_url)
+        useLocalStubButton = view.findViewById(R.id.setting_use_local_stub)
         logsList = view.findViewById(R.id.settings_logs_list)
         logsEmptyState = view.findViewById(R.id.settings_logs_empty_state)
         languageValueView = view.findViewById(R.id.settings_language_value)
@@ -655,6 +658,14 @@ class SettingsFragment : Fragment() {
             baseUrlResetBtn.isEnabled = !editing
             baseUrlResetBtn.alpha = if (editing) 0.38f else 1f
         }
+
+        val isDebugBuild = debugBuildOverride ?: BuildConfig.DEBUG
+        useLocalStubButton.visibility = if (isDebugBuild) View.VISIBLE else View.GONE
+        useLocalStubButton.setOnClickListener {
+            repository.setBaseUrl("http://10.0.2.2:${BuildConfig.STUB_PORT}/user/api/v2/")
+            settingBaseUrl.value = repository.getBaseUrl()
+            invalidateApiThrottle()
+        }
     }
 
     private fun wireImportExportReset(view: View) {
@@ -959,5 +970,8 @@ class SettingsFragment : Fragment() {
 
     companion object {
         var emailSenderFactory: ((address: String, password: String) -> EmailSender)? = null
+
+        /** Test seam: overrides [BuildConfig.DEBUG] so release-build gating can be exercised. */
+        var debugBuildOverride: Boolean? = null
     }
 }

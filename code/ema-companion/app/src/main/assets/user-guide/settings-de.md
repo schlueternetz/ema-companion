@@ -56,6 +56,8 @@ Das Ändern der **Zeitzone der Anlage** plant den täglichen Modulstatus-Job sof
 | **API-Anfragelimit** | Maximale EMA API-Aufrufe pro Monat (1–2.678.400; Standard 1.000). Ein Fortschrittsbalken unterhalb des Felds zeigt, wie viele der **erfolgreichen** Lesevorgänge dieses Monats bereits verbraucht wurden. Der Zähler wird automatisch zu Beginn jedes Kalendermonats zurückgesetzt. Tippe auf ↺, um den Standard wiederherzustellen. |
 | **Basis-URL** | Der API-Endpunkt (Standard: `https://api.apsystemsema.com:9282/user/api/v2/`). Muss eine gültige URL mit bis zu 2.048 Zeichen sein. Tippe auf ↺, um den Standard wiederherzustellen. |
 
+> **Nur in Entwickler-Builds:** In Debug-Builds erscheint unterhalb von Basis-URL eine Schaltfläche **Lokalen Stub verwenden**, die die App auf einen lokalen Testserver statt auf die echte EMA API umleitet. In der veröffentlichten App ist sie nicht vorhanden.
+
 ## E-Mail-Benachrichtigungen
 
 Sendet eine E-Mail, wenn sich der Modulstatus ändert (GRÜN → GELB oder ROT und zurück zu GRÜN). E-Mails werden über dein eigenes Gmail-Konto mit einem App-Passwort verschickt — kein Drittanbieter-Relay erforderlich.
