@@ -201,4 +201,17 @@
     <string name="email_body_green">Alle Solarmodule deiner Anlage produzieren wieder.</string>
     <string name="email_body_module_line">Modul %1$s: Keine Produktion seit %2$d Tag(en)</string>
     <string name="email_body_cta">EMA Companion öffnen für Details.</string>
+
+    <!-- Home-screen widgets -->
+    <string name="widget_not_configured">Nicht konfiguriert – EMA Companion öffnen</string>
+    <string name="widget_no_data">Noch keine Daten</string>
+    <string name="widget_today_chart_description">Diagramm der heutigen Stundenproduktion</string>
+    <string name="today_production_widget_label">Heutige Produktion</string>
+    <string name="today_production_widget_description">Diagramm der heutigen Stundenproduktion und laufende Gesamtsumme.</string>
+    <string name="production_summary_widget_label">Produktionsübersicht</string>
+    <string name="production_summary_widget_description">Produktionssummen für heute, diesen Monat und die letzten 30 Tage.</string>
+    <string name="widget_history_chart_description">Diagramm der täglichen Produktionshistorie</string>
+    <string name="widget_history_title">Letzte %1$d Tage</string>
+    <string name="production_history_widget_label">Produktionshistorie</string>
+    <string name="production_history_widget_description">Balkendiagramm der täglichen Produktion über den konfigurierten Zeitraum.</string>
 </resources>

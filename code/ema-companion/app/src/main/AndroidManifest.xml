@@ -23,6 +23,42 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".feature.widgets.TodayProductionWidgetReceiver"
+            android:exported="false"
+            android:label="@string/today_production_widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/today_production_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".feature.widgets.ProductionSummaryWidgetReceiver"
+            android:exported="false"
+            android:label="@string/production_summary_widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/production_summary_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".feature.widgets.ProductionHistoryWidgetReceiver"
+            android:exported="false"
+            android:label="@string/production_history_widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/production_history_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

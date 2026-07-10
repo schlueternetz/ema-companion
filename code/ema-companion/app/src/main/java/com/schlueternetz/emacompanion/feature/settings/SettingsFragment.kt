@@ -111,8 +111,8 @@ class SettingsFragment : Fragment() {
         repository = SettingsRepository.create(requireContext())
         usageRepository = ApiUsageRepository.create(requireContext())
         moduleHealthRepository = ModuleHealthRepository.create(requireContext())
-        hourlyEnergyRepository = HourlyEnergyRepository.create(requireContext())
-        dailyEnergyRepository = DailyEnergyRepository.create(requireContext())
+        hourlyEnergyRepository = hourlyRepoOverride ?: HourlyEnergyRepository.create(requireContext())
+        dailyEnergyRepository = dailyRepoOverride ?: DailyEnergyRepository.create(requireContext())
         tileRepositories = listOf(usageRepository, moduleHealthRepository, hourlyEnergyRepository, dailyEnergyRepository)
         logRepository = ApiCallLogRepository.create(requireContext())
 
@@ -377,6 +377,15 @@ class SettingsFragment : Fragment() {
     // the stale error avoids showing the old failure until that fetch completes.
     private fun invalidateApiThrottle() {
         tileRepositories.forEach { it.resetThrottle() }
+        // A widget sitting unattended has no "revisit Home" moment to naturally pick up the new
+        // config, unlike HomeFragment — so force an immediate hourly+daily fetch (or, if the
+        // credentials were just cleared, a free ConfigurationError) and push the result to any
+        // placed widgets rather than leaving them showing a stale or now-invalid system's data.
+        viewLifecycleOwner.lifecycleScope.launch {
+            hourlyEnergyRepository.refresh(force = true)
+            dailyEnergyRepository.refresh(force = true)
+            widgetUpdateAction(requireContext())
+        }
     }
 
     private fun updateApiRequestProgress() {
@@ -973,5 +982,20 @@ class SettingsFragment : Fragment() {
 
         /** Test seam: overrides [BuildConfig.DEBUG] so release-build gating can be exercised. */
         var debugBuildOverride: Boolean? = null
+
+        /** Test seam: substitutes the hourly energy repository. */
+        var hourlyRepoOverride: HourlyEnergyRepository? = null
+
+        /** Test seam: substitutes the daily energy repository. */
+        var dailyRepoOverride: DailyEnergyRepository? = null
+
+        internal val defaultWidgetUpdateAction: suspend (android.content.Context) -> Unit =
+            { context ->
+                com.schlueternetz.emacompanion.feature.widgets.WidgetUpdater
+                    .updateAll(context)
+            }
+
+        /** Test seam: substitutes the widget-update side effect invoked after an immediate forced refresh. */
+        var widgetUpdateAction: suspend (android.content.Context) -> Unit = defaultWidgetUpdateAction
     }
 }

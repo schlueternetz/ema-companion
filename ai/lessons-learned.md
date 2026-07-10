@@ -1,5 +1,28 @@
 # AI Lessons Learned
 
+## 2026-07-06: ema-widgets (Glance home-screen widgets, full change)
+
+### Went Well
+* Compose-compiler plugin version pinned EXACTLY to resolved Kotlin stdlib version (2.2.10) — Glance/Compose built clean first try on AGP 9.2.1 built-in-Kotlin, no separate Kotlin plugin needed
+* `.editorconfig` `ktlint_function_naming_ignore_when_annotated_with = Composable` — fixes ktlint flagging PascalCase `@Composable` fns; don't rename functions to satisfy lint
+* `androidx.glance.material3.ColorProviders(lightColorScheme())` / `(darkColorScheme())` single-scheme overload forces fixed light/dark regardless of system theme; default `GlanceTheme{}` (no args) already day/night-aware — needs `glance-material3` + `compose.material3:material3` deps
+* Official `androidx.glance:glance-appwidget-testing` + `glance-testing` libs: `runGlanceAppWidgetUnitTest { setContext(); setAppWidgetSize(DpSize); provideComposable{ widget.TestContent() }; onNode(hasText(...)).assertExists() }` — real Robolectric widget-content testing, no manual Compose test harness needed
+* `onAllNodes(matcher).assertCountEquals(n)` when >1 node matches same text (e.g. two "0.00 kWh" figures) — `onNode` throws on ambiguous match
+* Function-reference test seams (`var updateAllAction: suspend (Context, List<GlanceAppWidget>) -> Unit`) on `WidgetRefreshWorker`/`HomeFragment`/`SettingsFragment` — needed because Glance's real `updateAll()` is a no-op with zero placed widget instances in Robolectric, so can't spy on it directly
+* `SettingsFragment.hourlyRepoOverride`/`dailyRepoOverride` companion seams (mirrors `HomeFragment`'s existing pattern) — let settings-integration tests inject a `FakeClient`-backed repo instead of fighting real MockWebServer + IO-dispatcher timing in a Fragment test
+* `NavigationUI.onNavDestinationSelected(item, navController)` + also setting `bottomNav.selectedItemId` for widget tap-target routing in `MainActivity` — deterministic in Robolectric AND keeps the tab visually highlighted on a real device
+
+### Didn't Work
+* Design doc said "MockWebServer matching HourlyEnergyRepositoryTest's style" — that referenced test actually uses a plain `FakeClient` (no sockets); took the actual style over the literal wording
+* First `runGlanceAppWidgetUnitTest(DpSize(...))` positional arg → "actual type DpSize, but Duration expected" (first param is a timeout, not size); size is set via `setAppWidgetSize()` inside the test block, not a constructor arg
+* Reused `activity` var after `Robolectric ActivityController.recreate()` → stale reference, `findFragmentById` returns null/NPE; must re-fetch via `controller.get()`
+* `WidgetUpdater.updateAll(context, widgets)` with real `GlanceAppWidget` instances as a "spy" (counting inside `provideGlance`) → count stays 0 in Robolectric since no glance ids are placed, so `provideGlance` never runs
+
+### Avoid
+* Don't try to observe Glance's real `updateAll()`/`provideGlance()` side effects as a test double in Robolectric with zero placed widgets — inject a function-reference seam at the call site instead
+* Don't trust a design doc's literal tool name ("MockWebServer") over what the referenced example test file actually does — read the cited test first
+* Don't reuse a pre-recreate Activity/Fragment reference after `ActivityController.recreate()` — always re-fetch from the controller
+
 ## 2026-07-04: a-home-screen CI flake — "8000 W" race after stub switch
 
 ### Went Well
@@ -338,35 +361,10 @@
 * Markwon image-from-assets: use built-in `FileSchemeHandler.createWithAssets()` + rewrite relative paths to `file:///android_asset/…`; don't hand-roll an `AsyncDrawableLoader`
 * When `gradlew ktlintCheck` looks suspiciously cheap, confirm it actually lints `.kt` (grep the report for a source file) before trusting it
 
-## 2026-06-11: Robolectric appcompat AlertDialog
-
-### Went Well
-* `hintText: String?` on `SettingRowView` — clean, no new classes, 4/5 tests green first try
-
-### Didn't Work
-* `ShadowAlertDialog.getLatestAlertDialog()` → null for appcompat dialogs
-* `is android.app.AlertDialog` → fails for appcompat instances in Robolectric
-* `AlertDialog.Builder(ApplicationContext)` → dialog never shown
+## 2026-06-11: Robolectric appcompat AlertDialog + nav orphaned back stack (condensed)
 
 ### Avoid
-* Use `ShadowDialog.getLatestDialog()`, cast to `androidx.appcompat.app.AlertDialog` (not platform class)
-* Dialog tests need `Robolectric.buildActivity(AppCompatActivity).setup().get()`, not Application context
-* Read dialog message via `dialog.window?.decorView?.findViewById<TextView>(android.R.id.message)`
-* Set `label` before `hintText` in SettingsFragment — listener captures label at set time
-
----
-
-## 2026-06-11: nav orphaned back stack
-
-### Went Well
-* `NavigationUI.onNavDestinationSelected` in Robolectric — matches real bottom-nav tap path
-
-### Didn't Work
-* `bottomNav.selectedItemId = id` → doesn't fire listener in Robolectric
-* `adb logcat -d` → empty on this emulator session
-
-### Avoid
-* Don't push gated screen over start dest — breaks `popUpTo`; set it AS start dest instead
-* `navController.navigate(id)` passing ≠ bottom-nav works — test via `NavigationUI.onNavDestinationSelected`
-
+* Appcompat `AlertDialog` in Robolectric: use `ShadowDialog.getLatestDialog()` cast to `androidx.appcompat.app.AlertDialog` (not `ShadowAlertDialog`/platform class); needs `Robolectric.buildActivity(AppCompatActivity)`, not Application context
+* Don't push a gated screen over the start destination — breaks `popUpTo`; set it AS start destination instead
+* `bottomNav.selectedItemId = id` alone doesn't fire the nav listener in Robolectric (re-confirmed 2026-07-06) — test/drive via `NavigationUI.onNavDestinationSelected`
 * Batch UX edits; invoke `write-user-guide` once at end, not per edit (recurring lesson — PostToolUse hook fires per-edit, not per-task)

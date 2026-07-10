@@ -29,9 +29,4 @@ Wenn die App nicht vollständig konfiguriert ist, sind nur **Einstellungen** und
 
 - [Startseite](home.md) — aktuelle Produktion, heutige Stundengrafik, Produktionsverlauf, Modulstatus und Push-Benachrichtigungen
 - [Einstellungen](settings.md) — Zugangsdaten, Anlage-Zeitzone, App-Einstellungen und API-Konfiguration
-
-## Geplante Funktionen
-
-Für zukünftige Versionen geplant:
-
-- Startbildschirm-Widgets mit Live-Ausgabe
+- [Startbildschirm-Widgets](widgets.md) — drei Android-Startbildschirm-Widgets für Produktionsdaten auf einen Blick

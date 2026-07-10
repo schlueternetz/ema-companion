@@ -11,12 +11,16 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.schlueternetz.emacompanion.feature.home.ModuleHealthNotifier
 import com.schlueternetz.emacompanion.feature.home.ModuleHealthWorker
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
+import com.schlueternetz.emacompanion.feature.widgets.WidgetRefreshWorker
+import com.schlueternetz.emacompanion.feature.widgets.WidgetTapTarget
 
 class MainActivity : AppCompatActivity() {
     private val notificationPermissionLauncher =
@@ -67,8 +71,11 @@ class MainActivity : AppCompatActivity() {
             applyUnconfiguredNavState(bottomNav)
         }
 
+        applyWidgetTargetExtra(bottomNav, navController)
+
         ModuleHealthNotifier.ensureChannelCreated(this)
         ModuleHealthWorker.schedule(this, repository.getArrayTimezone())
+        WidgetRefreshWorker.schedule(this)
         requestNotificationPermissionIfNeeded()
     }
 
@@ -88,5 +95,24 @@ class MainActivity : AppCompatActivity() {
             val item = menu.getItem(i)
             item.isEnabled = item.itemId == R.id.settingsFragment || item.itemId == R.id.userGuideFragment
         }
+    }
+
+    // Consumed exactly once: cleared immediately after reading so a later recreation
+    // (e.g. rotation) does not re-trigger this navigation.
+    private fun applyWidgetTargetExtra(
+        bottomNav: BottomNavigationView,
+        navController: NavController,
+    ) {
+        val target = intent.getStringExtra(WidgetTapTarget.EXTRA_WIDGET_TARGET) ?: return
+        intent.removeExtra(WidgetTapTarget.EXTRA_WIDGET_TARGET)
+        val itemId =
+            when (target) {
+                WidgetTapTarget.TARGET_SETTINGS -> R.id.settingsFragment
+                WidgetTapTarget.TARGET_HOME -> R.id.homeFragment
+                else -> return
+            }
+        val item = bottomNav.menu.findItem(itemId) ?: return
+        NavigationUI.onNavDestinationSelected(item, navController)
+        bottomNav.selectedItemId = itemId
     }
 }

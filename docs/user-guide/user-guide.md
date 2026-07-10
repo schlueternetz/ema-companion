@@ -28,9 +28,4 @@ When the app is not fully configured, only **Settings** and **User Guide** are r
 
 - [Home](home.md) — current production, today's hourly chart, production history, module health, and push notifications
 - [Settings](settings.md) — credentials, array timezone, app preferences, and API configuration
-
-## What's Coming
-
-Features planned for future releases:
-
-- Home screen widgets showing live output
+- [Home-Screen Widgets](widgets.md) — three Android home-screen widgets for at-a-glance production data

@@ -36,10 +36,10 @@ Update this table whenever a new feature is added or an existing one changes its
 |---------|----------|----------|---------------|--------------|-------------|
 | Production tile | `getCurrentProduction` | 10 min | 1 | ~5 | ~150 |
 | Module Health tile | `getBatchInverterEnergy` | 24 hr | 1 (steady state†) | 1 | ~30 |
-| Today hourly chart | `getHourlyEnergy` | 1 hr | 1 | ~5 | ~150 |
-| History daily chart | `getDailyEnergy` | 1 hr | 1 (steady state‡) | 1 | ~30 |
-| **Total allocated** | | | | | **~360** |
-| **Headroom** | | | | | **~640** |
+| Today hourly chart + widgets | `getHourlyEnergy` | 1 hr | 1 | ~12 (widget background worker, every 2h, no time-of-day gating; app opens absorbed by the same throttle) | ~360 |
+| History daily chart + widgets | `getDailyEnergy` | 1 hr | 1 (steady state‡) | 1 (widget background worker replaces app-open trigger 1:1) | ~30 |
+| **Total allocated** | | | | | **~570** |
+| **Headroom** | | | | | **~430** |
 
 † First run ever: up to 3 calls (3-day window, no cache). Steady state: 1 call/day (today always re-fetched; past days cached permanently).
 

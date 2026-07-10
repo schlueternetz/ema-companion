@@ -213,4 +213,17 @@
     <string name="email_body_green">All solar modules in your array are producing again.</string>
     <string name="email_body_module_line">Module %1$s: No production for %2$d day(s)</string>
     <string name="email_body_cta">Open EMA Companion to view details.</string>
+
+    <!-- Home-screen widgets -->
+    <string name="widget_not_configured">Not configured — open EMA Companion</string>
+    <string name="widget_no_data">No data yet</string>
+    <string name="widget_today_chart_description">Today\'s hourly production chart</string>
+    <string name="today_production_widget_label">Today\'s Production</string>
+    <string name="today_production_widget_description">Today\'s hourly production chart and running total.</string>
+    <string name="production_summary_widget_label">Production Summary</string>
+    <string name="production_summary_widget_description">Today, this month, and last-30-days production totals.</string>
+    <string name="widget_history_chart_description">Daily production history chart</string>
+    <string name="widget_history_title">Last %1$d Days</string>
+    <string name="production_history_widget_label">Production History</string>
+    <string name="production_history_widget_description">Bar chart of daily production over the configured history window.</string>
 </resources>

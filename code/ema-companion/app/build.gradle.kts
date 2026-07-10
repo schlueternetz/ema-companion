@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ktlint)
+    alias(libs.plugins.kotlin.compose)
 }
 
 val repoRoot = rootDir.parentFile.parentFile
@@ -29,6 +30,7 @@ android {
 
     buildFeatures {
         buildConfig = true
+        compose = true
     }
 
     buildTypes {
@@ -76,6 +78,9 @@ dependencies {
     implementation(libs.android.activation)
     implementation(libs.mpandroidchart)
     implementation(libs.swiperefreshlayout)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+    implementation(libs.androidx.compose.material3)
     testImplementation(libs.junit)
     testImplementation(libs.greenmail)
     testImplementation(libs.androidx.navigation.testing)
@@ -86,6 +91,7 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.work.testing)
     testImplementation("com.schlueternetz.emaapistub:ema-api-stub:1.0")
+    testImplementation(libs.androidx.glance.appwidget.testing)
     debugImplementation(libs.androidx.fragment.testing)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)

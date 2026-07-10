@@ -41,6 +41,7 @@ import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthSource
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthState
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthStatus
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
+import com.schlueternetz.emacompanion.feature.widgets.WidgetUpdater
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.text.DateFormat
@@ -167,10 +168,14 @@ class HomeFragment : Fragment() {
             renderModuleHealth(moduleHealthSource.refresh())
         }
         viewLifecycleOwner.lifecycleScope.launch {
-            bindHourlyState(hourlySource.refresh(force = false), cap)
+            val state = hourlySource.refresh(force = false)
+            bindHourlyState(state, cap)
+            if (state.error == null) widgetUpdateAction(requireContext())
         }
         viewLifecycleOwner.lifecycleScope.launch {
-            bindDailyState(dailySource.refresh(force = false), cap, historyDays)
+            val state = dailySource.refresh(force = false)
+            bindDailyState(state, cap, historyDays)
+            if (state.error == null) widgetUpdateAction(requireContext())
         }
     }
 
@@ -182,8 +187,12 @@ class HomeFragment : Fragment() {
             val hourly = async { hourlySource.refresh(force = true) }
             val daily = async { dailySource.refresh(force = true) }
             render(prod.await())
-            bindHourlyState(hourly.await(), cap)
-            bindDailyState(daily.await(), cap, historyDays)
+            val hourlyState = hourly.await()
+            bindHourlyState(hourlyState, cap)
+            if (hourlyState.error == null) widgetUpdateAction(requireContext())
+            val dailyState = daily.await()
+            bindDailyState(dailyState, cap, historyDays)
+            if (dailyState.error == null) widgetUpdateAction(requireContext())
             swipeRefresh.isRefreshing = false
         }
     }
@@ -727,6 +736,12 @@ class HomeFragment : Fragment() {
 
         /** Test seam: overrides the current hour used for chart rendering (0–23). */
         var currentHourOverride: Int? = null
+
+        internal val defaultWidgetUpdateAction: suspend (android.content.Context) -> Unit =
+            { context -> WidgetUpdater.updateAll(context) }
+
+        /** Test seam: substitutes the widget-update side effect invoked after a successful hourly/daily refresh. */
+        var widgetUpdateAction: suspend (android.content.Context) -> Unit = defaultWidgetUpdateAction
 
         private val MONTH_PALETTE =
             listOf(
