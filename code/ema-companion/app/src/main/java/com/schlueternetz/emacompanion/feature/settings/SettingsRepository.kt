@@ -7,6 +7,7 @@ import androidx.security.crypto.MasterKeys
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.TimeZone
+import kotlin.math.roundToInt
 
 class SettingsRepository(
     private val prefs: SharedPreferences,
@@ -115,8 +116,10 @@ class SettingsRepository(
     fun getSystemCapacity(): Float = prefs.getFloat(SYSTEM_CAPACITY_KEY, -1f)
 
     fun setSystemCapacity(value: Float) {
-        prefs.edit().putFloat(SYSTEM_CAPACITY_KEY, value).apply()
+        prefs.edit().putFloat(SYSTEM_CAPACITY_KEY, roundToTwoDecimals(value)).apply()
     }
+
+    private fun roundToTwoDecimals(value: Float): Float = (value * 100).roundToInt() / 100f
 
     fun getHistoricDataDays(): Int = prefs.getInt(HISTORIC_DATA_DAYS_KEY, HISTORIC_DATA_DAYS_DEFAULT)
 
@@ -201,7 +204,10 @@ class SettingsRepository(
                 put(EMA_APP_SECRET_KEY, getEmaAppSecret())
                 put(EMA_SYSTEM_ID_KEY, getEmaSystemId())
                 put(EMA_ECU_ID_KEY, getEmaEcuId())
-                put(SYSTEM_CAPACITY_KEY, getSystemCapacity().toDouble())
+                // getSystemCapacity().toDouble() would widen the raw Float bits and expose
+                // binary imprecision as noisy decimals (e.g. 9.72f -> 9.720000267028809);
+                // going through Float's own shortest-round-trip toString avoids that.
+                put(SYSTEM_CAPACITY_KEY, getSystemCapacity().toString().toDouble())
                 put(HISTORIC_DATA_DAYS_KEY, getHistoricDataDays())
                 put(API_REQUEST_LIMIT_KEY, getApiRequestLimit())
                 put(NOTIFICATIONS_ENABLED_KEY, getNotificationsEnabled())
@@ -223,7 +229,9 @@ class SettingsRepository(
         if (obj.has(EMA_APP_SECRET_KEY)) edit.putString(EMA_APP_SECRET_KEY, obj.getString(EMA_APP_SECRET_KEY))
         if (obj.has(EMA_SYSTEM_ID_KEY)) edit.putString(EMA_SYSTEM_ID_KEY, obj.getString(EMA_SYSTEM_ID_KEY))
         if (obj.has(EMA_ECU_ID_KEY)) edit.putString(EMA_ECU_ID_KEY, obj.getString(EMA_ECU_ID_KEY))
-        if (obj.has(SYSTEM_CAPACITY_KEY)) edit.putFloat(SYSTEM_CAPACITY_KEY, obj.getDouble(SYSTEM_CAPACITY_KEY).toFloat())
+        if (obj.has(SYSTEM_CAPACITY_KEY)) {
+            edit.putFloat(SYSTEM_CAPACITY_KEY, roundToTwoDecimals(obj.getDouble(SYSTEM_CAPACITY_KEY).toFloat()))
+        }
         if (obj.has(HISTORIC_DATA_DAYS_KEY)) edit.putInt(HISTORIC_DATA_DAYS_KEY, obj.getInt(HISTORIC_DATA_DAYS_KEY))
         if (obj.has(API_REQUEST_LIMIT_KEY)) edit.putInt(API_REQUEST_LIMIT_KEY, obj.getInt(API_REQUEST_LIMIT_KEY))
         if (obj.has(NOTIFICATIONS_ENABLED_KEY)) edit.putBoolean(NOTIFICATIONS_ENABLED_KEY, obj.getBoolean(NOTIFICATIONS_ENABLED_KEY))

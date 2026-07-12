@@ -274,6 +274,22 @@ class SettingsRepositoryTest {
         assertEquals("dark", obj.getString("displayMode"))
     }
 
+    @Test
+    fun exportToJson_systemCapacityHasNoFloatWideningNoise() {
+        repo.setSystemCapacity(9.72f)
+
+        val json = repo.exportToJson()
+        val obj = JSONObject(json)
+
+        assertEquals(9.72, obj.getDouble("systemCapacity"), 0.0)
+    }
+
+    @Test
+    fun setSystemCapacity_roundsToTwoDecimals() {
+        repo.setSystemCapacity(9.723f)
+        assertEquals(9.72f, repo.getSystemCapacity(), 0.0001f)
+    }
+
     // importFromJson
     @Test
     fun importFromJson_mergesRecognizedKeys() {

@@ -51,7 +51,27 @@
       "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" devices 2>&1)",
       "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe\" -list-avds 2>&1)",
       "PowerShell(maestro test \"D:\\\\projects\\\\ema-companion\\\\code\\\\ema-companion\\\\maestro\\\\\" 2>&1)",
-      "Read(//c/Users/micro/AppData/Local/Temp/claude/d--projects-ema-companion/ab3b9c59-ad86-41bf-9034-2a8adc9887ba/scratchpad/**)"
+      "Read(//c/Users/micro/AppData/Local/Temp/claude/d--projects-ema-companion/ab3b9c59-ad86-41bf-9034-2a8adc9887ba/scratchpad/**)",
+      "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" devices -l)",
+      "Bash(mkdir -p /d/ema-debug)",
+      "Bash(/c/Users/micro/AppData/Local/Android/Sdk/platform-tools/adb.exe -s emulator-5554 shell dumpsys window)",
+      "PowerShell(Get-Process qemu-system-x86_64 -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Force -Confirm:$false)",
+      "Bash(cp \"/c/Users/micro/.maestro/tests/2026-07-11_185843/screenshot-❌-1783818019110-\\(a-home-screen.yaml\\).png\" /d/ema-debug/maestro-home-screen-retry-fail.png)",
+      "Bash(ls /c/Users/micro/.maestro/tests/2026-07-11_190529/*.png *)",
+      "Bash(powershell.exe -NoProfile -Command 'Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue | Select-Object -Property OwningProcess | ForEach-Object { Get-Process -Id $_.OwningProcess }')",
+      "Bash(powershell.exe -NoProfile -Command 'Stop-Process -Id 24148 -Force -Confirm:$false')",
+      "Bash(powershell.exe -NoProfile -Command \"Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue\")",
+      "Bash(./gradlew.bat run *)",
+      "Bash(seq 1 20)",
+      "Bash(powershell.exe -NoProfile -Command '\\(Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue\\) -ne $null')",
+      "Bash(powershell.exe -NoProfile -Command 'Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force -Confirm:$false }')",
+      "Bash(python3 -c ' *)"
+    ],
+    "additionalDirectories": [
+      "D:\\ema-debug",
+      "C:\\Users\\micro\\.maestro\\tests\\2026-07-11_185843",
+      "C:\\Users\\micro\\.maestro\\tests\\2026-07-11_190529"
     ]
   },
   "enabledMcpjsonServers": [
