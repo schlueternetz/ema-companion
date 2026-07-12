@@ -66,7 +66,17 @@
       "Bash(seq 1 20)",
       "Bash(powershell.exe -NoProfile -Command '\\(Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue\\) -ne $null')",
       "Bash(powershell.exe -NoProfile -Command 'Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force -Confirm:$false }')",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(./gradlew.bat compileDebugUnitTestKotlin)",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.feature.widgets.WidgetChartRendererTest\")",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.feature.widgets.*\")",
+      "Bash(find / -iname \"*glance-appwidget*.jar\" -o -iname \"*glance-layout*\" 2>/dev/null | grep -v \"^find:\" | head -5 *)",
+      "Bash(javap glance_classes/androidx/glance/layout/ColumnKt.class)",
+      "Bash(unzip -o -q \"/c/Users/micro/.gradle/caches/9.5.1/transforms/c8e27c6065edacea9bc985ec165d1d97/transformed/glance-1.1.1/jars/classes.jar\" -d glance_classes_all)",
+      "Bash(javap \"d:/ema-debug/glance_classes_all/androidx/glance/layout/ColumnScope.class\")",
+      "Bash(rm -rf /d/ema-debug/glance_classes /d/ema-debug/glance_classes_all)",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.feature.widgets.ProductionHistoryWidgetTest.singleDayData_rendersSingleBarChart\")",
+      "Bash(./gradlew.bat testDebugUnitTest ktlintCheck)"
     ],
     "additionalDirectories": [
       "D:\\ema-debug",

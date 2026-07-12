@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.view.View
 import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.charts.BarLineChartBase
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.BarData
@@ -96,12 +97,7 @@ object WidgetChartRenderer {
             position = XAxis.XAxisPosition.BOTTOM
             setDrawGridLines(false)
         }
-        chart.axisLeft.apply {
-            if (capacity > 0f) axisMaximum = capacity else resetAxisMaximum()
-        }
-        chart.axisRight.isEnabled = false
-        chart.description.isEnabled = false
-        chart.legend.isEnabled = false
+        configureValueAxis(chart, capacity)
         chart.data = if (dataSets.isEmpty()) null else LineData(dataSets)
 
         return chart.drawToBitmap(widthPx, heightPx)
@@ -121,23 +117,14 @@ object WidgetChartRenderer {
         val entries = sorted.mapIndexed { i, (_, kwh) -> BarEntry(i.toFloat(), kwh.toFloat()) }
         val colors = sorted.map { (d, _) -> monthColors[YearMonth.from(d)] ?: MONTH_PALETTE[0] }
 
-        val monthFmtShort = DateTimeFormatter.ofPattern("MMM", Locale.getDefault())
-        val xLabels =
-            sorted.mapIndexed { i, (d, _) ->
-                if (i == 0 || d.dayOfMonth == 1) d.format(monthFmtShort) else ""
-            }
+        val xLabels = historyXAxisLabels(sorted.map { it.first })
         chart.xAxis.apply {
             valueFormatter = IndexAxisValueFormatter(xLabels)
             granularity = 1f
             position = XAxis.XAxisPosition.BOTTOM
             setDrawGridLines(false)
         }
-        chart.axisLeft.apply {
-            if (capacity > 0f) axisMaximum = capacity else resetAxisMaximum()
-        }
-        chart.axisRight.isEnabled = false
-        chart.description.isEnabled = false
-        chart.legend.isEnabled = false
+        configureValueAxis(chart, capacity)
         chart.data =
             if (entries.isEmpty()) {
                 null
@@ -151,6 +138,36 @@ object WidgetChartRenderer {
     private fun buildMonthColorMap(dates: List<LocalDate>): Map<YearMonth, Int> {
         val months = dates.map { YearMonth.from(it) }.distinct().sorted()
         return months.mapIndexed { i, m -> m to MONTH_PALETTE[i % MONTH_PALETTE.size] }.toMap()
+    }
+
+    /**
+     * Labels the first bar of every month, even when that month's day-1 entry is missing from
+     * [sortedDates] (e.g. no production data recorded on the 1st) — matching on the day-of-month
+     * literally left some months unlabeled whenever their day 1 happened to be absent.
+     */
+    internal fun historyXAxisLabels(sortedDates: List<LocalDate>): List<String> {
+        val monthFmtShort = DateTimeFormatter.ofPattern("MMM", Locale.getDefault())
+        var previousMonth: YearMonth? = null
+        return sortedDates.map { d ->
+            val month = YearMonth.from(d)
+            val label = if (month != previousMonth) d.format(monthFmtShort) else ""
+            previousMonth = month
+            label
+        }
+    }
+
+    /** Forces the value axis to start at zero so bar/line heights are visually comparable. */
+    internal fun configureValueAxis(
+        chart: BarLineChartBase<*>,
+        capacity: Float,
+    ) {
+        chart.axisLeft.apply {
+            axisMinimum = 0f
+            if (capacity > 0f) axisMaximum = capacity else resetAxisMaximum()
+        }
+        chart.axisRight.isEnabled = false
+        chart.description.isEnabled = false
+        chart.legend.isEnabled = false
     }
 
     private fun View.drawToBitmap(

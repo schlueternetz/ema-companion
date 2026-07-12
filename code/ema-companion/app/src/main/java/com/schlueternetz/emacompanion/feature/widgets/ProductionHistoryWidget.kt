@@ -1,6 +1,7 @@
 package com.schlueternetz.emacompanion.feature.widgets
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.Image
@@ -15,6 +16,8 @@ import androidx.glance.background
 import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.padding
 import androidx.glance.text.Text
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.DailyEnergyRepository
@@ -48,7 +51,8 @@ class ProductionHistoryWidget : GlanceAppWidget() {
                     GlanceModifier
                         .fillMaxSize()
                         .background(GlanceTheme.colors.background)
-                        .clickable(WidgetTapTarget.action(context, target)),
+                        .clickable(WidgetTapTarget.action(context, target))
+                        .padding(12.dp),
             ) {
                 val daysInWindow =
                     dailyState.snapshot
@@ -66,7 +70,7 @@ class ProductionHistoryWidget : GlanceAppWidget() {
                         Text(context.getString(widgetErrorStringRes(dailyState.error, WidgetDataSource.DAILY)))
                     daysInWindow.isEmpty() -> Text(context.getString(R.string.widget_no_data))
                     else -> {
-                        Text(context.getString(R.string.widget_history_title, historyDays))
+                        Text(context.getString(R.string.widget_history_title, historyDays), style = WidgetTextStyles.title)
                         val size = LocalSize.current
                         val density = context.resources.displayMetrics.density
                         val widthPx = (size.width.value * density).toInt().coerceAtLeast(1)
@@ -82,7 +86,7 @@ class ProductionHistoryWidget : GlanceAppWidget() {
                         Image(
                             provider = ImageProvider(bitmap),
                             contentDescription = context.getString(R.string.widget_history_chart_description),
-                            modifier = GlanceModifier.fillMaxSize(),
+                            modifier = GlanceModifier.fillMaxWidth().defaultWeight(),
                             contentScale = ContentScale.Fit,
                         )
                     }

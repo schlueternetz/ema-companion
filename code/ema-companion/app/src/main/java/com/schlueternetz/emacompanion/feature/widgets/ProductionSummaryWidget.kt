@@ -1,6 +1,7 @@
 package com.schlueternetz.emacompanion.feature.widgets
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.LocalContext
@@ -10,7 +11,10 @@ import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Column
+import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.height
+import androidx.glance.layout.padding
 import androidx.glance.text.Text
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.DailyEnergyRepository
@@ -46,33 +50,45 @@ class ProductionSummaryWidget : GlanceAppWidget() {
                     GlanceModifier
                         .fillMaxSize()
                         .background(GlanceTheme.colors.background)
-                        .clickable(WidgetTapTarget.action(context, target)),
+                        .clickable(WidgetTapTarget.action(context, target))
+                        .padding(12.dp),
             ) {
                 if (!configured) {
-                    Text(context.getString(R.string.widget_not_configured))
+                    Text(context.getString(R.string.widget_not_configured), style = WidgetTextStyles.value)
                 } else {
-                    Text(context.getString(R.string.home_today_total_label))
+                    Text(context.getString(R.string.home_today_total_label), style = WidgetTextStyles.header)
                     if (hourlyState.error != null) {
                         Text(context.getString(widgetErrorStringRes(hourlyState.error, WidgetDataSource.HOURLY)))
                     } else {
-                        Text(context.getString(R.string.home_today_value_kwh, todaysTotalKwh(hourlyState.snapshot)))
+                        Text(
+                            context.getString(R.string.home_today_value_kwh, todaysTotalKwh(hourlyState.snapshot)),
+                            style = WidgetTextStyles.value,
+                        )
                     }
+                    Spacer(GlanceModifier.height(8.dp))
 
                     val dailyErrorText =
                         dailyState.error?.let { context.getString(widgetErrorStringRes(it, WidgetDataSource.DAILY)) }
 
-                    Text(context.getString(R.string.home_history_this_month_label))
+                    Text(context.getString(R.string.home_history_this_month_label), style = WidgetTextStyles.header)
                     if (dailyErrorText != null) {
                         Text(dailyErrorText)
                     } else {
-                        Text(context.getString(R.string.home_today_value_kwh, thisMonthTotalKwh(dailyState.snapshot, today)))
+                        Text(
+                            context.getString(R.string.home_today_value_kwh, thisMonthTotalKwh(dailyState.snapshot, today)),
+                            style = WidgetTextStyles.value,
+                        )
                     }
+                    Spacer(GlanceModifier.height(8.dp))
 
-                    Text(context.getString(R.string.home_history_last_30_label))
+                    Text(context.getString(R.string.home_history_last_30_label), style = WidgetTextStyles.header)
                     if (dailyErrorText != null) {
                         Text(dailyErrorText)
                     } else {
-                        Text(context.getString(R.string.home_today_value_kwh, last30DaysTotalKwh(dailyState.snapshot, today)))
+                        Text(
+                            context.getString(R.string.home_today_value_kwh, last30DaysTotalKwh(dailyState.snapshot, today)),
+                            style = WidgetTextStyles.value,
+                        )
                     }
                 }
             }

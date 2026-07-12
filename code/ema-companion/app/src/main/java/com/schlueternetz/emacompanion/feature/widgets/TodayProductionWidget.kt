@@ -1,6 +1,7 @@
 package com.schlueternetz.emacompanion.feature.widgets
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.Image
@@ -15,6 +16,8 @@ import androidx.glance.background
 import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.padding
 import androidx.glance.text.Text
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.HourlyEnergyRepository
@@ -48,10 +51,11 @@ class TodayProductionWidget : GlanceAppWidget() {
                     GlanceModifier
                         .fillMaxSize()
                         .background(GlanceTheme.colors.background)
-                        .clickable(WidgetTapTarget.action(context, target)),
+                        .clickable(WidgetTapTarget.action(context, target))
+                        .padding(12.dp),
             ) {
                 when {
-                    !configured -> Text(context.getString(R.string.widget_not_configured))
+                    !configured -> Text(context.getString(R.string.widget_not_configured), style = WidgetTextStyles.value)
                     state.error != null ->
                         Text(context.getString(widgetErrorStringRes(state.error, WidgetDataSource.HOURLY)))
                     state.snapshot == null || state.snapshot.hours.isEmpty() ->
@@ -70,13 +74,17 @@ class TodayProductionWidget : GlanceAppWidget() {
                                 widthPx = widthPx,
                                 heightPx = heightPx,
                             )
+                        Text(context.getString(R.string.home_today_title), style = WidgetTextStyles.title)
                         Image(
                             provider = ImageProvider(bitmap),
                             contentDescription = context.getString(R.string.widget_today_chart_description),
-                            modifier = GlanceModifier.fillMaxSize(),
+                            modifier = GlanceModifier.fillMaxWidth().defaultWeight(),
                             contentScale = ContentScale.Fit,
                         )
-                        Text(context.getString(R.string.home_today_value_kwh, todaysTotalKwh(state.snapshot)))
+                        Text(
+                            context.getString(R.string.home_today_value_kwh, todaysTotalKwh(state.snapshot)),
+                            style = WidgetTextStyles.value,
+                        )
                     }
                 }
             }
