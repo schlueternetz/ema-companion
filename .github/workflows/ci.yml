@@ -109,3 +109,17 @@ jobs:
           script: |
             ./gradlew installDebug
             maestro test maestro/a-home-screen.yaml maestro/bottom-nav.yaml maestro/email-alerts.yaml
+
+      # Maestro's screenshots/commands-*.json/maestro.log for a failed run only ever exist on
+      # this ephemeral runner — without this step a CI failure is undiagnosable after the job
+      # ends (no way to see what was actually on screen, e.g. an ANR/system dialog blocking the
+      # app). if-no-files-found: ignore covers the case where the job failed before Maestro ran
+      # at all (e.g. install step), so this step itself never fails the job.
+      - name: Upload Maestro debug artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-debug
+          path: ~/.maestro/tests/
+          if-no-files-found: ignore
+          retention-days: 14
