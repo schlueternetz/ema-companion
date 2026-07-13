@@ -11,6 +11,7 @@ import com.schlueternetz.emacompanion.core.api.DailyEnergyRepository
 import com.schlueternetz.emacompanion.core.api.DailyEnergySource
 import com.schlueternetz.emacompanion.core.api.HourlyEnergyRepository
 import com.schlueternetz.emacompanion.core.api.HourlyEnergySource
+import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 
@@ -26,17 +27,20 @@ class WidgetRefreshWorker(
     params: WorkerParameters,
 ) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
+        val settings = SettingsRepository.create(applicationContext)
         val hourlySource = hourlySourceOverride ?: HourlyEnergyRepository.create(applicationContext)
         val dailySource = dailySourceOverride ?: DailyEnergyRepository.create(applicationContext)
-        val widgets = widgetsOverride ?: listOf(TodayProductionWidget(), ProductionSummaryWidget(), ProductionHistoryWidget())
+        val widgets = widgetsOverride ?: WidgetUpdater.enabledWidgets(settings)
 
-        val hourlyState = hourlySource.refresh(force = false)
-        if (hourlyState.error == null) {
-            updateAllAction(applicationContext, widgets)
+        if (settings.isHourlyDataNeeded()) {
+            val hourlyState = hourlySource.refresh(force = false)
+            if (hourlyState.error == null) {
+                updateAllAction(applicationContext, widgets)
+            }
         }
 
         val hour = (hourOverride ?: { LocalTime.now().hour })()
-        if (hour == DAILY_TRIGGER_HOUR) {
+        if (hour == DAILY_TRIGGER_HOUR && settings.isDailyDataNeeded()) {
             val dailyState = dailySource.refresh(force = false)
             if (dailyState.error == null) {
                 updateAllAction(applicationContext, widgets)

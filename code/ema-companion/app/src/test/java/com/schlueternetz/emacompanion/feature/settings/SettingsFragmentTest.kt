@@ -12,10 +12,13 @@ import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult
 import com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator
+import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
 import com.schlueternetz.emacompanion.R
+import com.schlueternetz.emacompanion.core.HomeTile
+import com.schlueternetz.emacompanion.core.HomeWidget
 import com.schlueternetz.emacompanion.core.email.EmailResult
 import com.schlueternetz.emacompanion.core.email.EmailSender
 import org.junit.After
@@ -503,43 +506,6 @@ class SettingsFragmentTest {
             assertTrue("Label should mention 800", text.contains("800"))
             assertTrue("Label should mention 1000", text.contains("1000"))
         }
-    }
-
-    @Test
-    fun changingCredential_resetsThrottleAndClearsError() {
-        appContext
-            .getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
-            .edit()
-            .putLong("lastFetchEpochMs", 12345L)
-            .putString("lastFetchError", "API")
-            .apply()
-        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
-        scenario.onFragment { fragment ->
-            val row = fragment.requireView().findViewById<SettingRowView>(R.id.setting_ema_app_id)
-            row.onSave.invoke("a".repeat(32))
-        }
-        val usage = appContext.getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
-        assertEquals(0L, usage.getLong("lastFetchEpochMs", -1L))
-        assertEquals(null, usage.getString("lastFetchError", null))
-    }
-
-    @Test
-    fun importingSettings_resetsThrottleAndClearsError() {
-        // Import can change connection settings, so the post-import refresh must reset the
-        // throttle and clear the stale error just like a manual credential edit does.
-        appContext
-            .getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
-            .edit()
-            .putLong("lastFetchEpochMs", 12345L)
-            .putString("lastFetchError", "API")
-            .apply()
-        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
-        scenario.onFragment { fragment ->
-            fragment.refreshAllDisplayedValues()
-        }
-        val usage = appContext.getSharedPreferences("ema_api_usage", Context.MODE_PRIVATE)
-        assertEquals(0L, usage.getLong("lastFetchEpochMs", -1L))
-        assertEquals(null, usage.getString("lastFetchError", null))
     }
 
     @Test
@@ -1184,6 +1150,142 @@ class SettingsFragmentTest {
             // Cancel factory reset dialog — simulate by just verifying value is still present
             val row = fragment.requireView().findViewById<SettingRowView>(R.id.setting_ema_app_id)
             assertEquals("originalid1234567890123456789012", row.value)
+        }
+    }
+
+    // Tiles & Widgets
+    private val tileCheckboxIds =
+        mapOf(
+            HomeTile.TODAY_PRODUCTION to R.id.checkbox_tile_today_production,
+            HomeTile.HISTORY_PRODUCTION to R.id.checkbox_tile_history_production,
+            HomeTile.MODULE_HEALTH to R.id.checkbox_tile_module_health,
+        )
+    private val widgetCheckboxIds =
+        mapOf(
+            HomeWidget.TODAY_PRODUCTION to R.id.checkbox_widget_today_production,
+            HomeWidget.PRODUCTION_SUMMARY to R.id.checkbox_widget_production_summary,
+            HomeWidget.PRODUCTION_HISTORY to R.id.checkbox_widget_production_history,
+        )
+
+    @Test
+    fun tileWidgetCheckboxes_allCheckedByDefault() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            (tileCheckboxIds.values + widgetCheckboxIds.values).forEach { id ->
+                assertTrue(fragment.requireView().findViewById<MaterialCheckBox>(id).isChecked)
+            }
+        }
+    }
+
+    @Test
+    fun tileWidgetCheckboxes_reflectStoredDisabledState() {
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean("tileEnabled_MODULE_HEALTH", false)
+            .apply()
+
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val checkbox = fragment.requireView().findViewById<MaterialCheckBox>(R.id.checkbox_tile_module_health)
+            assertFalse(checkbox.isChecked)
+            val other = fragment.requireView().findViewById<MaterialCheckBox>(R.id.checkbox_tile_today_production)
+            assertTrue(other.isChecked)
+        }
+    }
+
+    @Test
+    fun uncheckingTileCheckbox_persistsOnlyThatFlag() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<MaterialCheckBox>(R.id.checkbox_tile_history_production).isChecked = false
+        }
+        val prefs = appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        assertFalse(prefs.getBoolean("tileEnabled_HISTORY_PRODUCTION", true))
+        assertTrue(prefs.getBoolean("tileEnabled_TODAY_PRODUCTION", true))
+        assertTrue(prefs.getBoolean("tileEnabled_MODULE_HEALTH", true))
+    }
+
+    @Test
+    fun uncheckingWidgetCheckbox_persistsOnlyThatFlag() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<MaterialCheckBox>(R.id.checkbox_widget_production_summary).isChecked = false
+        }
+        val prefs = appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        assertFalse(prefs.getBoolean("widgetEnabled_PRODUCTION_SUMMARY", true))
+        assertTrue(prefs.getBoolean("widgetEnabled_TODAY_PRODUCTION", true))
+    }
+
+    @Test
+    fun selectAllToggle_whenAllChecked_deselectsAllAndPersists() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<View>(R.id.settings_tiles_widgets_select_all).performClick()
+        }
+        scenario.onFragment { fragment ->
+            (tileCheckboxIds.values + widgetCheckboxIds.values).forEach { id ->
+                assertFalse(fragment.requireView().findViewById<MaterialCheckBox>(id).isChecked)
+            }
+        }
+        val prefs = appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        HomeTile.entries.forEach { assertFalse(prefs.getBoolean("tileEnabled_${it.name}", true)) }
+        HomeWidget.entries.forEach { assertFalse(prefs.getBoolean("widgetEnabled_${it.name}", true)) }
+    }
+
+    @Test
+    fun selectAllToggle_whenAtLeastOneUnchecked_selectsAllAndPersists() {
+        appContext
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean("tileEnabled_MODULE_HEALTH", false)
+            .apply()
+
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<View>(R.id.settings_tiles_widgets_select_all).performClick()
+        }
+        scenario.onFragment { fragment ->
+            (tileCheckboxIds.values + widgetCheckboxIds.values).forEach { id ->
+                assertTrue(fragment.requireView().findViewById<MaterialCheckBox>(id).isChecked)
+            }
+        }
+        val prefs = appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+        HomeTile.entries.forEach { assertTrue(prefs.getBoolean("tileEnabled_${it.name}", true)) }
+    }
+
+    @Test
+    fun selectAllToggle_labelFlipsBetweenSelectAndDeselect() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val button =
+                fragment.requireView().findViewById<com.google.android.material.button.MaterialButton>(
+                    R.id.settings_tiles_widgets_select_all,
+                )
+            assertEquals(fragment.getString(R.string.settings_tiles_widgets_deselect_all), button.text.toString())
+            button.performClick()
+        }
+        scenario.onFragment { fragment ->
+            val button =
+                fragment.requireView().findViewById<com.google.android.material.button.MaterialButton>(
+                    R.id.settings_tiles_widgets_select_all,
+                )
+            assertEquals(fragment.getString(R.string.settings_tiles_widgets_select_all), button.text.toString())
+        }
+    }
+
+    @Test
+    fun refreshAllDisplayedValues_reflectsImportedTileWidgetFlags() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            appContext
+                .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean("tileEnabled_MODULE_HEALTH", false)
+                .apply()
+            fragment.refreshAllDisplayedValues()
+            val checkbox = fragment.requireView().findViewById<MaterialCheckBox>(R.id.checkbox_tile_module_health)
+            assertFalse(checkbox.isChecked)
         }
     }
 }

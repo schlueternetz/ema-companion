@@ -15,25 +15,25 @@ import org.junit.Test
 
 class ApplicationTest {
     private val goodDataEcuId = "203000001234"
-    private val minutelyUrl =
-        "/user/api/v2/systems/SID123/devices/ecu/energy/$goodDataEcuId?energy_level=minutely"
+    private val hourlyUrl =
+        "/user/api/v2/systems/SID123/devices/ecu/energy/$goodDataEcuId?energy_level=hourly"
 
     private fun ApplicationTestBuilder.installStub() {
         application { stubModule(MatchingEngine(ScenarioLoader.loadDefault())) }
     }
 
     @Test
-    fun `good data minutely call returns code 0 with current production 8000`() =
+    fun `good data hourly call returns code 0 with hourly data`() =
         testApplication {
             installStub()
 
-            val response = client.get(minutelyUrl)
+            val response = client.get(hourlyUrl)
 
             assertEquals(HttpStatusCode.OK, response.status)
             val body = Json.parseToJsonElement(response.bodyAsText()).jsonObject
             assertEquals("0", body["code"]!!.jsonPrimitive.content)
-            val power = body["data"]!!.jsonObject["power"]!!.jsonArray
-            assertEquals(8000, power.last().jsonPrimitive.content.toInt())
+            val data = body["data"]!!.jsonArray
+            assertEquals("0.42", data[6].jsonPrimitive.content)
         }
 
     @Test
@@ -42,7 +42,7 @@ class ApplicationTest {
             installStub()
 
             val response =
-                client.get("/user/api/v2/systems/SID123/devices/ecu/energy/$goodDataEcuId?energy_level=hourly")
+                client.get("/user/api/v2/systems/SID123/devices/ecu/energy/$goodDataEcuId?energy_level=daily")
 
             assertEquals(HttpStatusCode.Conflict, response.status)
             val body = Json.parseToJsonElement(response.bodyAsText()).jsonObject
@@ -55,7 +55,7 @@ class ApplicationTest {
             installStub()
 
             val response =
-                client.get("/user/api/v2/systems/SID123/devices/ecu/energy/999999999999?energy_level=minutely")
+                client.get("/user/api/v2/systems/SID123/devices/ecu/energy/999999999999?energy_level=hourly")
 
             assertEquals(HttpStatusCode.Conflict, response.status)
         }
@@ -75,12 +75,12 @@ class ApplicationTest {
         testApplication {
             installStub()
 
-            assertEquals(HttpStatusCode.OK, client.get(minutelyUrl).status)
+            assertEquals(HttpStatusCode.OK, client.get(hourlyUrl).status)
             // cursor consumed; a second call would be unexpected
-            assertEquals(HttpStatusCode.Conflict, client.get(minutelyUrl).status)
+            assertEquals(HttpStatusCode.Conflict, client.get(hourlyUrl).status)
 
             assertEquals(HttpStatusCode.OK, client.post("/__stub__/reset").status)
-            assertEquals(HttpStatusCode.OK, client.get(minutelyUrl).status)
+            assertEquals(HttpStatusCode.OK, client.get(hourlyUrl).status)
         }
 
     @Test
@@ -88,8 +88,8 @@ class ApplicationTest {
         testApplication {
             installStub()
 
-            client.get(minutelyUrl)
+            client.get(hourlyUrl)
             assertEquals(HttpStatusCode.OK, client.post("/__stub__/reset/$goodDataEcuId").status)
-            assertEquals(HttpStatusCode.OK, client.get(minutelyUrl).status)
+            assertEquals(HttpStatusCode.OK, client.get(hourlyUrl).status)
         }
 }

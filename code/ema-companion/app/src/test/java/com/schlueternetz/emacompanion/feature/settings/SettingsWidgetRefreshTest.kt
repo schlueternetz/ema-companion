@@ -14,7 +14,6 @@ import com.schlueternetz.emacompanion.core.api.EmaApiClient
 import com.schlueternetz.emacompanion.core.api.HourlyEnergyFetch
 import com.schlueternetz.emacompanion.core.api.HourlyEnergyRepository
 import com.schlueternetz.emacompanion.core.api.HourlySnapshot
-import com.schlueternetz.emacompanion.core.api.ProductionFetch
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLogRepository
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -37,8 +36,6 @@ class SettingsWidgetRefreshTest {
     ) : EmaApiClient {
         var hourlyCalls = 0
         var dailyCalls = 0
-
-        override suspend fun getCurrentProduction() = ProductionFetch(ApiResult.ConfigurationError)
 
         override suspend fun getBatchInverterEnergy(date: String) = BatchEnergyFetch(ApiResult.ConfigurationError)
 
@@ -111,6 +108,34 @@ class SettingsWidgetRefreshTest {
 
         assertEquals(1, client.hourlyCalls)
         assertEquals(1, widgetUpdateCallCount)
+    }
+
+    @Test
+    fun changingCredential_skipsHourlyAndDailyRefresh_whenNoEnabledConsumer() {
+        val settings = SettingsRepository.create(appContext)
+        settings.setEmaAppId("a".repeat(32))
+        settings.setEmaAppSecret("b".repeat(12))
+        settings.setEmaSystemId("c".repeat(16))
+        settings.setEmaEcuId("1".repeat(12))
+        settings.setSystemCapacity(5f)
+        settings.setTileEnabled(com.schlueternetz.emacompanion.core.HomeTile.TODAY_PRODUCTION, false)
+        settings.setTileEnabled(com.schlueternetz.emacompanion.core.HomeTile.HISTORY_PRODUCTION, false)
+        settings.setWidgetEnabled(com.schlueternetz.emacompanion.core.HomeWidget.TODAY_PRODUCTION, false)
+        settings.setWidgetEnabled(com.schlueternetz.emacompanion.core.HomeWidget.PRODUCTION_SUMMARY, false)
+        settings.setWidgetEnabled(com.schlueternetz.emacompanion.core.HomeWidget.PRODUCTION_HISTORY, false)
+
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        idle()
+        scenario.onFragment { fragment ->
+            fragment
+                .requireView()
+                .findViewById<SettingRowView>(R.id.setting_ema_app_id)
+                .onSave
+                .invoke("a".repeat(32))
+        }
+        idle()
+
+        assertEquals(0, client.hourlyCalls)
     }
 
     @Test

@@ -17,6 +17,10 @@ Zeigt drei fett gedruckte Werte auf einen Blick: **Heute**, **Diesen Monat** und
 
 Zeigt ein Balkendiagramm der Tagessummen über deinen konfigurierten Zeitraum (Einstellungen → Historische Datentage), farblich nach Kalendermonat codiert — dasselbe Diagramm wie die Kachel „Produktionshistorie" auf der Startseite, nur in Widget-Größe.
 
+## In den Einstellungen deaktiviert
+
+Jedes Widget lässt sich einzeln unter Einstellungen → Kacheln & Widgets deaktivieren. Da Android Apps keine Möglichkeit bietet, ein bereits platziertes Widget zu entfernen, verschwindet ein deaktiviertes Widget nicht — es zeigt stattdessen **„Dieses Widget wurde in den Einstellungen deaktiviert"** anstelle seines üblichen Diagramms oder seiner Werte, sowohl für bestehende als auch für neu platzierte Widgets. Aktiviere es in den Einstellungen wieder, um den normalen Inhalt wiederherzustellen.
+
 ## Noch nicht konfiguriert
 
 Wenn du deine EMA-Zugangsdaten noch nicht in den Einstellungen eingegeben hast, zeigt jedes Widget stattdessen die neutrale Meldung **„Nicht konfiguriert – EMA Companion öffnen"** anstelle eines Diagramms oder von Werten. Ein Tippen auf das Widget öffnet die App direkt in den Einstellungen, damit du die Einrichtung abschließen kannst.

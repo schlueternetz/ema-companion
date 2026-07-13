@@ -14,8 +14,6 @@ import com.schlueternetz.emacompanion.core.api.FetchError
 import com.schlueternetz.emacompanion.core.api.HourlyEnergySource
 import com.schlueternetz.emacompanion.core.api.HourlyProductionState
 import com.schlueternetz.emacompanion.core.api.HourlySnapshot
-import com.schlueternetz.emacompanion.core.api.ProductionSource
-import com.schlueternetz.emacompanion.core.api.ProductionState
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -59,21 +57,13 @@ class HomeTodaySectionTest {
         }
     }
 
-    private class FakeProductionSource : ProductionSource {
-        override fun currentState() = ProductionState()
-
-        override suspend fun refresh(force: Boolean) = ProductionState()
-    }
-
     @Before
     fun setUp() {
-        HomeFragment.sourceOverride = FakeProductionSource()
         HomeFragment.moduleHealthSourceOverride = null
     }
 
     @After
     fun tearDown() {
-        HomeFragment.sourceOverride = null
         HomeFragment.moduleHealthSourceOverride = null
         HomeFragment.hourlySourceOverride = null
         HomeFragment.dailySourceOverride = null
@@ -248,26 +238,12 @@ class HomeTodaySectionTest {
         }
     }
 
-    // ── Pull-to-refresh triggers force=true on all three (10.3) ───────────
+    // ── Pull-to-refresh triggers force=true on both sources (10.3) ────────
 
     @Test
     fun pullToRefresh_callsForceRefreshOnAllSources_andHidesSpinner() {
         val hourly = FakeHourlySource(HourlyProductionState())
         val daily = FakeDailySource()
-        val production =
-            object : ProductionSource {
-                var calls = 0
-                var lastForce = false
-
-                override fun currentState() = ProductionState()
-
-                override suspend fun refresh(force: Boolean): ProductionState {
-                    calls++
-                    lastForce = force
-                    return ProductionState()
-                }
-            }
-        HomeFragment.sourceOverride = production
         HomeFragment.hourlySourceOverride = hourly
         HomeFragment.dailySourceOverride = daily
 
@@ -294,7 +270,6 @@ class HomeTodaySectionTest {
         idle()
 
         scenario.onFragment { fragment ->
-            assertEquals(true, production.lastForce)
             assertEquals(true, hourly.lastForce)
             assertEquals(true, daily.lastForce)
             val swipe = fragment.requireView().findViewById<SwipeRefreshLayout>(R.id.home_swipe_refresh)

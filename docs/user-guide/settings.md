@@ -48,6 +48,19 @@ Changing the **Array Timezone** immediately reschedules the background Module He
 | **Notifications Enabled** | Toggle; on by default. Takes effect immediately — no Save step required. |
 | **Historic Data Days** | Days of production history to retain (1–90); defaults to 30. |
 
+## Tiles & Widgets
+
+Choose which Home tiles and home-screen widgets are active. All seven are checked (enabled) by default.
+
+- **Tiles:** Today Production, History Production, Module Health. Unchecking a tile removes its card from Home the next time you view that screen.
+- **Widgets:** Today Production, Production Summary, Production History. Android has no way for an app to remove a widget you've already placed on your home screen, so unchecking a widget instead makes it show **"This widget has been disabled in Settings"** in place of its data — both for widgets already placed and any placed after being disabled.
+
+A **Select All / Deselect All** button at the top of the section toggles every checkbox at once: it reads "Deselect All" when everything is checked, and "Select All" as soon as anything is unchecked.
+
+Data is only fetched from the EMA API for a tile or widget that is currently enabled — disabling everything that depends on a given data type (e.g. all daily-energy consumers) stops those API calls entirely.
+
+These settings are included in Import/Export and reset to all-enabled on Factory Reset, like the rest of your settings.
+
 ## API Settings
 
 | Control | Description |

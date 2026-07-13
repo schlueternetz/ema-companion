@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
+import com.schlueternetz.emacompanion.core.HomeTile
+import com.schlueternetz.emacompanion.core.HomeWidget
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.TimeZone
@@ -189,6 +191,47 @@ class SettingsRepository(
         prefs.edit().clear().apply()
     }
 
+    fun isTileEnabled(tile: HomeTile): Boolean = prefs.getBoolean(tileEnabledKey(tile), true)
+
+    fun setTileEnabled(
+        tile: HomeTile,
+        enabled: Boolean,
+    ) {
+        prefs.edit().putBoolean(tileEnabledKey(tile), enabled).apply()
+    }
+
+    fun isWidgetEnabled(widget: HomeWidget): Boolean = prefs.getBoolean(widgetEnabledKey(widget), true)
+
+    fun setWidgetEnabled(
+        widget: HomeWidget,
+        enabled: Boolean,
+    ) {
+        prefs.edit().putBoolean(widgetEnabledKey(widget), enabled).apply()
+    }
+
+    /** Hourly energy is consumed by the Today Production tile and two widgets. */
+    fun isHourlyDataNeeded(): Boolean =
+        isTileEnabled(HomeTile.TODAY_PRODUCTION) ||
+            isWidgetEnabled(HomeWidget.TODAY_PRODUCTION) ||
+            isWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY)
+
+    /**
+     * Daily energy is consumed by the History Production tile, two widgets, AND the Today
+     * Production tile's best-day cards — so Today Production alone keeps it needed even if
+     * History Production and both daily-consuming widgets are disabled.
+     */
+    fun isDailyDataNeeded(): Boolean =
+        isTileEnabled(HomeTile.TODAY_PRODUCTION) ||
+            isTileEnabled(HomeTile.HISTORY_PRODUCTION) ||
+            isWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY) ||
+            isWidgetEnabled(HomeWidget.PRODUCTION_HISTORY)
+
+    fun isModuleHealthDataNeeded(): Boolean = isTileEnabled(HomeTile.MODULE_HEALTH)
+
+    private fun tileEnabledKey(tile: HomeTile) = "tileEnabled_${tile.name}"
+
+    private fun widgetEnabledKey(widget: HomeWidget) = "widgetEnabled_${widget.name}"
+
     fun isConfigured(): Boolean =
         getEmaAppId().isNotEmpty() &&
             getEmaAppSecret().isNotEmpty() &&
@@ -214,6 +257,8 @@ class SettingsRepository(
                 put(BASE_URL_KEY, getBaseUrl())
                 put(DISPLAY_MODE_KEY, getDisplayMode())
                 put(ARRAY_TIMEZONE_KEY, getArrayTimezone())
+                HomeTile.entries.forEach { put(tileEnabledKey(it), isTileEnabled(it)) }
+                HomeWidget.entries.forEach { put(widgetEnabledKey(it), isWidgetEnabled(it)) }
             }.toString()
 
     fun importFromJson(json: String) {
@@ -238,6 +283,14 @@ class SettingsRepository(
         if (obj.has(BASE_URL_KEY)) edit.putString(BASE_URL_KEY, obj.getString(BASE_URL_KEY))
         if (obj.has(DISPLAY_MODE_KEY)) edit.putString(DISPLAY_MODE_KEY, obj.getString(DISPLAY_MODE_KEY))
         if (obj.has(ARRAY_TIMEZONE_KEY)) edit.putString(ARRAY_TIMEZONE_KEY, obj.getString(ARRAY_TIMEZONE_KEY))
+        HomeTile.entries.forEach { tile ->
+            val key = tileEnabledKey(tile)
+            if (obj.has(key)) edit.putBoolean(key, obj.getBoolean(key))
+        }
+        HomeWidget.entries.forEach { widget ->
+            val key = widgetEnabledKey(widget)
+            if (obj.has(key)) edit.putBoolean(key, obj.getBoolean(key))
+        }
         edit.apply()
     }
 }

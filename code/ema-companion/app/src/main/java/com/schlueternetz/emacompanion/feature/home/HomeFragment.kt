@@ -23,6 +23,7 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.schlueternetz.emacompanion.R
+import com.schlueternetz.emacompanion.core.HomeTile
 import com.schlueternetz.emacompanion.core.api.DailyEnergyRepository
 import com.schlueternetz.emacompanion.core.api.DailyEnergySource
 import com.schlueternetz.emacompanion.core.api.DailyProductionState
@@ -32,10 +33,6 @@ import com.schlueternetz.emacompanion.core.api.HourlyEnergyRepository
 import com.schlueternetz.emacompanion.core.api.HourlyEnergySource
 import com.schlueternetz.emacompanion.core.api.HourlyProductionState
 import com.schlueternetz.emacompanion.core.api.HourlySnapshot
-import com.schlueternetz.emacompanion.core.api.ProductionRepository
-import com.schlueternetz.emacompanion.core.api.ProductionSnapshot
-import com.schlueternetz.emacompanion.core.api.ProductionSource
-import com.schlueternetz.emacompanion.core.api.ProductionState
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthRepository
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthSource
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthState
@@ -52,11 +49,8 @@ import java.util.Date
 import java.util.Locale
 
 class HomeFragment : Fragment() {
-    private lateinit var productionView: TextView
-    private lateinit var updatedView: TextView
-    private lateinit var statusView: TextView
-    private lateinit var source: ProductionSource
-
+    private lateinit var todayProductionTile: View
+    private lateinit var historyProductionTile: View
     private lateinit var moduleHealthTile: View
     private lateinit var moduleHealthIcon: ImageView
     private lateinit var moduleHealthStatusView: TextView
@@ -103,11 +97,8 @@ class HomeFragment : Fragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Current production
-        productionView = view.findViewById(R.id.text_current_production)
-        updatedView = view.findViewById(R.id.production_updated)
-        statusView = view.findViewById(R.id.production_status)
-        source = sourceOverride ?: ProductionRepository.create(requireContext())
+        todayProductionTile = view.findViewById(R.id.tile_today_production)
+        historyProductionTile = view.findViewById(R.id.tile_history_production)
 
         // Module health
         moduleHealthTile = view.findViewById(R.id.tile_module_health)
@@ -150,8 +141,9 @@ class HomeFragment : Fragment() {
         val historyDays = SettingsRepository.create(requireContext()).getHistoricDataDays()
         bestDayWindowLabel.text = getString(R.string.home_best_day_window_label, historyDays)
 
+        applyTileVisibility()
+
         // Seed from persisted state immediately (no flash before fetch in onResume)
-        render(source.currentState())
         renderModuleHealth(moduleHealthSource.currentState())
         bindHourlyState(hourlySource.currentState(), systemCapacity())
         bindDailyState(dailySource.currentState(), systemCapacity(), historyDays)
@@ -159,76 +151,59 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        applyTileVisibility()
+        val settings = SettingsRepository.create(requireContext())
         val cap = systemCapacity()
-        val historyDays = SettingsRepository.create(requireContext()).getHistoricDataDays()
-        viewLifecycleOwner.lifecycleScope.launch {
-            render(source.refresh())
+        val historyDays = settings.getHistoricDataDays()
+        if (settings.isModuleHealthDataNeeded()) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                renderModuleHealth(moduleHealthSource.refresh())
+            }
         }
-        viewLifecycleOwner.lifecycleScope.launch {
-            renderModuleHealth(moduleHealthSource.refresh())
+        if (settings.isHourlyDataNeeded()) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                val state = hourlySource.refresh(force = false)
+                bindHourlyState(state, cap)
+                if (state.error == null) widgetUpdateAction(requireContext())
+            }
         }
-        viewLifecycleOwner.lifecycleScope.launch {
-            val state = hourlySource.refresh(force = false)
-            bindHourlyState(state, cap)
-            if (state.error == null) widgetUpdateAction(requireContext())
-        }
-        viewLifecycleOwner.lifecycleScope.launch {
-            val state = dailySource.refresh(force = false)
-            bindDailyState(state, cap, historyDays)
-            if (state.error == null) widgetUpdateAction(requireContext())
+        if (settings.isDailyDataNeeded()) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                val state = dailySource.refresh(force = false)
+                bindDailyState(state, cap, historyDays)
+                if (state.error == null) widgetUpdateAction(requireContext())
+            }
         }
     }
 
+    /** Hides each tile whose flag is disabled in Settings; called on every visit since the flag can change without recreating the fragment. */
+    private fun applyTileVisibility() {
+        val settings = SettingsRepository.create(requireContext())
+        todayProductionTile.visibility = if (settings.isTileEnabled(HomeTile.TODAY_PRODUCTION)) View.VISIBLE else View.GONE
+        historyProductionTile.visibility = if (settings.isTileEnabled(HomeTile.HISTORY_PRODUCTION)) View.VISIBLE else View.GONE
+        moduleHealthTile.visibility = if (settings.isTileEnabled(HomeTile.MODULE_HEALTH)) View.VISIBLE else View.GONE
+    }
+
     private fun onPullToRefresh() {
+        val settings = SettingsRepository.create(requireContext())
         val cap = systemCapacity()
-        val historyDays = SettingsRepository.create(requireContext()).getHistoricDataDays()
+        val historyDays = settings.getHistoricDataDays()
         viewLifecycleOwner.lifecycleScope.launch {
-            val prod = async { source.refresh(force = true) }
-            val hourly = async { hourlySource.refresh(force = true) }
-            val daily = async { dailySource.refresh(force = true) }
-            render(prod.await())
-            val hourlyState = hourly.await()
-            bindHourlyState(hourlyState, cap)
-            if (hourlyState.error == null) widgetUpdateAction(requireContext())
-            val dailyState = daily.await()
-            bindDailyState(dailyState, cap, historyDays)
-            if (dailyState.error == null) widgetUpdateAction(requireContext())
+            val hourly = if (settings.isHourlyDataNeeded()) async { hourlySource.refresh(force = true) } else null
+            val daily = if (settings.isDailyDataNeeded()) async { dailySource.refresh(force = true) } else null
+            hourly?.await()?.let { hourlyState ->
+                bindHourlyState(hourlyState, cap)
+                if (hourlyState.error == null) widgetUpdateAction(requireContext())
+            }
+            daily?.await()?.let { dailyState ->
+                bindDailyState(dailyState, cap, historyDays)
+                if (dailyState.error == null) widgetUpdateAction(requireContext())
+            }
             swipeRefresh.isRefreshing = false
         }
     }
 
     private fun systemCapacity(): Float = SettingsRepository.create(requireContext()).getSystemCapacity()
-
-    // ── Current production ────────────────────────────────────────────────
-
-    private fun render(state: ProductionState) {
-        val value = state.snapshot?.powerWatts?.toString() ?: getString(R.string.home_production_neutral)
-        productionView.text = getString(R.string.home_production_value, value, ProductionSnapshot.UNIT)
-
-        val updatedAt = state.updatedAtEpochMs
-        if (updatedAt == null) {
-            updatedView.visibility = View.GONE
-        } else {
-            val time = DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(updatedAt))
-            updatedView.text = getString(R.string.home_production_updated, time)
-            updatedView.visibility = View.VISIBLE
-        }
-
-        val statusText =
-            when (state.error) {
-                FetchError.NETWORK -> getString(R.string.home_status_network_error)
-                FetchError.AUTH -> getString(R.string.home_status_auth_error)
-                FetchError.API -> getString(R.string.home_status_api_error)
-                null -> null
-            }
-        if (statusText == null) {
-            statusView.visibility = View.GONE
-        } else {
-            statusView.text = statusText
-            statusView.contentDescription = statusText
-            statusView.visibility = View.VISIBLE
-        }
-    }
 
     // ── Module health ─────────────────────────────────────────────────────
 
@@ -722,9 +697,6 @@ class HomeFragment : Fragment() {
     }
 
     companion object {
-        /** Test seam: substitutes the production source so Home can be tested without HTTP. */
-        var sourceOverride: ProductionSource? = null
-
         /** Test seam: substitutes the module health source so the tile can be tested without HTTP. */
         var moduleHealthSourceOverride: ModuleHealthSource? = null
 

@@ -9,7 +9,6 @@ import com.schlueternetz.emacompanion.core.api.EmaApiClient
 import com.schlueternetz.emacompanion.core.api.HourlyEnergyFetch
 import com.schlueternetz.emacompanion.core.api.HourlyEnergyRepository
 import com.schlueternetz.emacompanion.core.api.HourlySnapshot
-import com.schlueternetz.emacompanion.core.api.ProductionFetch
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLogRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -32,8 +31,6 @@ class WidgetRefreshWorkerHomeIntegrationTest {
 
     private class FakeClient : EmaApiClient {
         var calls = 0
-
-        override suspend fun getCurrentProduction() = ProductionFetch(ApiResult.ConfigurationError)
 
         override suspend fun getBatchInverterEnergy(date: String) = BatchEnergyFetch(ApiResult.ConfigurationError)
 

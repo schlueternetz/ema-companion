@@ -12,8 +12,6 @@ import com.schlueternetz.emacompanion.core.api.DailySnapshot
 import com.schlueternetz.emacompanion.core.api.FetchError
 import com.schlueternetz.emacompanion.core.api.HourlyEnergySource
 import com.schlueternetz.emacompanion.core.api.HourlyProductionState
-import com.schlueternetz.emacompanion.core.api.ProductionSource
-import com.schlueternetz.emacompanion.core.api.ProductionState
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -44,19 +42,12 @@ class HomeHistorySectionTest {
 
     @Before
     fun setUp() {
-        HomeFragment.sourceOverride =
-            object : ProductionSource {
-                override fun currentState() = ProductionState()
-
-                override suspend fun refresh(force: Boolean) = ProductionState()
-            }
         HomeFragment.hourlySourceOverride = FakeHourlySource()
         HomeFragment.moduleHealthSourceOverride = null
     }
 
     @After
     fun tearDown() {
-        HomeFragment.sourceOverride = null
         HomeFragment.moduleHealthSourceOverride = null
         HomeFragment.hourlySourceOverride = null
         HomeFragment.dailySourceOverride = null

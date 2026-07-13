@@ -100,6 +100,12 @@ jobs:
           target: google_apis
           profile: pixel_tablet
           working-directory: code/ema-companion
+          # Flow order is explicit, not directory order: `maestro test maestro/` iterates
+          # whatever order the filesystem returns, which is alphabetical on Windows/NTFS
+          # (where these flows were authored) but arbitrary on Linux/ext4 (this runner) —
+          # a-home-screen.yaml is written to run first (see its header comment) to avoid
+          # the accessibility driver degrading after other flows' clearState+relaunch
+          # cycles, so pin that order here rather than trust directory listing.
           script: |
             ./gradlew installDebug
-            maestro test maestro/
+            maestro test maestro/a-home-screen.yaml maestro/bottom-nav.yaml maestro/email-alerts.yaml

@@ -3,19 +3,20 @@
     <string name="nav_settings">Einstellungen</string>
     <string name="nav_user_guide">Benutzerhandbuch</string>
 
-    <!-- Home -->
-    <string name="home_current_production_title">Aktuelle Produktion</string>
-    <string name="home_production_updated">Aktualisiert %1$s</string>
-    <string name="home_status_network_error">Netzwerkproblem – keine Aktualisierung</string>
-    <string name="home_status_auth_error">Authentifizierung fehlgeschlagen – API-Zugangsdaten prüfen</string>
-    <string name="home_status_api_error">Produktionsdaten konnten nicht aktualisiert werden</string>
-
     <!-- Settings section headers -->
     <string name="settings_section_solar_array">Solaranlagen-Einstellungen</string>
     <string name="settings_section_app">App-Einstellungen</string>
     <string name="settings_section_configuration">Konfiguration</string>
     <string name="settings_section_api">API-Einstellungen</string>
     <string name="settings_section_logs">Protokolle</string>
+
+    <!-- Tiles & Widgets -->
+    <string name="settings_section_tiles_widgets">Kacheln &amp; Widgets</string>
+    <string name="settings_tiles_widgets_tiles_label">Kacheln</string>
+    <string name="settings_tiles_widgets_widgets_label">Widgets</string>
+    <string name="settings_tiles_widgets_select_all">Alle auswählen</string>
+    <string name="settings_tiles_widgets_deselect_all">Alle abwählen</string>
+    <string name="widget_disabled_in_settings">Dieses Widget wurde in den Einstellungen deaktiviert</string>
 
     <!-- Logs -->
     <string name="settings_logs_empty">Noch keine API-Aufrufe aufgezeichnet</string>

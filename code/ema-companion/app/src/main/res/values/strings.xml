@@ -4,21 +4,20 @@
     <string name="nav_settings">Settings</string>
     <string name="nav_user_guide">User Guide</string>
 
-    <!-- Home -->
-    <string name="home_current_production_title">Current Production</string>
-    <string name="home_production_value" translatable="false">%1$s %2$s</string>
-    <string name="home_production_neutral" translatable="false">—</string>
-    <string name="home_production_updated">Updated %1$s</string>
-    <string name="home_status_network_error">Network issue — couldn\'t update</string>
-    <string name="home_status_auth_error">Authentication failed — check your API credentials</string>
-    <string name="home_status_api_error">Couldn\'t update production data</string>
-
     <!-- Settings section headers -->
     <string name="settings_section_solar_array">Solar Array Settings</string>
     <string name="settings_section_app">App Settings</string>
     <string name="settings_section_configuration">Configuration</string>
     <string name="settings_section_api">API Settings</string>
     <string name="settings_section_logs">Logs</string>
+
+    <!-- Tiles & Widgets -->
+    <string name="settings_section_tiles_widgets">Tiles &amp; Widgets</string>
+    <string name="settings_tiles_widgets_tiles_label">Tiles</string>
+    <string name="settings_tiles_widgets_widgets_label">Widgets</string>
+    <string name="settings_tiles_widgets_select_all">Select All</string>
+    <string name="settings_tiles_widgets_deselect_all">Deselect All</string>
+    <string name="widget_disabled_in_settings">This widget has been disabled in Settings</string>
 
     <!-- Logs -->
     <string name="settings_logs_empty">No API calls recorded yet</string>

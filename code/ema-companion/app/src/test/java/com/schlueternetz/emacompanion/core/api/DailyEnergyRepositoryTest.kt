@@ -27,8 +27,6 @@ class DailyEnergyRepositoryTest {
         var lastStart: String? = null
         var lastEnd: String? = null
 
-        override suspend fun getCurrentProduction() = ProductionFetch(ApiResult.ConfigurationError)
-
         override suspend fun getBatchInverterEnergy(date: String) = BatchEnergyFetch(ApiResult.ConfigurationError)
 
         override suspend fun getDailyEnergy(

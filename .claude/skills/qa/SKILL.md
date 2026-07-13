@@ -40,9 +40,10 @@ Set-Location "code\ema-companion"
 ## Step 3 — Maestro E2E flows
 
 ```powershell
-maestro test code\ema-companion\maestro\
+maestro test code\ema-companion\maestro\a-home-screen.yaml code\ema-companion\maestro\bottom-nav.yaml code\ema-companion\maestro\email-alerts.yaml
 ```
 
+- Flow order is explicit (matching `.github/workflows/ci.yml`), not a bare directory path — `maestro test <dir>` iterates filesystem order, which is alphabetical on Windows/NTFS but arbitrary on Linux/ext4 (GitHub's runners). `a-home-screen.yaml` must run first (see its header comment) to avoid the accessibility driver degrading after other flows' `clearState`+relaunch cycles.
 - If the `maestro` command is not found, mark E2E **SKIPPED (Maestro CLI not installed)** and point to https://maestro.mobile.dev/getting-started/installing-maestro — do not fail the whole QA pass on a missing CLI.
 - Maestro runs black-box against the installed APK; flows live in `code\ema-companion\maestro\` (ADR-002).
 

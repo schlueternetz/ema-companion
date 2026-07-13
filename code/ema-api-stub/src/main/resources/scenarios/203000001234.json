@@ -1,26 +1,7 @@
 {
   "ecuId": "203000001234",
-  "description": "Good Data — healthy 10kW array currently producing at 80% (8000 W). Only minutely/hourly/daily interactions for this canonical persona live here; hourly/daily-focused tests should use their own isolated fixtures rather than this shared file.",
+  "description": "Good Data — healthy 10kW array. Only hourly/daily interactions for this canonical persona live here; hourly/daily-focused tests should use their own isolated fixtures rather than this shared file.",
   "interactions": [
-    {
-      "request": {
-        "method": "GET",
-        "path": "/user/api/v2/systems/{sid}/devices/ecu/energy/{eid}",
-        "pathParams": { "eid": "203000001234" },
-        "query": { "energy_level": "minutely" }
-      },
-      "response": {
-        "body": {
-          "code": 0,
-          "data": {
-            "today": "2.64",
-            "time": ["06:00", "06:05", "06:10", "06:15", "06:20", "06:25"],
-            "power": [1500, 3200, 5000, 6500, 7400, 8000],
-            "energy": ["0.125", "0.267", "0.417", "0.542", "0.617", "0.667"]
-          }
-        }
-      }
-    },
     {
       "request": {
         "method": "GET",

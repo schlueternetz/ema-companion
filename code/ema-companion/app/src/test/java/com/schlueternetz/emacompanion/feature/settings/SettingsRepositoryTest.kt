@@ -3,6 +3,8 @@ package com.schlueternetz.emacompanion.feature.settings
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
+import com.schlueternetz.emacompanion.core.HomeTile
+import com.schlueternetz.emacompanion.core.HomeWidget
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -470,5 +472,146 @@ class SettingsRepositoryTest {
         assertEquals(true, repo.getNotificationsEnabled())
         assertEquals(SettingsRepository.BASE_URL_DEFAULT, repo.getBaseUrl())
         assertEquals(SettingsRepository.DISPLAY_MODE_DEFAULT, repo.getDisplayMode())
+    }
+
+    // Tile / widget enabled flags
+    @Test
+    fun isTileEnabled_defaultsToTrue_whenUnset() {
+        HomeTile.entries.forEach { tile ->
+            assertTrue("$tile should default to enabled", repo.isTileEnabled(tile))
+        }
+    }
+
+    @Test
+    fun isWidgetEnabled_defaultsToTrue_whenUnset() {
+        HomeWidget.entries.forEach { widget ->
+            assertTrue("$widget should default to enabled", repo.isWidgetEnabled(widget))
+        }
+    }
+
+    @Test
+    fun setTileEnabled_persistsFalse() {
+        repo.setTileEnabled(HomeTile.MODULE_HEALTH, false)
+        assertFalse(repo.isTileEnabled(HomeTile.MODULE_HEALTH))
+    }
+
+    @Test
+    fun setTileEnabled_doesNotAffectOtherTiles() {
+        repo.setTileEnabled(HomeTile.MODULE_HEALTH, false)
+        assertTrue(repo.isTileEnabled(HomeTile.TODAY_PRODUCTION))
+        assertTrue(repo.isTileEnabled(HomeTile.HISTORY_PRODUCTION))
+    }
+
+    @Test
+    fun setWidgetEnabled_persistsFalse() {
+        repo.setWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY, false)
+        assertFalse(repo.isWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY))
+    }
+
+    @Test
+    fun setWidgetEnabled_doesNotAffectOtherWidgets() {
+        repo.setWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY, false)
+        assertTrue(repo.isWidgetEnabled(HomeWidget.TODAY_PRODUCTION))
+        assertTrue(repo.isWidgetEnabled(HomeWidget.PRODUCTION_HISTORY))
+    }
+
+    // Derived data-need methods
+    @Test
+    fun isHourlyDataNeeded_trueByDefault() {
+        assertTrue(repo.isHourlyDataNeeded())
+    }
+
+    @Test
+    fun isHourlyDataNeeded_falseWhenAllThreeConsumersDisabled() {
+        repo.setTileEnabled(HomeTile.TODAY_PRODUCTION, false)
+        repo.setWidgetEnabled(HomeWidget.TODAY_PRODUCTION, false)
+        repo.setWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY, false)
+        assertFalse(repo.isHourlyDataNeeded())
+    }
+
+    @Test
+    fun isHourlyDataNeeded_trueWhenOnlyWidgetRemainsEnabled() {
+        repo.setTileEnabled(HomeTile.TODAY_PRODUCTION, false)
+        repo.setWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY, false)
+        // HomeWidget.TODAY_PRODUCTION still enabled
+        assertTrue(repo.isHourlyDataNeeded())
+    }
+
+    @Test
+    fun isDailyDataNeeded_trueByDefault() {
+        assertTrue(repo.isDailyDataNeeded())
+    }
+
+    @Test
+    fun isDailyDataNeeded_falseWhenAllFourConsumersDisabled() {
+        repo.setTileEnabled(HomeTile.TODAY_PRODUCTION, false)
+        repo.setTileEnabled(HomeTile.HISTORY_PRODUCTION, false)
+        repo.setWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY, false)
+        repo.setWidgetEnabled(HomeWidget.PRODUCTION_HISTORY, false)
+        assertFalse(repo.isDailyDataNeeded())
+    }
+
+    @Test
+    fun isDailyDataNeeded_trueWhenOnlyTodayProductionTileRemainsEnabled() {
+        // Today Production's best-day cards consume daily data even though History is off.
+        repo.setTileEnabled(HomeTile.HISTORY_PRODUCTION, false)
+        repo.setWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY, false)
+        repo.setWidgetEnabled(HomeWidget.PRODUCTION_HISTORY, false)
+        assertTrue(repo.isDailyDataNeeded())
+    }
+
+    @Test
+    fun isModuleHealthDataNeeded_trueByDefault() {
+        assertTrue(repo.isModuleHealthDataNeeded())
+    }
+
+    @Test
+    fun isModuleHealthDataNeeded_falseWhenTileDisabled() {
+        repo.setTileEnabled(HomeTile.MODULE_HEALTH, false)
+        assertFalse(repo.isModuleHealthDataNeeded())
+    }
+
+    // Tile / widget flags in export/import
+    @Test
+    fun exportToJson_includesAllSixTileAndWidgetKeys() {
+        val obj = JSONObject(repo.exportToJson())
+        HomeTile.entries.forEach { assertTrue(obj.has("tileEnabled_${it.name}")) }
+        HomeWidget.entries.forEach { assertTrue(obj.has("widgetEnabled_${it.name}")) }
+    }
+
+    @Test
+    fun exportToJson_reflectsDisabledTileValue() {
+        repo.setTileEnabled(HomeTile.MODULE_HEALTH, false)
+        val obj = JSONObject(repo.exportToJson())
+        assertFalse(obj.getBoolean("tileEnabled_${HomeTile.MODULE_HEALTH.name}"))
+    }
+
+    @Test
+    fun importFromJson_setsTileAndWidgetFlags() {
+        repo.importFromJson(
+            """{"tileEnabled_MODULE_HEALTH":false,"widgetEnabled_PRODUCTION_SUMMARY":false}""",
+        )
+        assertFalse(repo.isTileEnabled(HomeTile.MODULE_HEALTH))
+        assertFalse(repo.isWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY))
+        // Unmentioned flags stay at their default.
+        assertTrue(repo.isTileEnabled(HomeTile.TODAY_PRODUCTION))
+        assertTrue(repo.isWidgetEnabled(HomeWidget.TODAY_PRODUCTION))
+    }
+
+    @Test
+    fun importFromJson_missingTileAndWidgetKeys_leavesExistingValuesUnchanged() {
+        repo.setTileEnabled(HomeTile.MODULE_HEALTH, false)
+        repo.importFromJson("""{"emaAppId":"abc"}""")
+        assertFalse(repo.isTileEnabled(HomeTile.MODULE_HEALTH))
+    }
+
+    // clearAll resets tile/widget flags to default-enabled
+    @Test
+    fun clearAll_resetsTileAndWidgetFlagsToEnabled() {
+        repo.setTileEnabled(HomeTile.MODULE_HEALTH, false)
+        repo.setWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY, false)
+        repo.clearAll()
+        HomeTile.entries.forEach { assertTrue(repo.isTileEnabled(it)) }
+        HomeWidget.entries.forEach { assertTrue(repo.isWidgetEnabled(it)) }
     }
 }

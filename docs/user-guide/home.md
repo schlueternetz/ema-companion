@@ -4,17 +4,7 @@
 
 The Home screen is a scrollable dashboard of tiles. Pull down anywhere on the screen to force a fresh fetch of all data. Each tile refreshes automatically when you open the app or return to this screen.
 
-## Current Production tile
-
-Shows the latest power reading from your solar array (e.g. "8000 W") and the time it was last updated. A fresh value is fetched when you open the app and whenever you return to Home. Successful readings are limited to once every 10 minutes; between refreshes, the last retrieved value stays on the tile. Until the first successful reading, a neutral placeholder ("— W") is shown.
-
-If a refresh fails, the tile shows a short status line beneath the value and keeps the last known value:
-
-- **Network issue — couldn't update** — the app could not reach the EMA service (e.g. no connection)
-- **Authentication failed — check your API credentials** — your credentials were rejected; check them in Settings
-- **Couldn't update production data** — another error, such as an invalid System/ECU ID or a server problem
-
-The status clears automatically when a later fetch succeeds.
+Each tile can be hidden if you don't need it — see the Tiles & Widgets section on the [Settings](settings.md) page.
 
 ## Today's Production tile
 

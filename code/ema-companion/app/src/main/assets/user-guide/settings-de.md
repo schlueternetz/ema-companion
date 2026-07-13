@@ -49,6 +49,19 @@ Das Ändern der **Zeitzone der Anlage** plant den täglichen Modulstatus-Job sof
 | **Benachrichtigungen aktiviert** | Schalter; standardmäßig aktiviert. Wirkt sofort — kein Speichern erforderlich. |
 | **Verlaufszeitraum (Tage)** | Anzahl der Tage des gespeicherten Produktionsverlaufs (1–90); Standard ist 30. |
 
+## Kacheln & Widgets
+
+Wähle, welche Startseiten-Kacheln und Startbildschirm-Widgets aktiv sind. Alle sieben sind standardmäßig aktiviert.
+
+- **Kacheln:** Heutige Produktion, Produktionsverlauf, Modulstatus. Deaktivierst du eine Kachel, verschwindet ihre Karte beim nächsten Aufruf der Startseite.
+- **Widgets:** Heutige Produktion, Produktionsübersicht, Produktionshistorie. Android bietet Apps keine Möglichkeit, ein bereits platziertes Widget zu entfernen. Deaktivierst du ein Widget, zeigt es stattdessen **„Dieses Widget wurde in den Einstellungen deaktiviert"** anstelle seiner Daten — sowohl für bereits platzierte als auch für nachträglich platzierte Widgets.
+
+Eine Schaltfläche **Alle auswählen / Alle abwählen** oben im Abschnitt schaltet alle Kontrollkästchen gleichzeitig um: Sie zeigt „Alle abwählen", solange alles aktiviert ist, und „Alle auswählen", sobald mindestens eines deaktiviert ist.
+
+Daten werden nur für Kacheln oder Widgets von der EMA API abgerufen, die aktuell aktiviert sind — deaktivierst du alles, was von einer bestimmten Datenart abhängt (z. B. alle Verbraucher von Tagesdaten), stoppen diese API-Aufrufe vollständig.
+
+Diese Einstellungen sind in Import/Export enthalten und werden beim Werksreset wie die übrigen Einstellungen auf „alle aktiviert" zurückgesetzt.
+
 ## API-Einstellungen
 
 | Steuerung | Beschreibung |

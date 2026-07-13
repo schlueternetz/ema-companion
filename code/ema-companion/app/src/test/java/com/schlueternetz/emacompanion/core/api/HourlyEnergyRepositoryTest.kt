@@ -26,8 +26,6 @@ class HourlyEnergyRepositoryTest {
     ) : EmaApiClient {
         var calls = 0
 
-        override suspend fun getCurrentProduction() = ProductionFetch(ApiResult.ConfigurationError)
-
         override suspend fun getBatchInverterEnergy(date: String) = BatchEnergyFetch(ApiResult.ConfigurationError)
 
         override suspend fun getHourlyEnergy(date: String): HourlyEnergyFetch {

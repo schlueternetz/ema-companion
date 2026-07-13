@@ -7,11 +7,11 @@
 # The Home tab is disabled until the app is configured (isConfigured() requires
 # App-ID, App-Secret, System-ID, ECU-ID, and System Capacity to be non-empty).
 # This flow fills in the five required fields via the Settings UI, then navigates
-# to Home and verifies all three tile sections render — current production, today
-# hourly, and history — each showing its neutral placeholder (dummy, unreachable
-# credentials; no live API needed). It then switches to the local ema-api-stub
-# (debug-only "Use local stub" action) and its canonical Good Data ECU id, re-opens
-# Home, and asserts the same three sections render real, populated data instead.
+# to Home and verifies both tile sections render — today hourly and history —
+# each showing its neutral placeholder (dummy, unreachable credentials; no live
+# API needed). It then switches to the local ema-api-stub (debug-only "Use local
+# stub" action) and its canonical Good Data ECU id, re-opens Home, and asserts
+# the same two sections render real, populated data instead.
 #
 # Field validators (from SettingsFragment):
 #   App-ID       [a-zA-Z0-9]{32}
@@ -114,25 +114,17 @@ appId: com.schlueternetz.emacompanion
     id: "homeFragment"
 - extendedWaitUntil:
     visible:
-      id: "tile_current_production"
+      id: "tile_today_production"
     timeout: 15000
 
-# ── Assert all three tile sections are present ───────────────────────────────
+# ── Assert both tile sections are present ────────────────────────────────────
 
-# Current-production tile — visible at the top without scrolling.
-- assertVisible:
-    id: "tile_current_production"
-
-# Today section — scroll to it and assert the card and the chart.
+# Today section — visible at the top without scrolling (Current Production was
+# removed; Today Production is now the first tile).
 # With dummy credentials, the fetch fails and the chart renders empty
 # (MPAndroidChart shows its own "No chart data available." message).
 # hourly_placeholder is only shown in the never-fetched state; once a
 # fetch is attempted the chart becomes visible regardless of result.
-- scrollUntilVisible:
-    element:
-      id: "tile_today_production"
-    direction: DOWN
-    timeout: 10000
 - assertVisible:
     id: "tile_today_production"
 - assertVisible:
@@ -193,22 +185,20 @@ appId: com.schlueternetz.emacompanion
     id: "homeFragment"
 - extendedWaitUntil:
     visible:
-      id: "tile_current_production"
+      id: "tile_today_production"
     timeout: 15000
-# tile_current_production is visible immediately (seeded from persisted state in
-# onViewCreated), but "8000 W" only appears after onResume's async refresh() completes
+# tile_today_production is visible immediately (seeded from persisted state in
+# onViewCreated), but the hour-06 value "0.42" (from the stub's Good Data hourly
+# fixture, 203000001234.json) only appears after onResume's async refresh() completes
 # a real HTTP round-trip to the stub. assertVisible's default 7s timeout races that
 # fetch under CI load; extendedWaitUntil gives it room like the other checks below.
+# 15s was borderline on GitHub Actions' shared runners (observed a 1m41s total flow
+# duration vs ~70-90s healthy — the fetch was landing just past the old window, not
+# hanging), so this one gets more margin than the others.
 - extendedWaitUntil:
     visible:
-      text: "8000 W"
-    timeout: 15000
-
-- scrollUntilVisible:
-    element:
-      id: "tile_today_production"
-    direction: DOWN
-    timeout: 10000
+      text: "0.42"
+    timeout: 30000
 - assertVisible:
     id: "hourly_chart"
 

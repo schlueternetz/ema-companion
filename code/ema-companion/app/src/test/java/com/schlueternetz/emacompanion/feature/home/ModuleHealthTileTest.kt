@@ -6,15 +6,12 @@ import android.widget.TextView
 import androidx.fragment.app.testing.launchFragmentInContainer
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.FetchError
-import com.schlueternetz.emacompanion.core.api.ProductionSource
-import com.schlueternetz.emacompanion.core.api.ProductionState
 import com.schlueternetz.emacompanion.core.api.modulehealth.Module
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthSource
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthState
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthStatus
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -25,19 +22,8 @@ import org.robolectric.shadows.ShadowDialog
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class ModuleHealthTileTest {
-    @Before
-    fun setUp() {
-        HomeFragment.sourceOverride =
-            object : ProductionSource {
-                override fun currentState() = ProductionState()
-
-                override suspend fun refresh(force: Boolean) = ProductionState()
-            }
-    }
-
     @After
     fun tearDown() {
-        HomeFragment.sourceOverride = null
         HomeFragment.moduleHealthSourceOverride = null
     }
 

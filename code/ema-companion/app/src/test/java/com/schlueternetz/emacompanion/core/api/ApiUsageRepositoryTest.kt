@@ -60,19 +60,10 @@ class ApiUsageRepositoryTest {
     }
 
     @Test
-    fun lastFetch_isPersisted() {
-        val repo = repo()
-        repo.setLastFetchEpochMs(123_456L)
-        assertEquals(123_456L, repo().getLastFetchEpochMs())
-    }
-
-    @Test
-    fun clear_resetsCountAndLastFetch() {
+    fun clear_resetsCount() {
         val repo = repo()
         repo.recordRequest()
-        repo.setLastFetchEpochMs(999L)
         repo.clear()
         assertEquals(0, repo.getRequestCount())
-        assertEquals(0L, repo.getLastFetchEpochMs())
     }
 }

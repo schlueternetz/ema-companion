@@ -16,6 +16,10 @@ Shows three bold figures at a glance: **Today**, **This Month**, and **Last 30 D
 
 Shows a bar chart of daily totals over your configured history window (Settings → Historic Data Days), colour-coded by calendar month — the same chart as the Home screen's Production History tile, sized for a widget.
 
+## Disabled in Settings
+
+Each widget can be turned off individually in Settings → Tiles & Widgets. Since Android gives apps no way to remove a widget you've already placed on your home screen, a disabled widget doesn't disappear — it instead shows **"This widget has been disabled in Settings"** in place of its usual chart or figures, for both existing placements and any new ones. Re-enable it in Settings to restore its normal content.
+
 ## Not configured yet
 
 If you haven't entered your EMA credentials in Settings, every widget shows a neutral **"Not configured — open EMA Companion"** message instead of a chart or figures. Tapping the widget opens the app directly to Settings so you can finish setup.

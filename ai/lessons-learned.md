@@ -1,5 +1,25 @@
 # AI Lessons Learned
 
+## 2026-07-12: configurable-tiles-widgets (remove Current Production + tile/widget visibility settings)
+
+### Went Well
+* `core/HomeTile.kt`/`core/HomeWidget.kt` enums in `core/` not `feature/settings/` — used by 3 features (home, widgets, settings), ADR-004 rule applies even though `SettingsRepository` itself is a pre-existing exception
+* `SettingsRepository.isHourlyDataNeeded()`/`isDailyDataNeeded()`/`isModuleHealthDataNeeded()` as single source of truth for gating — Today Production tile counts as consumer of BOTH hourly and daily (best-day cards use daily) even though its own data is hourly; missing this coupling would've silently broken best-day cards when History tile disabled
+* `WidgetUpdater.enabledWidgets(settings): List<GlanceAppWidget>` exposed as pure testable fn instead of trying to spy on Glance's real `updateAll()` — direct unit test, no Robolectric Glance placement hacks
+* Widget disabled-check placed BEFORE touching `hourlySourceOverride`/`currentState()` in `TestContent()` — test asserts `source.currentStateCalls == 0` to prove disabled widget never touches data layer
+* Gating `refresh(force=false)` calls with `if (isXDataNeeded())` around the EXISTING call (not new toggle-specific logic) → re-enabling a tile with an already-stale throttle timestamp fetches immediately next visit, free correctness from reusing the throttle check as-is
+
+### Didn't Work
+* Deleting `ProductionRepository`/`ProductionSnapshot`/`ProductionSource` broke 6+ unrelated test files (`HomeTodaySectionTest`, `HomeHistorySectionTest`, `HomeWidgetUpdateTest`, `ModuleHealthTileTest`) that only referenced them to satisfy `HomeFragment.sourceOverride` — a required test seam, not because they tested production behavior. Removing a companion-object seam ripples to every test file that ever stubbed it just to launch the fragment
+* Manual `curl` against the local `ema-api-stub` to "check connectivity" during Maestro debugging silently consumed a scenario interaction (per-ECU cursor is a single server-side counter) — next Maestro run got a stale-cursor 409 mismatch, looked like a real regression
+* Removing the `getCurrentProduction`/minutely fetch from the app broke the shared `ema-api-stub` "Good Data" fixture (`203000001234.json`): its `minutely` interaction was still `interactions[0]` in the strict-sequential per-ECU matcher, but nothing calls minutely anymore — the app's first real request (hourly) permanently mismatched cursor 0, and `POST /__stub__/reset` doesn't help since cursor 0 is STILL minutely after reset
+* `./gradlew run` in `ema-api-stub` loads resources from disk at JVM start — editing the scenario JSON after the server is already running does nothing; must kill and restart the process (`netstat -ano | grep 8080` → `taskkill //F //PID`) to pick up fixture changes
+
+### Avoid
+* Before running Maestro flows against the local stub, always `POST /__stub__/reset` immediately before the run — not just once at setup — any manual curl/debug request in between silently advances the per-ECU cursor
+* When removing a feature that was the FIRST call in a shared record/replay fixture's interaction order, the fixture's interaction list must be reordered/trimmed to match the new real call sequence — a strict-sequential matcher has no tolerance for a skipped leading interaction, even after reset
+* When deleting a data class/interface that backs a Fragment's test-injection companion seam, grep for the seam name (`sourceOverride`, etc.) across ALL test files, not just the ones that test the removed feature directly — other tests use it purely to satisfy a constructor requirement to launch the fragment at all
+
 ## 2026-07-06: ema-widgets (Glance home-screen widgets, full change)
 
 ### Went Well
@@ -139,21 +159,6 @@
 * Email credential setters live on `SettingsRepository`, not `ModuleHealthRepository` — don't conflate the two repos in tests
 * Any `MaterialSwitch` set programmatically inside `refreshAllDisplayedValues()` needs a suppress-listener guard; without it the listener fires and re-writes prefs on every import/reset
 * PostToolUse hook fires per-edit on every UX file — batch all layout/string/fragment edits, invoke `write-user-guide` exactly once at the end (existing lesson, re-confirmed)
-
-## 2026-06-25: Seeding SharedPreferences from adb
-
-### Went Well
-* Base64 encode XML locally, pipe through `echo BASE64 | base64 -d >` in `run-as` shell — preserves all double quotes inside XML attribute values and JSON strings
-* `MSYS_NO_PATHCONV=1` required on all `adb shell` calls involving `/data/data/` paths; without it, git-bash rewrites `/data/` to `C:/Program Files/Git/data/`
-* `adb push` to sdcard works; but `run-as <pkg> cp /sdcard/...` fails on play-store emulator images (Permission denied from app's run-as context)
-
-### Didn't Work
-* Shell redirect `run-as pkg sh -c 'printf "%s" "$XML" > file'` — double quotes inside $XML get stripped by shell expansion, producing malformed XML without attribute quotes
-* `run-as pkg cp /sdcard/file.xml /data/data/...` — play-store emulator image denies cross-partition copy from run-as
-
-### Avoid
-* Never seed prefs by interpolating XML into a shell string — use base64 round-trip instead: `base64`-encode locally, `echo BASE64 | base64 -d > prefs.xml` on device via run-as
-* Always `MSYS_NO_PATHCONV=1` before any `adb shell` path referencing `/data/`, `/sdcard/`, etc. on Windows git-bash
 
 ## 2026-06-24: WorkManager periodic task force-run limitations
 
@@ -325,24 +330,6 @@
 * After import/factory-reset, apply persisted theme AND locale, not just their labels
 * Robolectric per-app-locale assertions: pin the test to `@Config(sdk = [32])` (or lower) so `getApplicationLocales()` reads AppCompat backport storage, not the framework service
 * `setDefaultNightMode` is synchronous in Robolectric; `setApplicationLocales` is not at API 33+
-
-## 2026-06-12: Maestro flow + CI (locale & wrapper)
-
-### Went Well
-* Reproduced the Maestro failure locally via `adb` (clear state → launch → `uiautomator dump` + screencap) without Maestro installed — screenshot revealed the emulator was German
-* Installed Maestro locally (`curl get.maestro.mobile.dev | bash`, set `ANDROID_HOME`) and ran the flow to confirm GREEN before spending a CI cycle
-
-### Didn't Work
-* Maestro flow asserted English labels (`"Settings"`, `"Home"`) — fails on the German emulator (`Einstellungen`/`Startseite`). Nav labels are localized; ids are not
-* `assertVisible: "EMA Companion User Guide"` — Markwon renders the whole guide into ONE TextView; Maestro regex-matches the element's entire text blob, so a title substring never matches
-* `adb exec-out cat /sdcard/...` returned empty in git-bash — MSYS rewrote `/sdcard/...` to `C:/Program Files/Git/sdcard/...`
-* CI failed at first step: `gradle-wrapper.jar` was gitignored (root `.gitignore`) so the wrapper couldn't run on a clean checkout
-
-### Avoid
-* Maestro selectors → match `id:` (resource-id, locale-independent), not visible text. Confirmed ids: `homeFragment`/`userGuideFragment`/`settingsFragment`, content view `user_guide_content`
-* For a single-TextView Markdown screen, assert the **view id**, not rendered text
-* Prefix adb device-path commands with `MSYS_NO_PATHCONV=1` (or use `//sdcard/...`) in git-bash
-* `gradle-wrapper.jar` MUST be committed (build tool, not bundled in the APK) — never gitignore it
 
 ## 2026-06-12: in-app-user-guide (Markwon + Robolectric assets)
 

@@ -7,6 +7,7 @@ import androidx.glance.appwidget.testing.unit.runGlanceAppWidgetUnitTest
 import androidx.glance.testing.unit.hasText
 import androidx.test.core.app.ApplicationProvider
 import com.schlueternetz.emacompanion.R
+import com.schlueternetz.emacompanion.core.HomeWidget
 import com.schlueternetz.emacompanion.core.api.DailyEnergySource
 import com.schlueternetz.emacompanion.core.api.DailyProductionState
 import com.schlueternetz.emacompanion.core.api.DailySnapshot
@@ -17,6 +18,7 @@ import com.schlueternetz.emacompanion.core.api.HourlySnapshot
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -158,7 +160,12 @@ class ProductionSummaryWidgetTest {
     private class FakeHourlySource(
         private val state: HourlyProductionState,
     ) : HourlyEnergySource {
-        override fun currentState(): HourlyProductionState = state
+        var currentStateCalls = 0
+
+        override fun currentState(): HourlyProductionState {
+            currentStateCalls++
+            return state
+        }
 
         override suspend fun refresh(force: Boolean): HourlyProductionState = state
     }
@@ -166,8 +173,44 @@ class ProductionSummaryWidgetTest {
     private class FakeDailySource(
         private val state: DailyProductionState,
     ) : DailyEnergySource {
-        override fun currentState(): DailyProductionState = state
+        var currentStateCalls = 0
+
+        override fun currentState(): DailyProductionState {
+            currentStateCalls++
+            return state
+        }
 
         override suspend fun refresh(force: Boolean): DailyProductionState = state
     }
+
+    @Test
+    fun showsDisabledMessage_whenWidgetDisabledInSettings() =
+        runTest {
+            val hourly = FakeHourlySource(HourlyProductionState(snapshot = HourlySnapshot(mapOf(6 to 1.0))))
+            val daily = FakeDailySource(DailyProductionState())
+            ProductionSummaryWidget.hourlySourceOverride = hourly
+            ProductionSummaryWidget.dailySourceOverride = daily
+            ProductionSummaryWidget.todayOverride = { java.time.LocalDate.of(2026, 7, 15) }
+            settings.setWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY, false)
+
+            runWidget {
+                onNode(hasText(context.getString(R.string.widget_disabled_in_settings))).assertExists()
+            }
+            assertEquals("disabled widget must not read its hourly data source", 0, hourly.currentStateCalls)
+            assertEquals("disabled widget must not read its daily data source", 0, daily.currentStateCalls)
+        }
+
+    @Test
+    fun rendersNormalContent_whenWidgetReEnabled() =
+        runTest {
+            seed(
+                hourly = HourlyProductionState(snapshot = HourlySnapshot(mapOf(6 to 1.0))),
+                daily = DailyProductionState(snapshot = DailySnapshot(mapOf("2026-07-15" to 1.0))),
+            )
+            settings.setWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY, true)
+
+            runWidget {
+                onNode(hasText(context.getString(R.string.home_today_total_label))).assertExists()
+            }
+        }
 }

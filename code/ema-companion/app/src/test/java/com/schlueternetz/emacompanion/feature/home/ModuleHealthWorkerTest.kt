@@ -9,8 +9,6 @@ import androidx.work.testing.TestListenableWorkerBuilder
 import com.schlueternetz.emacompanion.core.api.ApiResult
 import com.schlueternetz.emacompanion.core.api.BatchEnergyFetch
 import com.schlueternetz.emacompanion.core.api.EmaApiClient
-import com.schlueternetz.emacompanion.core.api.ProductionFetch
-import com.schlueternetz.emacompanion.core.api.ProductionSnapshot
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthRepository
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthStatus
 import com.schlueternetz.emacompanion.core.email.EmailResult
@@ -232,8 +230,6 @@ class ModuleHealthWorkerTest {
 
     class FakeClient : EmaApiClient {
         val responses = mutableMapOf<String, Map<String, Double>>()
-
-        override suspend fun getCurrentProduction(): ProductionFetch = ProductionFetch(ApiResult.Success(ProductionSnapshot(0)))
 
         override suspend fun getBatchInverterEnergy(date: String): BatchEnergyFetch {
             val data = responses[date] ?: return BatchEnergyFetch(ApiResult.NetworkError)

@@ -34,16 +34,17 @@ Update this table whenever a new feature is added or an existing one changes its
 
 | Feature | Endpoint | Throttle | Calls/trigger | Triggers/day | Calls/month |
 |---------|----------|----------|---------------|--------------|-------------|
-| Production tile | `getCurrentProduction` | 10 min | 1 | ~5 | ~150 |
 | Module Health tile | `getBatchInverterEnergy` | 24 hr | 1 (steady state†) | 1 | ~30 |
 | Today hourly chart + widgets | `getHourlyEnergy` | 1 hr | 1 | ~12 (widget background worker, every 2h, no time-of-day gating; app opens absorbed by the same throttle) | ~360 |
 | History daily chart + widgets | `getDailyEnergy` | 1 hr | 1 (steady state‡) | 1 (widget background worker replaces app-open trigger 1:1) | ~30 |
-| **Total allocated** | | | | | **~570** |
-| **Headroom** | | | | | **~430** |
+| **Total allocated** | | | | | **~420** |
+| **Headroom** | | | | | **~580** |
 
 † First run ever: up to 3 calls (3-day window, no cache). Steady state: 1 call/day (today always re-fetched; past days cached permanently).
 
 ‡ First run ever: 1–2 calls (one per calendar month in the history window). Steady state: 1 call/day (today only; past days cached permanently).
+
+The Current Production tile (`getCurrentProduction`, ~150 calls/month) was removed from the app — it duplicated the instantaneous production reading already shown in the original APsystems EMA app — freeing the headroom above.
 
 ### Design constraints for new features
 
@@ -58,6 +59,10 @@ Prefer in order:
 2. **Cache immutable past data** — data for completed days cannot change; cache it on first fetch and never re-fetch.
 3. **Throttle guards** — persist the last-fetch timestamp and skip the request if the throttle window has not elapsed.
 4. **Fresh fetch** — only when the above are genuinely insufficient.
+
+### Tile/widget visibility gates fetches below their worst-case allocation
+
+Users can disable individual Home tiles and widgets in Settings ("Tiles & Widgets" section). Each data source above (hourly, daily, module health) is only fetched when at least one enabled tile or widget still consumes it — `SettingsRepository.isHourlyDataNeeded()` / `isDailyDataNeeded()` / `isModuleHealthDataNeeded()` gate every fetch site (`HomeFragment`, `WidgetRefreshWorker`, `SettingsFragment.invalidateApiThrottle()`). This means the allocation table above is a ceiling, not a guarantee: a user who disables, say, the History Production tile and both daily-consuming widgets stops all daily-energy calls entirely. New features that add a tile or widget must add their own `isXDataNeeded()` consumer check alongside the allocation table row, not just the row itself.
 
 ## Alternatives Considered
 

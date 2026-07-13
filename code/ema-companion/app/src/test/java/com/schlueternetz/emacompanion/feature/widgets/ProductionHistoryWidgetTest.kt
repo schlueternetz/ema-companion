@@ -9,6 +9,7 @@ import androidx.glance.testing.unit.hasContentDescription
 import androidx.glance.testing.unit.hasText
 import androidx.test.core.app.ApplicationProvider
 import com.schlueternetz.emacompanion.R
+import com.schlueternetz.emacompanion.core.HomeWidget
 import com.schlueternetz.emacompanion.core.api.DailyEnergySource
 import com.schlueternetz.emacompanion.core.api.DailyProductionState
 import com.schlueternetz.emacompanion.core.api.DailySnapshot
@@ -16,6 +17,7 @@ import com.schlueternetz.emacompanion.core.api.FetchError
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -169,8 +171,10 @@ class ProductionHistoryWidgetTest {
             }
         }
 
-    private fun seed(state: DailyProductionState) {
-        ProductionHistoryWidget.dailySourceOverride = FakeSource(state)
+    private fun seed(state: DailyProductionState): FakeSource {
+        val source = FakeSource(state)
+        ProductionHistoryWidget.dailySourceOverride = source
+        return source
     }
 
     private suspend fun runWidget(assertions: GlanceAppWidgetUnitTest.() -> Unit) {
@@ -182,10 +186,39 @@ class ProductionHistoryWidgetTest {
         }
     }
 
+    @Test
+    fun showsDisabledMessage_whenWidgetDisabledInSettings() =
+        runTest {
+            val source = seed(DailyProductionState(snapshot = DailySnapshot(mapOf("2026-07-14" to 3.0))))
+            settings.setWidgetEnabled(HomeWidget.PRODUCTION_HISTORY, false)
+
+            runWidget {
+                onNode(hasText(context.getString(R.string.widget_disabled_in_settings))).assertExists()
+            }
+            assertEquals("disabled widget must not read its data source", 0, source.currentStateCalls)
+        }
+
+    @Test
+    fun rendersNormalContent_whenWidgetReEnabled() =
+        runTest {
+            seed(DailyProductionState(snapshot = DailySnapshot(mapOf("2026-07-14" to 3.0, "2026-07-15" to 4.0))))
+            settings.setWidgetEnabled(HomeWidget.PRODUCTION_HISTORY, true)
+
+            runWidget {
+                onNode(hasContentDescription(context.getString(R.string.widget_history_chart_description)))
+                    .assertExists()
+            }
+        }
+
     private class FakeSource(
         private val state: DailyProductionState,
     ) : DailyEnergySource {
-        override fun currentState(): DailyProductionState = state
+        var currentStateCalls = 0
+
+        override fun currentState(): DailyProductionState {
+            currentStateCalls++
+            return state
+        }
 
         override suspend fun refresh(force: Boolean): DailyProductionState = state
     }

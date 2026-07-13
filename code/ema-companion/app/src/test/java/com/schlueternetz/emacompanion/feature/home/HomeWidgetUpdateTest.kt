@@ -7,8 +7,6 @@ import com.schlueternetz.emacompanion.core.api.DailyEnergySource
 import com.schlueternetz.emacompanion.core.api.DailyProductionState
 import com.schlueternetz.emacompanion.core.api.HourlyEnergySource
 import com.schlueternetz.emacompanion.core.api.HourlyProductionState
-import com.schlueternetz.emacompanion.core.api.ProductionSource
-import com.schlueternetz.emacompanion.core.api.ProductionState
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -20,12 +18,6 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class HomeWidgetUpdateTest {
-    private class FakeProductionSource : ProductionSource {
-        override fun currentState() = ProductionState()
-
-        override suspend fun refresh(force: Boolean) = ProductionState()
-    }
-
     private class FakeHourlySource(
         var state: HourlyProductionState,
     ) : HourlyEnergySource {
@@ -46,7 +38,6 @@ class HomeWidgetUpdateTest {
 
     @After
     fun tearDown() {
-        HomeFragment.sourceOverride = null
         HomeFragment.hourlySourceOverride = null
         HomeFragment.dailySourceOverride = null
         HomeFragment.widgetUpdateAction = HomeFragment.defaultWidgetUpdateAction
@@ -56,7 +47,6 @@ class HomeWidgetUpdateTest {
     fun onResume_successfulHourlyRefresh_updatesWidgets() {
         var callCount = 0
         HomeFragment.widgetUpdateAction = { callCount++ }
-        HomeFragment.sourceOverride = FakeProductionSource()
         HomeFragment.hourlySourceOverride = FakeHourlySource(HourlyProductionState())
         HomeFragment.dailySourceOverride = FakeDailySource(DailyProductionState())
 
@@ -70,7 +60,6 @@ class HomeWidgetUpdateTest {
     fun pullToRefresh_successfulRefresh_updatesWidgets() {
         var callCount = 0
         HomeFragment.widgetUpdateAction = { callCount++ }
-        HomeFragment.sourceOverride = FakeProductionSource()
         HomeFragment.hourlySourceOverride = FakeHourlySource(HourlyProductionState())
         HomeFragment.dailySourceOverride = FakeDailySource(DailyProductionState())
 

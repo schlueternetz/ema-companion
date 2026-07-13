@@ -7,8 +7,6 @@ import com.schlueternetz.emacompanion.core.api.ApiResult
 import com.schlueternetz.emacompanion.core.api.BatchEnergyFetch
 import com.schlueternetz.emacompanion.core.api.EmaApiClient
 import com.schlueternetz.emacompanion.core.api.FetchError
-import com.schlueternetz.emacompanion.core.api.ProductionFetch
-import com.schlueternetz.emacompanion.core.api.ProductionSnapshot
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -477,8 +475,6 @@ class ModuleHealthRepositoryTest {
         val responses = mutableMapOf<String, Map<String, Double>>()
         var nextError: ApiResult<Map<String, Double>>? = null
         var callCount = 0
-
-        override suspend fun getCurrentProduction(): ProductionFetch = ProductionFetch(ApiResult.Success(ProductionSnapshot(0)))
 
         override suspend fun getBatchInverterEnergy(date: String): BatchEnergyFetch {
             callCount++

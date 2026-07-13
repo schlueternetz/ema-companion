@@ -17,6 +17,7 @@ import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.text.Text
 import com.schlueternetz.emacompanion.R
+import com.schlueternetz.emacompanion.core.HomeWidget
 import com.schlueternetz.emacompanion.core.api.DailyEnergyRepository
 import com.schlueternetz.emacompanion.core.api.DailyEnergySource
 import com.schlueternetz.emacompanion.core.api.HourlyEnergyRepository
@@ -36,6 +37,22 @@ class ProductionSummaryWidget : GlanceAppWidget() {
     internal fun TestContent() {
         val context = LocalContext.current
         val settings = SettingsRepository.create(context)
+
+        if (!settings.isWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY)) {
+            WidgetTheme(settings.getDisplayMode()) {
+                Column(
+                    modifier =
+                        GlanceModifier
+                            .fillMaxSize()
+                            .background(GlanceTheme.colors.background)
+                            .padding(12.dp),
+                ) {
+                    Text(context.getString(R.string.widget_disabled_in_settings), style = WidgetTextStyles.value)
+                }
+            }
+            return
+        }
+
         val hourlyState = (hourlySourceOverride ?: HourlyEnergyRepository.create(context)).currentState()
         val dailyState = (dailySourceOverride ?: DailyEnergyRepository.create(context)).currentState()
         val today = todayOverride?.invoke() ?: LocalDate.now()

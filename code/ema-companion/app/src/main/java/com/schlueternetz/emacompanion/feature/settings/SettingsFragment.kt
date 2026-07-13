@@ -19,12 +19,16 @@ import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.schlueternetz.emacompanion.BuildConfig
 import com.schlueternetz.emacompanion.R
+import com.schlueternetz.emacompanion.core.HomeTile
+import com.schlueternetz.emacompanion.core.HomeWidget
 import com.schlueternetz.emacompanion.core.api.ApiUsageRepository
 import com.schlueternetz.emacompanion.core.api.DailyEnergyRepository
 import com.schlueternetz.emacompanion.core.api.HourlyEnergyRepository
@@ -82,6 +86,9 @@ class SettingsFragment : Fragment() {
     private lateinit var useLocalStubButton: View
     private lateinit var logsList: LinearLayout
     private lateinit var logsEmptyState: View
+    private lateinit var tileCheckboxes: Map<HomeTile, MaterialCheckBox>
+    private lateinit var widgetCheckboxes: Map<HomeWidget, MaterialCheckBox>
+    private lateinit var tilesWidgetsSelectAllButton: MaterialButton
 
     private var activeEditRow: SettingRowView? = null
 
@@ -113,7 +120,7 @@ class SettingsFragment : Fragment() {
         moduleHealthRepository = ModuleHealthRepository.create(requireContext())
         hourlyEnergyRepository = hourlyRepoOverride ?: HourlyEnergyRepository.create(requireContext())
         dailyEnergyRepository = dailyRepoOverride ?: DailyEnergyRepository.create(requireContext())
-        tileRepositories = listOf(usageRepository, moduleHealthRepository, hourlyEnergyRepository, dailyEnergyRepository)
+        tileRepositories = listOf(moduleHealthRepository, hourlyEnergyRepository, dailyEnergyRepository)
         logRepository = ApiCallLogRepository.create(requireContext())
 
         settingEmaAppId = view.findViewById(R.id.setting_ema_app_id)
@@ -145,6 +152,19 @@ class SettingsFragment : Fragment() {
         emailAlertsTestButton = view.findViewById(R.id.email_alerts_test_button)
         emailAlertsTestResult = view.findViewById(R.id.email_alerts_test_result)
         emailAlertsClearButton = view.findViewById(R.id.email_alerts_clear_button)
+        tileCheckboxes =
+            mapOf(
+                HomeTile.TODAY_PRODUCTION to view.findViewById(R.id.checkbox_tile_today_production),
+                HomeTile.HISTORY_PRODUCTION to view.findViewById(R.id.checkbox_tile_history_production),
+                HomeTile.MODULE_HEALTH to view.findViewById(R.id.checkbox_tile_module_health),
+            )
+        widgetCheckboxes =
+            mapOf(
+                HomeWidget.TODAY_PRODUCTION to view.findViewById(R.id.checkbox_widget_today_production),
+                HomeWidget.PRODUCTION_SUMMARY to view.findViewById(R.id.checkbox_widget_production_summary),
+                HomeWidget.PRODUCTION_HISTORY to view.findViewById(R.id.checkbox_widget_production_history),
+            )
+        tilesWidgetsSelectAllButton = view.findViewById(R.id.settings_tiles_widgets_select_all)
 
         wireEmaAppId()
         wireEmaAppSecret()
@@ -161,6 +181,7 @@ class SettingsFragment : Fragment() {
         wireBaseUrl(view)
         wireImportExportReset(view)
         wireExclusiveEditMode()
+        wireTilesAndWidgets()
         refreshLogs()
     }
 
@@ -382,8 +403,8 @@ class SettingsFragment : Fragment() {
         // credentials were just cleared, a free ConfigurationError) and push the result to any
         // placed widgets rather than leaving them showing a stale or now-invalid system's data.
         viewLifecycleOwner.lifecycleScope.launch {
-            hourlyEnergyRepository.refresh(force = true)
-            dailyEnergyRepository.refresh(force = true)
+            if (repository.isHourlyDataNeeded()) hourlyEnergyRepository.refresh(force = true)
+            if (repository.isDailyDataNeeded()) dailyEnergyRepository.refresh(force = true)
             widgetUpdateAction(requireContext())
         }
     }
@@ -647,6 +668,45 @@ class SettingsFragment : Fragment() {
         }
     }
 
+    private fun wireTilesAndWidgets() {
+        tileCheckboxes.forEach { (tile, checkbox) ->
+            checkbox.setOnCheckedChangeListener { _, isChecked ->
+                repository.setTileEnabled(tile, isChecked)
+                updateSelectAllLabel()
+            }
+        }
+        widgetCheckboxes.forEach { (widget, checkbox) ->
+            checkbox.setOnCheckedChangeListener { _, isChecked ->
+                repository.setWidgetEnabled(widget, isChecked)
+                updateSelectAllLabel()
+            }
+        }
+        tilesWidgetsSelectAllButton.setOnClickListener {
+            val allEnabled = allTilesAndWidgetsEnabled()
+            tileCheckboxes.values.forEach { it.isChecked = !allEnabled }
+            widgetCheckboxes.values.forEach { it.isChecked = !allEnabled }
+        }
+        updateTilesAndWidgetsDisplay()
+    }
+
+    private fun updateTilesAndWidgetsDisplay() {
+        tileCheckboxes.forEach { (tile, checkbox) -> checkbox.isChecked = repository.isTileEnabled(tile) }
+        widgetCheckboxes.forEach { (widget, checkbox) -> checkbox.isChecked = repository.isWidgetEnabled(widget) }
+        updateSelectAllLabel()
+    }
+
+    private fun allTilesAndWidgetsEnabled(): Boolean =
+        tileCheckboxes.values.all { it.isChecked } && widgetCheckboxes.values.all { it.isChecked }
+
+    private fun updateSelectAllLabel() {
+        tilesWidgetsSelectAllButton.text =
+            if (allTilesAndWidgetsEnabled()) {
+                getString(R.string.settings_tiles_widgets_deselect_all)
+            } else {
+                getString(R.string.settings_tiles_widgets_select_all)
+            }
+    }
+
     private fun wireBaseUrl(view: View) {
         settingBaseUrl.label = getString(R.string.settings_base_url_label)
         settingBaseUrl.value = repository.getBaseUrl()
@@ -866,6 +926,7 @@ class SettingsFragment : Fragment() {
         updateDisplayModeDisplay()
         updateArrayTimezoneDisplay()
         updateEmailAlertsDisplay()
+        updateTilesAndWidgetsDisplay()
         // Apply the persisted theme and language, not just their labels. After an import
         // or factory reset the stored value changes but the effect would otherwise be
         // deferred until the next setting edit triggered an Activity recreate.

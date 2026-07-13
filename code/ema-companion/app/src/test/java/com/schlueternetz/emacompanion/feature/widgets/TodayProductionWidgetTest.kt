@@ -8,6 +8,7 @@ import androidx.glance.testing.unit.hasContentDescription
 import androidx.glance.testing.unit.hasText
 import androidx.test.core.app.ApplicationProvider
 import com.schlueternetz.emacompanion.R
+import com.schlueternetz.emacompanion.core.HomeWidget
 import com.schlueternetz.emacompanion.core.api.FetchError
 import com.schlueternetz.emacompanion.core.api.HourlyEnergySource
 import com.schlueternetz.emacompanion.core.api.HourlyProductionState
@@ -15,6 +16,7 @@ import com.schlueternetz.emacompanion.core.api.HourlySnapshot
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -211,10 +213,54 @@ class TodayProductionWidgetTest {
             }
         }
 
+    @Test
+    fun showsDisabledMessage_whenWidgetDisabledInSettings() =
+        runTest {
+            val source =
+                FakeSource(
+                    HourlyProductionState(snapshot = HourlySnapshot(mapOf(6 to 1.0, 7 to 2.0, 8 to 1.5))),
+                )
+            TodayProductionWidget.hourlySourceOverride = source
+            settings.setWidgetEnabled(HomeWidget.TODAY_PRODUCTION, false)
+
+            runGlanceAppWidgetUnitTest {
+                setAppWidgetSize(DpSize(200.dp, 100.dp))
+                setContext(context)
+                provideComposable { TodayProductionWidget().TestContent() }
+
+                onNode(hasText(context.getString(R.string.widget_disabled_in_settings))).assertExists()
+            }
+            assertEquals("disabled widget must not read its data source", 0, source.currentStateCalls)
+        }
+
+    @Test
+    fun rendersNormalContent_whenWidgetReEnabled() =
+        runTest {
+            TodayProductionWidget.hourlySourceOverride =
+                FakeSource(
+                    HourlyProductionState(snapshot = HourlySnapshot(mapOf(6 to 1.0, 7 to 2.0, 8 to 1.5))),
+                )
+            settings.setWidgetEnabled(HomeWidget.TODAY_PRODUCTION, true)
+
+            runGlanceAppWidgetUnitTest {
+                setAppWidgetSize(DpSize(200.dp, 100.dp))
+                setContext(context)
+                provideComposable { TodayProductionWidget().TestContent() }
+
+                onNode(hasContentDescription(context.getString(R.string.widget_today_chart_description)))
+                    .assertExists()
+            }
+        }
+
     private class FakeSource(
         private val state: HourlyProductionState,
     ) : HourlyEnergySource {
-        override fun currentState(): HourlyProductionState = state
+        var currentStateCalls = 0
+
+        override fun currentState(): HourlyProductionState {
+            currentStateCalls++
+            return state
+        }
 
         override suspend fun refresh(force: Boolean): HourlyProductionState = state
     }

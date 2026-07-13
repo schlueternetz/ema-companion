@@ -5,17 +5,7 @@
 
 Die Startseite ist ein scrollbares Dashboard mit Kacheln. Wische auf dem Bildschirm nach unten, um alle Daten sofort neu abzurufen. Jede Kachel wird beim Öffnen der App oder beim Zurückkehren zur Startseite automatisch aktualisiert.
 
-## Kachel „Aktuelle Produktion"
-
-Zeigt den aktuellen Leistungswert deiner Solaranlage (z. B. „8000 W") sowie den Zeitpunkt der letzten Aktualisierung. Ein neuer Wert wird beim Öffnen der App und bei jeder Rückkehr zur Startseite abgerufen. Erfolgreiche Abrufe sind auf einmal alle 10 Minuten begrenzt; zwischen den Aktualisierungen bleibt der zuletzt abgerufene Wert sichtbar. Bis zur ersten erfolgreichen Abfrage wird ein neutraler Platzhalter („— W") angezeigt.
-
-Schlägt eine Aktualisierung fehl, zeigt die Kachel eine kurze Statuszeile unterhalb des Werts und behält den letzten bekannten Wert bei:
-
-- **Netzwerkproblem – Aktualisierung nicht möglich** — die App konnte den EMA-Dienst nicht erreichen (z. B. keine Verbindung)
-- **Authentifizierung fehlgeschlagen – API-Zugangsdaten prüfen** — die Zugangsdaten wurden abgelehnt; prüfe sie in den Einstellungen
-- **Produktionsdaten konnten nicht aktualisiert werden** — ein anderer Fehler, z. B. ungültige System-/ECU-ID oder ein Serverproblem
-
-Die Statuszeile verschwindet automatisch, wenn ein späterer Abruf erfolgreich ist.
+Jede Kachel kann ausgeblendet werden, wenn du sie nicht brauchst — siehe den Abschnitt „Kacheln & Widgets" auf der Seite [Einstellungen](settings.md).
 
 ## Kachel „Heutige Produktion"
 

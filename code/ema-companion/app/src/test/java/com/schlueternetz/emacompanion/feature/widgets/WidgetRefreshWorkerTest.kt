@@ -3,14 +3,18 @@ package com.schlueternetz.emacompanion.feature.widgets
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.testing.TestListenableWorkerBuilder
+import com.schlueternetz.emacompanion.core.HomeTile
+import com.schlueternetz.emacompanion.core.HomeWidget
 import com.schlueternetz.emacompanion.core.api.DailyEnergySource
 import com.schlueternetz.emacompanion.core.api.DailyProductionState
 import com.schlueternetz.emacompanion.core.api.FetchError
 import com.schlueternetz.emacompanion.core.api.HourlyEnergySource
 import com.schlueternetz.emacompanion.core.api.HourlyProductionState
+import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -21,6 +25,15 @@ import org.robolectric.annotation.Config
 class WidgetRefreshWorkerTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
     private var updateAllCallCount = 0
+
+    @Before
+    fun setUp() {
+        context
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .commit()
+    }
 
     @After
     fun tearDown() {
@@ -67,6 +80,41 @@ class WidgetRefreshWorkerTest {
 
             assertEquals(1, daily.refreshCallCount)
             assertEquals(false, daily.lastForce)
+        }
+
+    @Test
+    fun hourlyBranch_skipsRefresh_whenNoEnabledConsumer() =
+        runBlocking {
+            val settings = SettingsRepository.create(context)
+            settings.setTileEnabled(HomeTile.TODAY_PRODUCTION, false)
+            settings.setWidgetEnabled(HomeWidget.TODAY_PRODUCTION, false)
+            settings.setWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY, false)
+            val hourly = FakeHourlySource(HourlyProductionState())
+            seed(hourly = hourly, daily = FakeDailySource(DailyProductionState()), hour = 10)
+
+            runWorker()
+
+            assertEquals(0, hourly.refreshCallCount)
+        }
+
+    @Test
+    fun dailyBranch_skipsRefresh_whenNoEnabledConsumer() =
+        runBlocking {
+            val settings = SettingsRepository.create(context)
+            settings.setTileEnabled(HomeTile.TODAY_PRODUCTION, false)
+            settings.setTileEnabled(HomeTile.HISTORY_PRODUCTION, false)
+            settings.setWidgetEnabled(HomeWidget.PRODUCTION_SUMMARY, false)
+            settings.setWidgetEnabled(HomeWidget.PRODUCTION_HISTORY, false)
+            val daily = FakeDailySource(DailyProductionState())
+            seed(
+                hourly = FakeHourlySource(HourlyProductionState()),
+                daily = daily,
+                hour = WidgetRefreshWorker.DAILY_TRIGGER_HOUR,
+            )
+
+            runWorker()
+
+            assertEquals(0, daily.refreshCallCount)
         }
 
     @Test

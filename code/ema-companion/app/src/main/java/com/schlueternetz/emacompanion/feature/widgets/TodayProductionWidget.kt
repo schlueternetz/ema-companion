@@ -20,6 +20,7 @@ import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
 import androidx.glance.text.Text
 import com.schlueternetz.emacompanion.R
+import com.schlueternetz.emacompanion.core.HomeWidget
 import com.schlueternetz.emacompanion.core.api.HourlyEnergyRepository
 import com.schlueternetz.emacompanion.core.api.HourlyEnergySource
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
@@ -37,6 +38,22 @@ class TodayProductionWidget : GlanceAppWidget() {
     internal fun TestContent() {
         val context = LocalContext.current
         val settings = SettingsRepository.create(context)
+
+        if (!settings.isWidgetEnabled(HomeWidget.TODAY_PRODUCTION)) {
+            WidgetTheme(settings.getDisplayMode()) {
+                Column(
+                    modifier =
+                        GlanceModifier
+                            .fillMaxSize()
+                            .background(GlanceTheme.colors.background)
+                            .padding(12.dp),
+                ) {
+                    Text(context.getString(R.string.widget_disabled_in_settings), style = WidgetTextStyles.value)
+                }
+            }
+            return
+        }
+
         val hourlySource = hourlySourceOverride ?: HourlyEnergyRepository.create(context)
         val state = hourlySource.currentState()
         val currentHour = currentHourOverride ?: LocalTime.now().hour
