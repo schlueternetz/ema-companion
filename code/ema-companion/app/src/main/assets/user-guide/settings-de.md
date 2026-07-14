@@ -44,7 +44,7 @@ Das Ändern der **Zeitzone der Anlage** plant den täglichen Modulstatus-Job sof
 
 | Einstellung | Details |
 |---|---|
-| **Sprache** | Tippen wählt aus: System (Gerätestandard), Englisch oder Deutsch. Wirkt sofort. |
+| **Sprache** | Tippen wählt aus: System (Gerätestandard), Englisch oder Deutsch. Jeder Sprachname wird immer in dieser Sprache angezeigt (z. B. „Deutsch" für Deutsch), damit er auch erkennbar ist, wenn die App gerade auf eine Sprache eingestellt ist, die du nicht lesen kannst. Wirkt sofort. |
 | **Anzeigemodus** | Tippen wählt aus: System (folgt OS Hell/Dunkel-Modus), Hell oder Dunkel. Wirkt sofort. |
 | **Benachrichtigungen** | Tippen wählt aus: Aus, Nur Warnungen oder Alle. Standard ist Nur Warnungen. Wirkt sofort — siehe „Wann Benachrichtigungen gesendet werden" unter E-Mail-Benachrichtigungen. |
 | **Verlaufszeitraum (Tage)** | Anzahl der Tage des gespeicherten Produktionsverlaufs (1–90); Standard ist 30. |

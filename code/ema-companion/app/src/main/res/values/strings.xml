@@ -31,8 +31,8 @@
     <!-- Language -->
     <string name="settings_language_label">Language</string>
     <string name="language_option_system">System</string>
-    <string name="language_option_english">English</string>
-    <string name="language_option_german">German</string>
+    <string name="language_option_english" translatable="false">English</string>
+    <string name="language_option_german" translatable="false">Deutsch</string>
     <string name="settings_language_dialog_title">Select Language</string>
 
     <!-- Display mode -->

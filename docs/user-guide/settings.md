@@ -43,7 +43,7 @@ Changing the **Array Timezone** immediately reschedules the background Module He
 
 | Setting | Details |
 |---|---|
-| **Language** | Tap to choose: System (device default), English, or German. Takes effect immediately. |
+| **Language** | Tap to choose: System (device default), English, or German. Each language name is always shown in that language (e.g. "Deutsch" for German) so it's recognizable even if the app is currently set to a language you don't read. Takes effect immediately. |
 | **Display Mode** | Tap to choose: System (follows OS dark/light mode), Light, or Dark. Takes effect immediately. |
 | **Notifications** | Tap to choose: Off, Alerts Only, or All. Alerts Only by default. Takes effect immediately — see "When alerts are sent" under Email Alerts below. |
 | **Historic Data Days** | Days of production history to retain (1–90); defaults to 30. |

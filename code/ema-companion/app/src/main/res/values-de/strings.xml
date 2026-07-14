@@ -30,8 +30,6 @@
     <!-- Language -->
     <string name="settings_language_label">Sprache</string>
     <string name="language_option_system">System</string>
-    <string name="language_option_english">Englisch</string>
-    <string name="language_option_german">Deutsch</string>
     <string name="settings_language_dialog_title">Sprache auswählen</string>
 
     <!-- Display mode -->

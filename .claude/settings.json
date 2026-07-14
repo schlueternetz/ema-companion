@@ -152,14 +152,24 @@
       "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell wm size)",
       "Skill(widget-preview)",
       "Skill(widget-preview:*)",
-      "Bash(./gradlew.bat :app:processDebugResources)"
+      "Bash(./gradlew.bat :app:processDebugResources)",
+      "Bash(./gradlew.bat :app:processDebugResources -q)",
+      "Bash(./gradlew.bat :app:testDebugUnitTest --tests \"*.SettingsFragmentTest\" -q)",
+      "Bash(./gradlew.bat ktlintCheck -q)",
+      "PowerShell(Get-Process | Where-Object { $_.ProcessName -match 'java|gradle|qemu|studio' } | Select-Object Id, ProcessName, Path | Format-Table -AutoSize)",
+      "PowerShell(Get-Process | Where-Object { $_.ProcessName -match 'git' } | Select-Object Id, ProcessName, Path | Format-Table -AutoSize)",
+      "PowerShell(Stop-Process -Id 4180,9684,26204 -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 500; Get-Process | Where-Object { $_.ProcessName -match 'git' } | Select-Object Id, ProcessName)",
+      "Bash(cd \"d:/projects/ema-companion\" && rm .git/index.lock && git status)",
+      "Bash(./gradlew.bat assembleDebug -q)",
+      "Bash(./gradlew.bat build *)"
     ],
     "additionalDirectories": [
       "D:\\ema-debug",
       "C:\\Users\\micro\\.maestro\\tests\\2026-07-11_185843",
       "C:\\Users\\micro\\.maestro\\tests\\2026-07-11_190529",
       "C:\\Users\\micro\\.maestro\\tests\\2026-07-13_221416",
-      "C:\\Users\\micro\\.maestro\\tests\\2026-07-13_223117"
+      "C:\\Users\\micro\\.maestro\\tests\\2026-07-13_223117",
+      "d:\\projects\\ema-companion\\.git"
     ]
   },
   "enabledMcpjsonServers": [
