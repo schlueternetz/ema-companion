@@ -24,7 +24,11 @@ class ApiSyncSchedulerTest {
     fun setUp() {
         val config = Configuration.Builder().setExecutor(SynchronousExecutor()).build()
         WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
-        context.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE).edit().clear().commit()
+        context
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .commit()
         ApiSyncWorker.updateAllAction = { _, _ -> }
     }
 
@@ -33,7 +37,11 @@ class ApiSyncSchedulerTest {
         ApiSyncWorker.hourlySourceOverride = null
         ApiSyncWorker.dailySourceOverride = null
         ApiSyncWorker.updateAllAction = ApiSyncWorker.defaultUpdateAllAction
-        ApiSyncScheduler.moduleHealthResettableFactory = { ctx -> com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthRepository.create(ctx) }
+        ApiSyncScheduler.moduleHealthResettableFactory =
+            { ctx ->
+                com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthRepository
+                    .create(ctx)
+            }
     }
 
     @Test

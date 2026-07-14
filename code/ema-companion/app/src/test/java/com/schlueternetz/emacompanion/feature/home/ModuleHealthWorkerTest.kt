@@ -6,12 +6,12 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.testing.TestListenableWorkerBuilder
+import com.schlueternetz.emacompanion.core.HomeTile
 import com.schlueternetz.emacompanion.core.api.ApiResult
 import com.schlueternetz.emacompanion.core.api.BatchEnergyFetch
 import com.schlueternetz.emacompanion.core.api.EmaApiClient
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthRepository
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthStatus
-import com.schlueternetz.emacompanion.core.HomeTile
 import com.schlueternetz.emacompanion.core.email.EmailResult
 import com.schlueternetz.emacompanion.core.email.EmailSender
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository

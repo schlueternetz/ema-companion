@@ -15,11 +15,19 @@ class AppForegroundTracker(
     private val clock: () -> Long = { System.currentTimeMillis() },
 ) : DefaultLifecycleObserver {
     override fun onStart(owner: LifecycleOwner) {
-        prefs.edit().putBoolean(KEY_IS_STARTED, true).putLong(KEY_LAST_TRANSITION, clock()).apply()
+        prefs
+            .edit()
+            .putBoolean(KEY_IS_STARTED, true)
+            .putLong(KEY_LAST_TRANSITION, clock())
+            .apply()
     }
 
     override fun onStop(owner: LifecycleOwner) {
-        prefs.edit().putBoolean(KEY_IS_STARTED, false).putLong(KEY_LAST_TRANSITION, clock()).apply()
+        prefs
+            .edit()
+            .putBoolean(KEY_IS_STARTED, false)
+            .putLong(KEY_LAST_TRANSITION, clock())
+            .apply()
     }
 
     /** True while currently foregrounded, or within [GRACE_WINDOW_MS] of having last left the foreground. */

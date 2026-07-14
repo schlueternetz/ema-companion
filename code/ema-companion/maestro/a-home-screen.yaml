@@ -125,10 +125,18 @@ appId: com.schlueternetz.emacompanion
 # (MPAndroidChart shows its own "No chart data available." message).
 # hourly_placeholder is only shown in the never-fetched state; once a
 # fetch is attempted the chart becomes visible regardless of result.
+# The fetch itself (which must first time out against an unreachable dummy
+# host) now runs inside a WorkManager-dispatched ApiSyncWorker rather than a
+# Fragment-scoped coroutine (ADR-010) — HomeFragment re-binds via an
+# observeCompletion() Flow collector, an extra hop on top of the same network
+# timeout that already made a bare assertVisible unreliable elsewhere in this
+# flow (see the "0.42" check below). extendedWaitUntil for the same reason.
 - assertVisible:
     id: "tile_today_production"
-- assertVisible:
-    id: "hourly_chart"
+- extendedWaitUntil:
+    visible:
+      id: "hourly_chart"
+    timeout: 20000
 
 # History section — scroll further and assert the card and the chart.
 - scrollUntilVisible:
@@ -138,8 +146,10 @@ appId: com.schlueternetz.emacompanion
     timeout: 10000
 - assertVisible:
     id: "tile_history_production"
-- assertVisible:
-    id: "history_chart"
+- extendedWaitUntil:
+    visible:
+      id: "history_chart"
+    timeout: 20000
 
 # ── Point at the local stub and switch to the stub's canonical Good Data ECU ─
 # Extends the flow (dev-stub-shortcut) to also verify real, populated data

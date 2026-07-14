@@ -184,7 +184,15 @@ class DailyEnergyRepository(
                 // whichever component most recently wrote HourlyEnergyRepository's persisted
                 // snapshot — a long-lived captured instance's in-memory cache would go stale
                 // the moment a *different* HourlyEnergyRepository instance performs the fetch.
-                todayTotalProvider = { HourlyEnergyRepository.create(context).currentState().snapshot?.hours?.values?.sum() },
+                todayTotalProvider = {
+                    HourlyEnergyRepository
+                        .create(context)
+                        .currentState()
+                        .snapshot
+                        ?.hours
+                        ?.values
+                        ?.sum()
+                },
             )
         }
     }

@@ -305,7 +305,11 @@ class SettingsWidgetRefreshTest {
         // safe in Robolectric, so the *second*, real save below is driven through the actual
         // SettingsFragment UI on the main thread, proving the production wiring end-to-end while
         // the concurrency needed to exercise REPLACE's cancellation comes from the first call.
-        val firstThread = Thread { com.schlueternetz.emacompanion.core.api.ApiSyncScheduler.requestResyncAfterSettingsChange(appContext) }
+        val firstThread =
+            Thread {
+                com.schlueternetz.emacompanion.core.api.ApiSyncScheduler
+                    .requestResyncAfterSettingsChange(appContext)
+            }
         firstThread.isDaemon = true
         firstThread.start()
         runBlocking { firstFetchStarted.await() }

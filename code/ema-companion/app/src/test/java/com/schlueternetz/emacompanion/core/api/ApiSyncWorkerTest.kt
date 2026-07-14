@@ -33,8 +33,16 @@ class ApiSyncWorkerTest {
 
     @Before
     fun setUp() {
-        context.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE).edit().clear().commit()
-        context.getSharedPreferences("ema_api_sync_worker", Context.MODE_PRIVATE).edit().clear().commit()
+        context
+            .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .commit()
+        context
+            .getSharedPreferences("ema_api_sync_worker", Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .commit()
         updateAllCallCount = 0
         ApiSyncWorker.updateAllAction = { _, _ -> updateAllCallCount++ }
         ApiSyncWorker.hasConsumingWidgetPlacedAction = { false }

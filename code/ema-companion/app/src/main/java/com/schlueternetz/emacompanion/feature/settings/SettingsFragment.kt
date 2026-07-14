@@ -1041,7 +1041,10 @@ class SettingsFragment : Fragment() {
         var dailyRepoOverride: DailyEnergyRepository? = null
 
         internal val defaultRequestResyncAfterSettingsChangeAction: (android.content.Context) -> Unit =
-            { ctx -> com.schlueternetz.emacompanion.core.api.ApiSyncScheduler.requestResyncAfterSettingsChange(ctx) }
+            { ctx ->
+                com.schlueternetz.emacompanion.core.api.ApiSyncScheduler
+                    .requestResyncAfterSettingsChange(ctx)
+            }
 
         /** Test seam: substitutes the settings-changed resync request side effect. */
         var requestResyncAfterSettingsChangeAction: (android.content.Context) -> Unit = defaultRequestResyncAfterSettingsChangeAction

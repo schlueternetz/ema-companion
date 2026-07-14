@@ -131,12 +131,24 @@
       "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.feature.home.*\")",
       "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.feature.settings.SettingsWidgetRefreshTest\")",
       "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.feature.settings.*\")",
-      "Bash(./gradlew.bat --stop)"
+      "Bash(./gradlew.bat --stop)",
+      "Bash(./gradlew.bat ktlintCheck)",
+      "Bash(./gradlew.bat ktlintFormat)",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb devices)",
+      "Bash(mkdir -p /d/ema-debug 2>/dev/null; ls \"C:/Users/micro/.maestro/tests/2026-07-13_220622/\" 2>&1)",
+      "Bash(cp \"C:/Users/micro/.maestro/tests/2026-07-13_220622/screenshot-❌-1784002080893-\\(a-home-screen\\).png\" \"D:/ema-debug/\")",
+      "Bash(cp \"C:/Users/micro/.maestro/tests/2026-07-13_220622/commands-\\(a-home-screen\\).json\" \"D:/ema-debug/\")",
+      "Bash(curl -s -m 3 http://localhost:8080/ -o /dev/null -w \"%{http_code}\\\\n\")",
+      "Bash(curl -s -X POST http://localhost:8080/__stub__/reset -w \"\\\\nHTTP %{http_code}\\\\n\")",
+      "Bash(cp \"C:/Users/micro/.maestro/tests/2026-07-13_221416/screenshot-❌-1784002537065-\\(a-home-screen\\).png\" \"D:/ema-debug/screenshot2.png\" *)",
+      "Bash(cp \"C:/Users/micro/.maestro/tests/2026-07-13_223117/screenshot-❌-1784003570587-\\(a-home-screen\\).png\" \"D:/ema-debug/screenshot3.png\")"
     ],
     "additionalDirectories": [
       "D:\\ema-debug",
       "C:\\Users\\micro\\.maestro\\tests\\2026-07-11_185843",
-      "C:\\Users\\micro\\.maestro\\tests\\2026-07-11_190529"
+      "C:\\Users\\micro\\.maestro\\tests\\2026-07-11_190529",
+      "C:\\Users\\micro\\.maestro\\tests\\2026-07-13_221416",
+      "C:\\Users\\micro\\.maestro\\tests\\2026-07-13_223117"
     ]
   },
   "enabledMcpjsonServers": [

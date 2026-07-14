@@ -10,7 +10,9 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
@@ -56,7 +58,6 @@ class HomeFragment : Fragment() {
     private lateinit var moduleHealthStatusView: TextView
     private lateinit var moduleHealthCheckedView: TextView
     private lateinit var moduleHealthErrorView: TextView
-    private lateinit var moduleHealthSource: ModuleHealthSource
 
     // Today section
     private lateinit var hourlyChart: LineChart
@@ -71,7 +72,6 @@ class HomeFragment : Fragment() {
     private lateinit var bestDayWindowValue: TextView
     private lateinit var hourlyStatus: TextView
     private lateinit var hourlyPlaceholder: TextView
-    private lateinit var hourlySource: HourlyEnergySource
 
     // History section
     private lateinit var historyChart: BarChart
@@ -81,7 +81,6 @@ class HomeFragment : Fragment() {
     private lateinit var last30Total: TextView
     private lateinit var historyStatus: TextView
     private lateinit var historyPlaceholder: TextView
-    private lateinit var dailySource: DailyEnergySource
 
     private lateinit var swipeRefresh: SwipeRefreshLayout
 
@@ -106,7 +105,6 @@ class HomeFragment : Fragment() {
         moduleHealthStatusView = view.findViewById(R.id.module_health_status)
         moduleHealthCheckedView = view.findViewById(R.id.module_health_checked)
         moduleHealthErrorView = view.findViewById(R.id.module_health_error)
-        moduleHealthSource = moduleHealthSourceOverride ?: ModuleHealthRepository.create(requireContext())
 
         // Today section
         hourlyChart = view.findViewById(R.id.hourly_chart)
@@ -121,7 +119,6 @@ class HomeFragment : Fragment() {
         bestDayWindowValue = view.findViewById(R.id.best_day_window_value)
         hourlyStatus = view.findViewById(R.id.hourly_status)
         hourlyPlaceholder = view.findViewById(R.id.hourly_placeholder)
-        hourlySource = hourlySourceOverride ?: HourlyEnergyRepository.create(requireContext())
 
         // History section
         historyChart = view.findViewById(R.id.history_chart)
@@ -131,7 +128,6 @@ class HomeFragment : Fragment() {
         last30Total = view.findViewById(R.id.last_30_total)
         historyStatus = view.findViewById(R.id.history_status)
         historyPlaceholder = view.findViewById(R.id.history_placeholder)
-        dailySource = dailySourceOverride ?: DailyEnergyRepository.create(requireContext())
 
         // Pull-to-refresh
         swipeRefresh = view.findViewById(R.id.home_swipe_refresh)
@@ -144,9 +140,9 @@ class HomeFragment : Fragment() {
         applyTileVisibility()
 
         // Seed from persisted state immediately (no flash before a sync completes)
-        renderModuleHealth(moduleHealthSource.currentState())
-        bindHourlyState(hourlySource.currentState(), systemCapacity())
-        bindDailyState(dailySource.currentState(), systemCapacity(), historyDays)
+        renderModuleHealth(moduleHealthSource().currentState())
+        bindHourlyState(hourlySource().currentState(), systemCapacity())
+        bindDailyState(dailySource().currentState(), systemCapacity(), historyDays)
 
         observeSyncCompletion()
     }
@@ -157,19 +153,41 @@ class HomeFragment : Fragment() {
         // Module Health has no on-demand fetch of its own (ModuleHealthWorker's daily schedule is
         // the only trigger, per ADR-010's always-on-alerting invariant) — just re-render whatever
         // it last persisted, in case it changed while the app was backgrounded.
-        renderModuleHealth(moduleHealthSource.currentState())
+        renderModuleHealth(moduleHealthSource().currentState())
         requestOpportunisticSyncAction(requireContext())
     }
 
-    /** Re-renders hourly/daily state from `currentState()` whenever a requested sync completes. */
+    // Resolved fresh on every call (not cached instance fields) — the actual fetch now always
+    // happens in ApiSyncWorker's own repository instances (a separate process/coroutine), so a
+    // long-lived instance held here would only ever reflect its state as of Fragment creation,
+    // never the fetch that just completed. currentState() is a cheap SharedPreferences read, so
+    // there's no cost to re-resolving on every render. Test overrides are unaffected since a
+    // fake's state lives in the test, not in repo construction.
+    private fun moduleHealthSource(): ModuleHealthSource = moduleHealthSourceOverride ?: ModuleHealthRepository.create(requireContext())
+
+    private fun hourlySource(): HourlyEnergySource = hourlySourceOverride ?: HourlyEnergyRepository.create(requireContext())
+
+    private fun dailySource(): DailyEnergySource = dailySourceOverride ?: DailyEnergyRepository.create(requireContext())
+
+    /**
+     * Re-renders hourly/daily state from `currentState()` whenever a requested sync completes.
+     * `repeatOnLifecycle(STARTED)` (not a bare `lifecycleScope.launch { flow.collect {} }`) is
+     * required here: the underlying `WorkManager` flow can still emit while the view is mid-
+     * teardown (Flow cancellation is cooperative, checked only at suspension points), and a plain
+     * launch's collector body can start running `requireContext()` after the view has already
+     * detached, crashing with "Fragment not attached to a context".
+     */
     private fun observeSyncCompletion() {
         viewLifecycleOwner.lifecycleScope.launch {
-            observeCompletionAction(requireContext()).collect {
-                val cap = systemCapacity()
-                val historyDays = SettingsRepository.create(requireContext()).getHistoricDataDays()
-                bindHourlyState(hourlySource.currentState(), cap)
-                bindDailyState(dailySource.currentState(), cap, historyDays)
-                swipeRefresh.isRefreshing = false
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                observeCompletionAction(requireContext()).collect {
+                    if (view == null) return@collect
+                    val cap = systemCapacity()
+                    val historyDays = SettingsRepository.create(requireContext()).getHistoricDataDays()
+                    bindHourlyState(hourlySource().currentState(), cap)
+                    bindDailyState(dailySource().currentState(), cap, historyDays)
+                    swipeRefresh.isRefreshing = false
+                }
             }
         }
     }

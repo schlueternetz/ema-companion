@@ -1,5 +1,41 @@
 # AI Lessons Learned
 
+## 2026-07-12: api-fetch-scheduler (centralize EMA API fetch triggering)
+
+### Went Well
+* `ApiSyncScheduler` as single entry point + `WorkManager.enqueueUniqueWork(name, REPLACE, request)` — coalesces bursty settings saves into one fetch, fixed real bug where redundant per-field-save fetches could overwrite good data with a later failure
+* Module Health kept on its own separate always-on `ModuleHealthWorker` schedule (ADR-010) instead of folding into `ApiSyncWorker` — alerting-class data must never be gated by tile/widget/foreground state
+* `WorkManagerTestInitHelper.initializeTestWorkManager(context, Configuration.Builder().setExecutor(SynchronousExecutor()).build())` in `@Before setUp()` — needed in every Robolectric test whose Fragment now touches real WorkManager (6 files)
+* Temporary `Log.d()` in both `ApiSyncWorker.doWork()` and `HomeFragment.observeSyncCompletion()` + `adb logcat -c` before an isolated single-flow rerun + `adb logcat -d` after — pinpointed worker completion AND Flow emission were BOTH correct, narrowing the bug to the state-READ step; removed logs once root cause confirmed
+* 3 real bugs found ONLY by `/qa`'s actual emulator run, zero caught by unit/Robolectric — validates AGENTS.md's Definition of Done requiring a real `/qa` pass before marking work done
+
+### Didn't Work
+* Moving fetch execution from Fragment-scoped coroutines into a Worker broke `HomeFragment`'s `private lateinit var hourlySource`/`dailySource`/`moduleHealthSource` fields silently — Worker constructs its OWN separate repo instance via the same `Xxx.create(context)`; both read/write the same SharedPreferences file but each instance's in-memory cache is loaded once at construction and never re-synced — Fragment's `currentState()` returned permanently stale (construction-time) data no matter how completion was signaled
+* Plain `viewLifecycleOwner.lifecycleScope.launch { flow.collect {} }` for `observeSyncCompletion()` crashed the app: `requireContext()` called after view detached (`IllegalStateException`) — cooperative cancellation only checks at suspension points, so a Flow can still emit into a collector whose lifecycle is already tearing down
+* Bare `assertVisible` on `hourly_chart`/`history_chart` in Maestro started flaking once fetch dispatch centralized through WorkManager — extra WorkManager DB-write + Flow-propagation hop pushed latency past the 7s default timeout even though the underlying network wait was unchanged
+
+### Avoid
+* Never cache a repository as a Fragment instance field once ANY OTHER component (a Worker, a different Fragment) can also construct and write through its own separate instance of the same repo — always resolve fresh via a function (`hourlySource()`, not `hourlySource`) on every read; `currentState()` is a cheap prefs read, so there's no cost. Same class of bug already avoided once this session for `DailyEnergyRepository.create()`'s `todayTotalProvider` — pattern wasn't applied consistently to `HomeFragment` itself
+* Any Flow collected in a Fragment via `lifecycleScope.launch { flow.collect {} }` that touches `requireContext()`/`requireView()` needs `repeatOnLifecycle(Lifecycle.State.STARTED)` wrapping, not a bare launch — plus a defensive `if (view == null) return@collect` guard
+* When centralizing a fetch path through WorkManager, widen any Maestro assertion on the fetch's resulting UI state to `extendedWaitUntil` — the dispatch hop adds real latency on top of the network wait a bare `assertVisible` was already borderline against
+
+## 2026-07-13: widget-preview skill (fix robot-head icon in widget picker)
+
+### Went Well
+* minSdk=31 means `android:previewLayout` (API 31+) always applies — no previewImage bitmap fallback needed, skip emulator/screenshot pipeline entirely
+* Root cause of robot head: `previewImage` pointed at `ic_launcher_foreground`, an adaptive-icon foreground layer, not a real static bitmap — system couldn't render it, fell back to placeholder
+* Static plain-View XML layout (not Glance/Compose) mirroring the widget's real look, themed via `android:theme="@style/Theme.EMACompanion"` on root so `?attr/colorSurface`/`colorOnSurface`/`colorPrimary` resolve to the app's own Material3 DayNight palette — matches `WidgetTheme.kt`'s `GlanceTheme` defaults without needing Glance at all
+* New `widget_preview_*` sample-value strings (both `values/` and `values-de/`) instead of hardcoding preview text — keeps ADR-003 (all text in string resources) intact even for OS-chrome preview content
+* `./gradlew.bat :app:processDebugResources` is enough to verify a previewLayout/string reference compiles — no need for a full assembleDebug or emulator for this kind of change
+* AskUserQuestion to pick previewLayout (static XML, no emulator) vs previewImage (screenshot pipeline) before building — real architectural fork, not just an implementation detail
+
+### Didn't Work
+* First pipe-test of the new hook printed nothing for "matching" paths — turned out the synthetic test JSON itself was invalid (`\p`, `\e` etc. are not legal JSON escapes in a Windows path inside single-quoted bash); rewrote test payloads with forward slashes / proper `\\\\` escaping before concluding the hook logic was broken
+
+### Avoid
+* Don't hand-write a Windows path into a bash single-quoted JSON test string with single backslashes — `\\p`, `\\e` aren't valid JSON escapes; JSON.parse throws before the hook logic ever runs, and the failure looks identical to "hook didn't match"
+* UX-file hook (write-user-guide) and widget-file hook both fire on `res/values/strings.xml` / `res/xml/*_widget_info.xml` edits — for OS-chrome-only content (widget-picker preview, not in-app screens), judge and skip write-user-guide rather than invoking it reflexively
+
 ## 2026-07-13: support-buy-me-a-coffee (4th bottom-nav tab + email footer links)
 
 ### Went Well
