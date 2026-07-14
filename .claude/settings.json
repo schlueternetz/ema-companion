@@ -161,7 +161,12 @@
       "PowerShell(Stop-Process -Id 4180,9684,26204 -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 500; Get-Process | Where-Object { $_.ProcessName -match 'git' } | Select-Object Id, ProcessName)",
       "Bash(cd \"d:/projects/ema-companion\" && rm .git/index.lock && git status)",
       "Bash(./gradlew.bat assembleDebug -q)",
-      "Bash(./gradlew.bat build *)"
+      "Bash(./gradlew.bat build *)",
+      "PowerShell(gh run list --branch main --limit 5)",
+      "Bash(where gh *)",
+      "Read(//c/Program Files/**)",
+      "Bash(curl -fsS -X POST \"http://localhost:8080/__stub__/reset\" -o /dev/null -w \"status=%{http_code}\\\\n\")",
+      "Bash(break)"
     ],
     "additionalDirectories": [
       "D:\\ema-debug",
