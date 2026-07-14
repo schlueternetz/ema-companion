@@ -45,10 +45,14 @@ object ModuleHealthNotifier {
     fun notify(
         context: Context,
         state: ModuleHealthState,
+        postOnGreen: Boolean = false,
     ) {
         val manager = context.getSystemService(NotificationManager::class.java)
-        when (state.status) {
-            ModuleHealthStatus.YELLOW, ModuleHealthStatus.RED -> postNotification(context, manager, state)
+        when {
+            state.status == ModuleHealthStatus.YELLOW || state.status == ModuleHealthStatus.RED ->
+                postNotification(context, manager, state)
+            state.status == ModuleHealthStatus.GREEN && postOnGreen ->
+                postNotification(context, manager, state)
             else -> manager.cancel(NOTIFICATION_ID)
         }
     }
@@ -67,12 +71,16 @@ object ModuleHealthNotifier {
         }
 
         val (title, text) =
-            if (state.status == ModuleHealthStatus.RED) {
-                context.getString(R.string.notification_module_health_red_title) to
-                    context.getString(R.string.notification_module_health_red_text)
-            } else {
-                context.getString(R.string.notification_module_health_yellow_title) to
-                    context.getString(R.string.notification_module_health_yellow_text)
+            when (state.status) {
+                ModuleHealthStatus.RED ->
+                    context.getString(R.string.notification_module_health_red_title) to
+                        context.getString(R.string.notification_module_health_red_text)
+                ModuleHealthStatus.GREEN ->
+                    context.getString(R.string.notification_module_health_green_title) to
+                        context.getString(R.string.notification_module_health_green_text)
+                else ->
+                    context.getString(R.string.notification_module_health_yellow_title) to
+                        context.getString(R.string.notification_module_health_yellow_text)
             }
 
         val notification =

@@ -45,7 +45,7 @@ Changing the **Array Timezone** immediately reschedules the background Module He
 |---|---|
 | **Language** | Tap to choose: System (device default), English, or German. Takes effect immediately. |
 | **Display Mode** | Tap to choose: System (follows OS dark/light mode), Light, or Dark. Takes effect immediately. |
-| **Notifications Enabled** | Toggle; on by default. Takes effect immediately — no Save step required. |
+| **Notifications** | Tap to choose: Off, Alerts Only, or All. Alerts Only by default. Takes effect immediately — see "When alerts are sent" under Email Alerts below. |
 | **Historic Data Days** | Days of production history to retain (1–90); defaults to 30. |
 
 ## Tiles & Widgets
@@ -72,13 +72,13 @@ These settings are included in Import/Export and reset to all-enabled on Factory
 
 ## Email Alerts
 
-Sends an email when your module health status changes (GREEN → YELLOW or RED, and back to GREEN). Emails are sent from your own Gmail account using an App Password — no third-party relay involved.
+Sends an email about your module health status. Emails are sent from your own Gmail account using an App Password — no third-party relay involved. Like Notifications, the **Email Alerts** row is tap-to-choose (Off, Alerts Only, or All) — see "When alerts are sent" below.
 
 **Requirement:** A Gmail account with 2-Step Verification enabled.
 
 ### Setting up Email Alerts
 
-1. Toggle **Email Alerts** on. A setup form appears below the toggle.
+1. Tap the **Email Alerts** row and choose **Alerts Only** or **All**. A setup form appears below.
 2. Tap **Open Google Account ↗** to open `myaccount.google.com/apppasswords` in your browser.
 3. In your Google Account, go to **Security → App Passwords** and create one for "Mail" on "Other device". Copy the 16-character password shown.
 4. Back in EMA Companion, enter your Gmail address and paste the App Password. Spaces in the App Password are stripped automatically.
@@ -97,11 +97,19 @@ In edit mode, two additional actions appear below the Save button:
 
 Tap **Cancel** to leave edit mode without saving.
 
-The toggle controls whether alerts are **active** or **paused** — the management section stays visible either way so you can always edit without re-enabling first.
+Choosing **Off** pauses alerts but keeps the management section visible (if credentials are saved) so you can switch back on without re-entering the App Password. Saving credentials from the setup form always turns alerts on (Alerts Only) if they were Off.
 
-### When emails are sent
+### When alerts are sent
 
-An email is sent once per status change, not on every background check. If a module has been offline for two days (YELLOW) and a third day passes with no production (RED), a second email is sent. When all modules recover, a recovery email is sent. Changing your EMA credentials resets the email history so the next check sends a fresh alert if needed.
+Notifications and Email Alerts each have their own independent level, so you can, for example, get a daily email digest while keeping push notifications set to Alerts Only:
+
+| Level | Behavior |
+|---|---|
+| **Off** | That channel never sends. |
+| **Alerts Only** | Sends only when your module health status actually changes — a degradation (GREEN → YELLOW → RED) or a recovery back to GREEN. This is the original behavior. |
+| **All** | Sends once a day on every background check, even if the status is unchanged and still GREEN — a daily confirmation that checks are still running, so a silent failure doesn't go unnoticed. |
+
+Changing your EMA credentials resets the alert history so the next check sends a fresh alert if needed.
 
 ## Logs
 

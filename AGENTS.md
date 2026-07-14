@@ -66,10 +66,10 @@ Architecture decisions are documented in [`docs/adr/`](docs/adr/). Read the rele
 - `ConfigurationError` is silent — show neutral placeholder only, no error line
 
 **Email alerts** (ADR-008):
-- Emails fire on module health status change only — `newStatus != UNKNOWN && newStatus != lastEmailedStatus`
-- `lastEmailedStatus` and `lastNotifiedStatus` are separate persisted fields in `ema_module_health`; do not merge them
+- Push and email are each gated by their own `AlertLevel` (`OFF`/`ALERTS_ONLY`/`ALL`, `core/AlertLevel.kt`) via the shared pure `shouldAlert(level, previousStatus, newStatus)` in `ModuleHealthWorker.kt` — Off never fires, Alerts Only fires only on status change (covers both degradation and recovery), All fires on every check regardless of change
+- `lastEmailedStatus` and `lastNotifiedStatus` are separate persisted fields in `ema_module_health`; do not merge them; both are updated on every dispatched alert, including under All
 - RED latch: if persisted status is RED and computed status is YELLOW, final status stays RED — only GREEN clears RED
-- `lastEmailedStatus` is updated only on `EmailResult.Success`; leave it unchanged on `AuthFailure` or `NetworkError` so the next change retries
+- `lastEmailedStatus` is updated only on `EmailResult.Success`; leave it unchanged on `AuthFailure` or `NetworkError` so the next eligible check retries
 - App Password must never appear in logs, crash reports, or `ApiCallLogRepository`; `resetThrottle()` on `ModuleHealthRepository` must clear `KEY_LAST_EMAILED_STATUS`
 
 **Package and code organization** (ADR-004):

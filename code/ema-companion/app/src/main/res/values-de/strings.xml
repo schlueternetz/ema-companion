@@ -42,11 +42,19 @@
     <string name="settings_display_mode_dialog_title">Anzeigemodus auswählen</string>
 
     <!-- Notifications -->
-    <string name="settings_notifications_label">Benachrichtigungen aktiviert</string>
+    <string name="settings_notifications_label">Benachrichtigungen</string>
+    <string name="notification_level_option_off">Aus</string>
+    <string name="notification_level_option_alerts_only">Nur Warnungen</string>
+    <string name="notification_level_option_all">Alle</string>
+    <string name="settings_notification_level_dialog_title">Benachrichtigungsstufe auswählen</string>
 
     <!-- Email Alerts -->
     <string name="email_alerts_section_title">E-Mail-Benachrichtigungen</string>
     <string name="email_alerts_toggle_title">E-Mail-Benachrichtigungen</string>
+    <string name="email_alert_level_option_off">Aus</string>
+    <string name="email_alert_level_option_alerts_only">Nur Warnungen</string>
+    <string name="email_alert_level_option_all">Alle</string>
+    <string name="settings_email_alert_level_dialog_title">E-Mail-Benachrichtigungsstufe auswählen</string>
     <string name="email_alerts_enabled_for">E-Mail-Benachrichtigungen aktiv für: %1$s</string>
     <string name="email_alerts_instructions">Erhalte eine E-Mail, wenn ein Modul offline geht.\n\nVoraussetzungen: ein Gmail-Konto mit aktivierter 2-Schritt-Verifizierung.\n\n1. Öffne dein Google-Konto › Sicherheit › App-Passwörter.\n2. Erstelle ein App-Passwort für „Mail" auf „Anderes Gerät".\n3. Gib unten deine Gmail-Adresse und das 16-stellige App-Passwort ein.</string>
     <string name="email_alerts_open_google_account">Google-Konto öffnen ↗</string>
@@ -193,6 +201,8 @@
     <string name="notification_module_health_yellow_text">Ein oder mehrere Module haben seit 1–2 Tagen nicht produziert. Tippen für Details.</string>
     <string name="notification_module_health_red_title">Solarmodul offline – Handlungsbedarf</string>
     <string name="notification_module_health_red_text">Ein oder mehrere Module haben seit 3 Tagen nicht produziert. Anlage prüfen.</string>
+    <string name="notification_module_health_green_title">Alle Module produzieren</string>
+    <string name="notification_module_health_green_text">Deine tägliche Prüfung ist abgeschlossen — jedes Modul in deiner Anlage produziert normal.</string>
 
     <!-- Email alerts -->
     <string name="email_subject_yellow">EMA Companion: Solarmodul offline</string>

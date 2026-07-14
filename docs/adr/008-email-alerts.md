@@ -21,15 +21,30 @@ Email is sent directly from the user's own Gmail account via `smtp.gmail.com:587
 
 OAuth 2.0 was rejected — see Alternatives Considered.
 
-### 2. Status-change-only trigger
+### 2. Level-gated trigger: Off / Alerts Only / All
 
-An email is sent **only when the module health status changes**, not on every 24-hour background check. The last status that triggered an email is persisted as `lastEmailedStatus` in `ema_module_health` SharedPreferences. A new email is sent when:
+Both delivery channels (push and email) are governed by a shared `AlertLevel` enum (`core/AlertLevel.kt`): `OFF`, `ALERTS_ONLY`, `ALL`. Each channel has its own independent setting — `SettingsRepository.notificationLevel` for push, `emailAlertLevel` for email — so a user can, for example, get a daily email digest while keeping push notifications alert-only.
 
+A shared pure function in `ModuleHealthWorker.kt` decides whether a given channel fires for the current check:
+
+```kotlin
+fun shouldAlert(level: AlertLevel, previousStatus: ModuleHealthStatus?, newStatus: ModuleHealthStatus): Boolean =
+    when (level) {
+        AlertLevel.OFF -> false
+        AlertLevel.ALERTS_ONLY -> newStatus != previousStatus
+        AlertLevel.ALL -> true
+    }
 ```
-newStatus != UNKNOWN && newStatus != lastEmailedStatus
-```
 
-`lastEmailedStatus` is updated only on `EmailResult.Success`. On `AuthFailure` or `NetworkError` it is left unchanged so the next status change retries delivery.
+- **Off**: the channel never fires, regardless of status.
+- **Alerts Only**: fires only when the status differs from the last status that fired on that channel — this is the original status-change-only behavior, unchanged, and covers both degradation and recovery back to GREEN.
+- **All**: fires on every 24-hour background check regardless of whether the status changed, so a user gets a daily confirmation that the check is still running even during an extended all-GREEN streak.
+
+For email, `lastEmailedStatus` (persisted in `ema_module_health`) is still updated on every dispatched email — including under `ALL` — so switching back to `ALERTS_ONLY` doesn't immediately re-fire for a status that hasn't actually changed. It is updated only on `EmailResult.Success`; on `AuthFailure` or `NetworkError` it is left unchanged so the next eligible check retries delivery. Push notifications follow the same pattern with `lastNotifiedStatus`.
+
+Under `ALL`, `ModuleHealthNotifier.notify()` also posts a new GREEN "all clear" push notification (via a `postOnGreen: Boolean` parameter) — previously GREEN always silently cancelled any existing notification with nothing posted in its place. Email's existing GREEN subject/body content is reused as-is for the daily confirmation; no new email content was needed.
+
+**Migration**: the two boolean preferences this replaced (`notificationsEnabled`, `emailAlertsEnabled`) are migrated lazily the first time each new level is read after upgrading — `true` becomes `ALERTS_ONLY`, `false` becomes `OFF` — so existing users' settings carry forward instead of silently resetting to the new defaults (`ALERTS_ONLY` for push, `OFF` for email).
 
 ### 3. Separate persisted fields for each delivery channel
 
@@ -50,9 +65,11 @@ A module oscillating between offline and zero-production days should not silentl
 ### 5. Settings UI
 
 Email Alerts are configured in a dedicated card on the Settings screen, below API Settings. The card contains:
-- A toggle (`MaterialSwitch`). When turned on with no credentials saved, an inline setup form appears.
-- The setup form: instruction text, **Open Google Account ↗** button (fires `ACTION_VIEW` to `myaccount.google.com/apppasswords`), Gmail address field, App Password field, and a **Verify & Save** button that calls `GmailSmtpEmailSender.testConnection()` before persisting credentials.
-- When credentials are saved: a status row showing "Email alerts enabled for: address" — tapping it shows a disable confirmation dialog that removes credentials and clears `lastEmailedStatus`.
+- A value row (`settings_email_alert_level_row`) showing the current level, matching the existing Language/Display Mode tap-to-open-dialog pattern rather than a switch — selecting Off/Alerts Only/All persists immediately. Selecting a non-Off level with no credentials saved reveals an inline setup form; selecting Off keeps the status row visible if credentials are already saved, so the user can switch back on without re-entering the App Password.
+- The setup form: instruction text, **Open Google Account ↗** button (fires `ACTION_VIEW` to `myaccount.google.com/apppasswords`), Gmail address field, App Password field, and a **Verify & Save** button that calls `GmailSmtpEmailSender.testConnection()` before persisting credentials. Saving promotes the level to Alerts Only if it was Off (matching the old "save always re-enables" behavior); an existing All or Alerts Only selection is left as-is.
+- When credentials are saved: a status row showing "Email alerts enabled for: address" — tapping it shows a disable confirmation dialog that removes credentials, sets the level to Off, and clears `lastEmailedStatus`.
+
+The push notification level uses the equivalent row (`settings_notification_level_row`) directly under App Settings.
 
 ## Alternatives Considered
 
@@ -67,8 +84,9 @@ Email Alerts are configured in a dedicated card on the Settings screen, below AP
 ## Consequences
 
 - `ModuleHealthRepository` exposes `getLastEmailedStatus()`, `setLastEmailedStatus()`, and clears `KEY_LAST_EMAILED_STATUS` in `resetThrottle()`.
-- `ModuleHealthWorker.doWork()` sends email after computing status, independently of push notification result.
+- `ModuleHealthWorker.doWork()` evaluates `shouldAlert()` independently for push (`notificationLevel`) and email (`emailAlertLevel`), each against its own previous-status field, and sends email independently of the push notification result.
 - `GmailSmtpEmailSender` takes injectable `smtpHost`, `smtpPort`, and `useTls` parameters so unit tests can point at a GreenMail in-process server.
 - App Password is stored in `EncryptedSharedPreferences` and must never be logged, included in crash reports, or passed to `ApiCallLogRepository`.
 - `SettingsFragmentTest.setUp()` must clear `ema_companion_settings` (which holds email credentials) — already satisfied by the existing full clear of that store.
-- Disabling email alerts removes credentials and clears `lastEmailedStatus`; the next enable re-runs the Verify & Save flow.
+- Disabling email alerts (selecting Off with a saved account, or clearing credentials) removes credentials when cleared and clears `lastEmailedStatus`; the next Verify & Save re-runs the setup flow.
+- `notificationLevel` and `emailAlertLevel` (both `AlertLevel`, persisted as their `name()`) replace the old `notificationsEnabled`/`emailAlertsEnabled` booleans; `SettingsRepository` migrates the legacy boolean lazily at read time so existing installs keep their prior effective behavior after upgrading. Email address/App Password/level remain outside `exportToJson()`/`importFromJson()`, matching the pre-existing (not new) exclusion of email settings from export.

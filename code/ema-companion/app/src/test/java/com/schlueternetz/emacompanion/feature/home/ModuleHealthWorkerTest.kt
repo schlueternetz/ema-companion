@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.testing.TestListenableWorkerBuilder
+import com.schlueternetz.emacompanion.core.AlertLevel
 import com.schlueternetz.emacompanion.core.HomeTile
 import com.schlueternetz.emacompanion.core.api.ApiResult
 import com.schlueternetz.emacompanion.core.api.BatchEnergyFetch
@@ -138,11 +139,36 @@ class ModuleHealthWorkerTest {
         assertEquals(ModuleHealthStatus.YELLOW, repo.getLastNotifiedStatus())
     }
 
+    // ── notification level gating ───────────────────────────────────────────
+
+    @Test
+    fun doWork_notificationLevelOff_noNotificationEvenOnChange() {
+        settingsRepo.setNotificationLevel(AlertLevel.OFF)
+        seedYellow()
+
+        runWorker()
+
+        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        assertEquals("Off level must never notify", 0, Shadows.shadowOf(nm).size())
+    }
+
+    @Test
+    fun doWork_notificationLevelAll_notifiesEvenWhenStatusUnchanged() {
+        settingsRepo.setNotificationLevel(AlertLevel.ALL)
+        repo.setLastNotifiedStatus(ModuleHealthStatus.YELLOW)
+        seedYellow()
+
+        runWorker()
+
+        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        assertEquals("All level notifies every check regardless of change", 1, Shadows.shadowOf(nm).size())
+    }
+
     // ── email integration ─────────────────────────────────────────────────────
 
     @Test
     fun doWork_statusChanges_emailConfigured_sendsEmail() {
-        settingsRepo.setEmailAlertsEnabled(true)
+        settingsRepo.setEmailAlertLevel(AlertLevel.ALERTS_ONLY)
         settingsRepo.setEmailAddress("user@example.com")
         settingsRepo.setEmailAppPassword("secret")
         seedYellow()
@@ -156,7 +182,7 @@ class ModuleHealthWorkerTest {
 
     @Test
     fun doWork_sameStatus_noEmail() {
-        settingsRepo.setEmailAlertsEnabled(true)
+        settingsRepo.setEmailAlertLevel(AlertLevel.ALERTS_ONLY)
         settingsRepo.setEmailAddress("user@example.com")
         settingsRepo.setEmailAppPassword("secret")
         repo.setLastEmailedStatus(ModuleHealthStatus.YELLOW)
@@ -169,20 +195,43 @@ class ModuleHealthWorkerTest {
     }
 
     @Test
-    fun doWork_emailDisabled_noEmail() {
-        settingsRepo.setEmailAlertsEnabled(false)
+    fun doWork_emailLevelOff_noEmail() {
+        settingsRepo.setEmailAlertLevel(AlertLevel.OFF)
         settingsRepo.setEmailAddress("user@example.com")
         settingsRepo.setEmailAppPassword("secret")
         seedYellow()
 
         runWorker()
 
-        assertEquals("no email when toggle is off", 0, fakeEmailSender.sentCount)
+        assertEquals("no email when level is Off", 0, fakeEmailSender.sentCount)
+    }
+
+    @Test
+    fun doWork_emailLevelAll_sendsEvenWhenStatusUnchanged() {
+        settingsRepo.setEmailAlertLevel(AlertLevel.ALL)
+        settingsRepo.setEmailAddress("user@example.com")
+        settingsRepo.setEmailAppPassword("secret")
+        repo.setLastEmailedStatus(ModuleHealthStatus.YELLOW)
+        seedYellow()
+
+        runWorker()
+
+        assertEquals("All level sends every check regardless of change", 1, fakeEmailSender.sentCount)
+    }
+
+    @Test
+    fun doWork_emailUnconfigured_neverSendsRegardlessOfLevel() {
+        settingsRepo.setEmailAlertLevel(AlertLevel.ALL)
+        seedYellow()
+
+        runWorker()
+
+        assertEquals("unconfigured email must never send", 0, fakeEmailSender.sentCount)
     }
 
     @Test
     fun doWork_emailAuthFailure_lastEmailedStatusNotUpdated() {
-        settingsRepo.setEmailAlertsEnabled(true)
+        settingsRepo.setEmailAlertLevel(AlertLevel.ALERTS_ONLY)
         settingsRepo.setEmailAddress("user@example.com")
         settingsRepo.setEmailAppPassword("secret")
         fakeEmailSender.nextResult = EmailResult.AuthFailure
@@ -198,7 +247,7 @@ class ModuleHealthWorkerTest {
 
     @Test
     fun doWork_recoveryGreen_emailConfigured_sendsRecoveryEmail() {
-        settingsRepo.setEmailAlertsEnabled(true)
+        settingsRepo.setEmailAlertLevel(AlertLevel.ALERTS_ONLY)
         settingsRepo.setEmailAddress("user@example.com")
         settingsRepo.setEmailAppPassword("secret")
         repo.setLastEmailedStatus(ModuleHealthStatus.YELLOW)

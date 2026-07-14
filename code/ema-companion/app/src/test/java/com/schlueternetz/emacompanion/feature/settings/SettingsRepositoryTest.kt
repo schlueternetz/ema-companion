@@ -3,6 +3,7 @@ package com.schlueternetz.emacompanion.feature.settings
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
+import com.schlueternetz.emacompanion.core.AlertLevel
 import com.schlueternetz.emacompanion.core.HomeTile
 import com.schlueternetz.emacompanion.core.HomeWidget
 import org.json.JSONObject
@@ -139,16 +140,35 @@ class SettingsRepositoryTest {
         assertEquals(30, repo.getHistoricDataDays())
     }
 
-    // Notifications Enabled
+    // Notification Level
     @Test
-    fun getNotificationsEnabled_returnsTrue_whenNothingStored() {
-        assertEquals(true, repo.getNotificationsEnabled())
+    fun getNotificationLevel_returnsAlertsOnly_whenNothingStored() {
+        assertEquals(AlertLevel.ALERTS_ONLY, repo.getNotificationLevel())
     }
 
     @Test
-    fun setNotificationsEnabled_persistsAndReturnsValue() {
-        repo.setNotificationsEnabled(false)
-        assertEquals(false, repo.getNotificationsEnabled())
+    fun setNotificationLevel_persistsAndReturnsValue() {
+        repo.setNotificationLevel(AlertLevel.ALL)
+        assertEquals(AlertLevel.ALL, repo.getNotificationLevel())
+    }
+
+    @Test
+    fun getNotificationLevel_migratesLegacyTrue_toAlertsOnly() {
+        prefs.edit().putBoolean("notificationsEnabled", true).apply()
+        assertEquals(AlertLevel.ALERTS_ONLY, repo.getNotificationLevel())
+    }
+
+    @Test
+    fun getNotificationLevel_migratesLegacyFalse_toOff() {
+        prefs.edit().putBoolean("notificationsEnabled", false).apply()
+        assertEquals(AlertLevel.OFF, repo.getNotificationLevel())
+    }
+
+    @Test
+    fun getNotificationLevel_migrationPersistsUnderNewKey() {
+        prefs.edit().putBoolean("notificationsEnabled", false).apply()
+        repo.getNotificationLevel()
+        assertEquals("OFF", prefs.getString("notificationLevel", null))
     }
 
     // Base URL
@@ -244,7 +264,7 @@ class SettingsRepositoryTest {
         repo.setSystemCapacity(4.5f)
         repo.setHistoricDataDays(30)
         repo.setApiRequestLimit(1000)
-        repo.setNotificationsEnabled(false)
+        repo.setNotificationLevel(AlertLevel.OFF)
         repo.setBaseUrl("http://test.com")
         repo.setDisplayMode("dark")
 
@@ -259,7 +279,7 @@ class SettingsRepositoryTest {
         assertTrue(obj.has("systemCapacity"))
         assertTrue(obj.has("historicDataDays"))
         assertTrue(obj.has("apiRequestLimit"))
-        assertTrue(obj.has("notificationsEnabled"))
+        assertTrue(obj.has("notificationLevel"))
         assertTrue(obj.has("baseUrl"))
         assertTrue(obj.has("displayMode"))
     }
@@ -324,7 +344,7 @@ class SettingsRepositoryTest {
         repo.importFromJson(
             """{"language":"de","emaAppId":"a","emaAppSecret":"b","emaSystemId":"c",
             "emaEcuId":"d","systemCapacity":5.5,"historicDataDays":45,"apiRequestLimit":800,
-            "notificationsEnabled":false,"baseUrl":"http://x.com","displayMode":"light"}""",
+            "notificationLevel":"OFF","baseUrl":"http://x.com","displayMode":"light"}""",
         )
         assertEquals("de", repo.getLanguage())
         assertEquals("a", repo.getEmaAppId())
@@ -334,9 +354,21 @@ class SettingsRepositoryTest {
         assertEquals(5.5f, repo.getSystemCapacity(), 0.01f)
         assertEquals(45, repo.getHistoricDataDays())
         assertEquals(800, repo.getApiRequestLimit())
-        assertEquals(false, repo.getNotificationsEnabled())
+        assertEquals(AlertLevel.OFF, repo.getNotificationLevel())
         assertEquals("http://x.com", repo.getBaseUrl())
         assertEquals("light", repo.getDisplayMode())
+    }
+
+    @Test
+    fun importFromJson_migratesLegacyNotificationsEnabledBoolean() {
+        repo.importFromJson("""{"notificationsEnabled":false}""")
+        assertEquals(AlertLevel.OFF, repo.getNotificationLevel())
+    }
+
+    @Test
+    fun importFromJson_prefersNewLevelKeyOverLegacyBooleanWhenBothPresent() {
+        repo.importFromJson("""{"notificationsEnabled":false,"notificationLevel":"ALL"}""")
+        assertEquals(AlertLevel.ALL, repo.getNotificationLevel())
     }
 
     // API Request Limit
@@ -376,16 +408,35 @@ class SettingsRepositoryTest {
         assertEquals(750, repo.getApiRequestLimit())
     }
 
-    // Email alerts enabled
+    // Email Alert Level
     @Test
-    fun getEmailAlertsEnabled_returnsFalse_byDefault() {
-        assertFalse(repo.getEmailAlertsEnabled())
+    fun getEmailAlertLevel_returnsOff_byDefault() {
+        assertEquals(AlertLevel.OFF, repo.getEmailAlertLevel())
     }
 
     @Test
-    fun setEmailAlertsEnabled_persists() {
-        repo.setEmailAlertsEnabled(true)
-        assertTrue(repo.getEmailAlertsEnabled())
+    fun setEmailAlertLevel_persists() {
+        repo.setEmailAlertLevel(AlertLevel.ALL)
+        assertEquals(AlertLevel.ALL, repo.getEmailAlertLevel())
+    }
+
+    @Test
+    fun getEmailAlertLevel_migratesLegacyTrue_toAlertsOnly() {
+        prefs.edit().putBoolean("emailAlertsEnabled", true).apply()
+        assertEquals(AlertLevel.ALERTS_ONLY, repo.getEmailAlertLevel())
+    }
+
+    @Test
+    fun getEmailAlertLevel_migratesLegacyFalse_toOff() {
+        prefs.edit().putBoolean("emailAlertsEnabled", false).apply()
+        assertEquals(AlertLevel.OFF, repo.getEmailAlertLevel())
+    }
+
+    @Test
+    fun getEmailAlertLevel_migrationPersistsUnderNewKey() {
+        prefs.edit().putBoolean("emailAlertsEnabled", true).apply()
+        repo.getEmailAlertLevel()
+        assertEquals("ALERTS_ONLY", prefs.getString("emailAlertLevel", null))
     }
 
     // Email credentials
@@ -456,7 +507,7 @@ class SettingsRepositoryTest {
         repo.setEmaEcuId("123456")
         repo.setSystemCapacity(5.0f)
         repo.setHistoricDataDays(30)
-        repo.setNotificationsEnabled(false)
+        repo.setNotificationLevel(AlertLevel.OFF)
         repo.setBaseUrl("http://test.com")
         repo.setDisplayMode("dark")
 
@@ -469,7 +520,7 @@ class SettingsRepositoryTest {
         assertEquals("", repo.getEmaEcuId())
         assertEquals(-1f, repo.getSystemCapacity(), 0.001f)
         assertEquals(SettingsRepository.HISTORIC_DATA_DAYS_DEFAULT, repo.getHistoricDataDays())
-        assertEquals(true, repo.getNotificationsEnabled())
+        assertEquals(AlertLevel.ALERTS_ONLY, repo.getNotificationLevel())
         assertEquals(SettingsRepository.BASE_URL_DEFAULT, repo.getBaseUrl())
         assertEquals(SettingsRepository.DISPLAY_MODE_DEFAULT, repo.getDisplayMode())
     }

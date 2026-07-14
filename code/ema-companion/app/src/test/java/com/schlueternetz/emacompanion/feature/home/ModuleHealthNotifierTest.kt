@@ -92,4 +92,28 @@ class ModuleHealthNotifierTest {
         val shadow = Shadows.shadowOf(manager)
         assertEquals(0, shadow.allNotifications.size)
     }
+
+    @Test
+    fun greenStatus_withPostOnGreenTrue_postsConfirmationNotification() {
+        ModuleHealthNotifier.notify(context, ModuleHealthState(ModuleHealthStatus.GREEN), postOnGreen = true)
+        val shadow = Shadows.shadowOf(manager)
+        assertEquals(1, shadow.allNotifications.size)
+    }
+
+    @Test
+    fun greenStatus_withPostOnGreenTrue_consecutiveChecksReplaceNotStack() {
+        val state = ModuleHealthState(ModuleHealthStatus.GREEN)
+        ModuleHealthNotifier.notify(context, state, postOnGreen = true)
+        ModuleHealthNotifier.notify(context, state, postOnGreen = true)
+
+        val shadow = Shadows.shadowOf(manager)
+        assertEquals(1, shadow.allNotifications.size)
+    }
+
+    @Test
+    fun unknownStatus_withPostOnGreenTrue_stillDoesNotPostNotification() {
+        ModuleHealthNotifier.notify(context, ModuleHealthState(ModuleHealthStatus.UNKNOWN), postOnGreen = true)
+        val shadow = Shadows.shadowOf(manager)
+        assertEquals(0, shadow.allNotifications.size)
+    }
 }

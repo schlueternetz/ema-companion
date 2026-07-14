@@ -46,7 +46,7 @@ Das Ändern der **Zeitzone der Anlage** plant den täglichen Modulstatus-Job sof
 |---|---|
 | **Sprache** | Tippen wählt aus: System (Gerätestandard), Englisch oder Deutsch. Wirkt sofort. |
 | **Anzeigemodus** | Tippen wählt aus: System (folgt OS Hell/Dunkel-Modus), Hell oder Dunkel. Wirkt sofort. |
-| **Benachrichtigungen aktiviert** | Schalter; standardmäßig aktiviert. Wirkt sofort — kein Speichern erforderlich. |
+| **Benachrichtigungen** | Tippen wählt aus: Aus, Nur Warnungen oder Alle. Standard ist Nur Warnungen. Wirkt sofort — siehe „Wann Benachrichtigungen gesendet werden" unter E-Mail-Benachrichtigungen. |
 | **Verlaufszeitraum (Tage)** | Anzahl der Tage des gespeicherten Produktionsverlaufs (1–90); Standard ist 30. |
 
 ## Kacheln & Widgets
@@ -73,13 +73,13 @@ Diese Einstellungen sind in Import/Export enthalten und werden beim Werksreset w
 
 ## E-Mail-Benachrichtigungen
 
-Sendet eine E-Mail, wenn sich der Modulstatus ändert (GRÜN → GELB oder ROT und zurück zu GRÜN). E-Mails werden über dein eigenes Gmail-Konto mit einem App-Passwort verschickt — kein Drittanbieter-Relay erforderlich.
+Sendet eine E-Mail zu deinem Modulstatus. E-Mails werden über dein eigenes Gmail-Konto mit einem App-Passwort verschickt — kein Drittanbieter-Relay erforderlich. Wie bei Benachrichtigungen wählst du bei **E-Mail-Benachrichtigungen** durch Tippen eine Stufe (Aus, Nur Warnungen oder Alle) — siehe „Wann Benachrichtigungen gesendet werden" unten.
 
 **Voraussetzung:** Ein Gmail-Konto mit aktivierter 2-Schritt-Verifizierung.
 
 ### E-Mail-Benachrichtigungen einrichten
 
-1. Schalte **E-Mail-Benachrichtigungen** ein. Unterhalb des Schalters erscheint ein Einrichtungsformular.
+1. Tippe auf **E-Mail-Benachrichtigungen** und wähle **Nur Warnungen** oder **Alle**. Darunter erscheint ein Einrichtungsformular.
 2. Tippe auf **Google-Konto öffnen ↗**, um `myaccount.google.com/apppasswords` in deinem Browser zu öffnen.
 3. Gehe in deinem Google-Konto zu **Sicherheit → App-Passwörter** und erstelle eines für „Mail" auf „Anderes Gerät". Kopiere das angezeigte 16-stellige Passwort.
 4. Gib in EMA Companion deine Gmail-Adresse ein und füge das App-Passwort ein. Leerzeichen im App-Passwort werden automatisch entfernt.
@@ -98,11 +98,19 @@ Im Bearbeitungsmodus erscheinen unterhalb der Speichern-Schaltfläche zwei weite
 
 Tippe auf **Abbrechen**, um den Bearbeitungsmodus ohne Speichern zu verlassen.
 
-Der Schalter steuert, ob Benachrichtigungen **aktiv** oder **pausiert** sind — der Verwaltungsbereich bleibt in beiden Zuständen sichtbar, sodass du jederzeit bearbeiten kannst, ohne vorher aktivieren zu müssen.
+Wählst du **Aus**, werden Benachrichtigungen pausiert, aber der Verwaltungsbereich bleibt sichtbar (falls Zugangsdaten gespeichert sind), sodass du wieder einschalten kannst, ohne das App-Passwort erneut einzugeben. Das Speichern von Zugangsdaten im Einrichtungsformular schaltet Benachrichtigungen immer ein (Nur Warnungen), falls sie aus waren.
 
-### Wann E-Mails gesendet werden
+### Wann Benachrichtigungen gesendet werden
 
-Eine E-Mail wird einmal pro Statusänderung gesendet, nicht bei jeder Hintergrundprüfung. Wenn ein Modul zwei Tage offline war (GELB) und ein dritter Tag ohne Produktion vergeht (ROT), wird eine zweite E-Mail gesendet. Wenn alle Module wieder produzieren, wird eine Wiederherstellungs-E-Mail gesendet. Das Ändern der EMA-Zugangsdaten setzt den E-Mail-Verlauf zurück, sodass die nächste Prüfung bei Bedarf eine neue Benachrichtigung sendet.
+Benachrichtigungen und E-Mail-Benachrichtigungen haben jeweils eine eigene, unabhängige Stufe — du kannst z. B. eine tägliche E-Mail-Zusammenfassung erhalten und gleichzeitig Push-Benachrichtigungen auf Nur Warnungen belassen:
+
+| Stufe | Verhalten |
+|---|---|
+| **Aus** | Dieser Kanal sendet nie. |
+| **Nur Warnungen** | Sendet nur, wenn sich dein Modulstatus tatsächlich ändert — eine Verschlechterung (GRÜN → GELB → ROT) oder eine Wiederherstellung zurück zu GRÜN. Das ist das ursprüngliche Verhalten. |
+| **Alle** | Sendet einmal täglich bei jeder Hintergrundprüfung, auch wenn der Status unverändert und weiterhin GRÜN ist — eine tägliche Bestätigung, dass die Prüfungen noch laufen, damit ein stiller Ausfall nicht unbemerkt bleibt. |
+
+Das Ändern der EMA-Zugangsdaten setzt den Benachrichtigungsverlauf zurück, sodass die nächste Prüfung bei Bedarf eine neue Benachrichtigung sendet.
 
 ## Protokolle
 

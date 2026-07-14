@@ -6,6 +6,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.schlueternetz.emacompanion.core.AlertLevel
 import com.schlueternetz.emacompanion.core.AppConfig
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthRepository
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthStatus
@@ -17,6 +18,24 @@ import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
+
+/**
+ * Whether a module health alert should be dispatched for [newStatus] at the given [level]:
+ * - [AlertLevel.OFF] never alerts.
+ * - [AlertLevel.ALERTS_ONLY] alerts only when the status differs from [previousStatus] (covers
+ *   both degradation and recovery).
+ * - [AlertLevel.ALL] alerts on every check regardless of change.
+ */
+internal fun shouldAlert(
+    level: AlertLevel,
+    previousStatus: ModuleHealthStatus?,
+    newStatus: ModuleHealthStatus,
+): Boolean =
+    when (level) {
+        AlertLevel.OFF -> false
+        AlertLevel.ALERTS_ONLY -> newStatus != previousStatus
+        AlertLevel.ALL -> true
+    }
 
 class ModuleHealthWorker(
     context: Context,
@@ -30,16 +49,18 @@ class ModuleHealthWorker(
         val state = repo.refresh()
         val newStatus = state.status
 
-        if (newStatus != ModuleHealthStatus.UNKNOWN && newStatus != previousNotifiedStatus) {
+        val notificationLevel = settings.getNotificationLevel()
+        if (newStatus != ModuleHealthStatus.UNKNOWN &&
+            shouldAlert(notificationLevel, previousNotifiedStatus, newStatus)
+        ) {
             ModuleHealthNotifier.ensureChannelCreated(applicationContext)
-            ModuleHealthNotifier.notify(applicationContext, state)
+            ModuleHealthNotifier.notify(applicationContext, state, postOnGreen = notificationLevel == AlertLevel.ALL)
             repo.setLastNotifiedStatus(newStatus)
         }
 
         if (newStatus != ModuleHealthStatus.UNKNOWN &&
-            newStatus != previousEmailedStatus &&
-            settings.isEmailConfigured() &&
-            settings.getEmailAlertsEnabled()
+            shouldAlert(settings.getEmailAlertLevel(), previousEmailedStatus, newStatus) &&
+            settings.isEmailConfigured()
         ) {
             val sender =
                 emailSenderOverride ?: GmailSmtpEmailSender(

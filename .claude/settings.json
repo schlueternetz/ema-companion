@@ -141,7 +141,8 @@
       "Bash(curl -s -m 3 http://localhost:8080/ -o /dev/null -w \"%{http_code}\\\\n\")",
       "Bash(curl -s -X POST http://localhost:8080/__stub__/reset -w \"\\\\nHTTP %{http_code}\\\\n\")",
       "Bash(cp \"C:/Users/micro/.maestro/tests/2026-07-13_221416/screenshot-❌-1784002537065-\\(a-home-screen\\).png\" \"D:/ema-debug/screenshot2.png\" *)",
-      "Bash(cp \"C:/Users/micro/.maestro/tests/2026-07-13_223117/screenshot-❌-1784003570587-\\(a-home-screen\\).png\" \"D:/ema-debug/screenshot3.png\")"
+      "Bash(cp \"C:/Users/micro/.maestro/tests/2026-07-13_223117/screenshot-❌-1784003570587-\\(a-home-screen\\).png\" \"D:/ema-debug/screenshot3.png\")",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.feature.settings.SettingsRepositoryTest\")"
     ],
     "additionalDirectories": [
       "D:\\ema-debug",

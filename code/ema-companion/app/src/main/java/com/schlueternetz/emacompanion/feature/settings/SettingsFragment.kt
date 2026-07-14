@@ -21,12 +21,12 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
-import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.schlueternetz.emacompanion.BuildConfig
 import com.schlueternetz.emacompanion.R
+import com.schlueternetz.emacompanion.core.AlertLevel
 import com.schlueternetz.emacompanion.core.HomeTile
 import com.schlueternetz.emacompanion.core.HomeWidget
 import com.schlueternetz.emacompanion.core.api.ApiUsageRepository
@@ -56,8 +56,8 @@ class SettingsFragment : Fragment() {
     private lateinit var languageValueView: TextView
     private lateinit var displayModeValueView: TextView
     private lateinit var arrayTimezoneValueView: TextView
-    private lateinit var notificationsSwitch: MaterialSwitch
-    private lateinit var emailAlertsSwitch: MaterialSwitch
+    private lateinit var notificationLevelValueView: TextView
+    private lateinit var emailAlertLevelValueView: TextView
     private lateinit var emailAlertsSetupRow: View
     private lateinit var emailAlertsStatusRow: View
     private lateinit var emailAlertsStatusText: TextView
@@ -69,7 +69,6 @@ class SettingsFragment : Fragment() {
     private lateinit var emailAlertsTestButton: View
     private lateinit var emailAlertsTestResult: TextView
     private lateinit var emailAlertsClearButton: View
-    private var suppressEmailSwitchListener = false
     private var isEditingExisting = false
     private lateinit var settingEmaAppId: SettingRowView
     private lateinit var settingEmaAppSecret: SettingRowView
@@ -136,8 +135,8 @@ class SettingsFragment : Fragment() {
         languageValueView = view.findViewById(R.id.settings_language_value)
         displayModeValueView = view.findViewById(R.id.settings_display_mode_value)
         arrayTimezoneValueView = view.findViewById(R.id.settings_array_timezone_value)
-        notificationsSwitch = view.findViewById(R.id.settings_notifications_switch)
-        emailAlertsSwitch = view.findViewById(R.id.settings_email_alerts_switch)
+        notificationLevelValueView = view.findViewById(R.id.settings_notification_level_value)
+        emailAlertLevelValueView = view.findViewById(R.id.settings_email_alert_level_value)
         emailAlertsSetupRow = view.findViewById(R.id.settings_email_alerts_setup_row)
         emailAlertsStatusRow = view.findViewById(R.id.settings_email_alerts_status_row)
         emailAlertsStatusText = view.findViewById(R.id.settings_email_alerts_status_text)
@@ -171,7 +170,7 @@ class SettingsFragment : Fragment() {
         wireLanguage(view)
         wireDisplayMode(view)
         wireArrayTimezone(view)
-        wireNotifications()
+        wireNotifications(view)
         wireEmailAlerts(view)
         wireHistoricDays()
         wireApiRequestLimit(view)
@@ -493,27 +492,9 @@ class SettingsFragment : Fragment() {
 
     private fun wireEmailAlerts(view: View) {
         updateEmailAlertsDisplay()
-        emailAlertsSwitch.setOnCheckedChangeListener { _, isChecked ->
-            if (suppressEmailSwitchListener) return@setOnCheckedChangeListener
-            if (isChecked) {
-                repository.setEmailAlertsEnabled(true)
-                if (!repository.isEmailConfigured()) {
-                    isEditingExisting = false
-                    emailAlertsCancelButton.visibility = View.GONE
-                    emailAlertsSetupRow.visibility = View.VISIBLE
-                    emailAlertsStatusRow.visibility = View.GONE
-                } else {
-                    updateEmailAlertsStatusText()
-                }
-            } else {
-                repository.setEmailAlertsEnabled(false)
-                if (repository.isEmailConfigured()) {
-                    updateEmailAlertsStatusText()
-                } else {
-                    emailAlertsSetupRow.visibility = View.GONE
-                }
-            }
-        }
+        view
+            .findViewById<View>(R.id.settings_email_alert_level_row)
+            .setOnClickListener { showEmailAlertLevelDialog() }
         emailAlertsEditButton.setOnClickListener { showEmailEditMode() }
         emailAlertsCancelButton.setOnClickListener { cancelEmailEdit() }
         emailAlertsTestButton.setOnClickListener { sendTestEmail() }
@@ -526,11 +507,39 @@ class SettingsFragment : Fragment() {
         }
     }
 
+    private fun showEmailAlertLevelDialog() {
+        val options =
+            arrayOf(
+                getString(R.string.email_alert_level_option_off),
+                getString(R.string.email_alert_level_option_alerts_only),
+                getString(R.string.email_alert_level_option_all),
+            )
+        val levels = arrayOf(AlertLevel.OFF, AlertLevel.ALERTS_ONLY, AlertLevel.ALL)
+        AlertDialog
+            .Builder(requireContext())
+            .setTitle(R.string.settings_email_alert_level_dialog_title)
+            .setItems(options) { _, which -> onEmailAlertLevelSelected(levels[which]) }
+            .show()
+    }
+
+    private fun onEmailAlertLevelSelected(level: AlertLevel) {
+        repository.setEmailAlertLevel(level)
+        if (level != AlertLevel.OFF && !repository.isEmailConfigured()) {
+            isEditingExisting = false
+            emailAlertsCancelButton.visibility = View.GONE
+            emailAlertsSetupRow.visibility = View.VISIBLE
+            emailAlertsStatusRow.visibility = View.GONE
+        } else if (repository.isEmailConfigured()) {
+            updateEmailAlertsStatusText()
+        } else {
+            emailAlertsSetupRow.visibility = View.GONE
+        }
+        updateEmailAlertLevelDisplay()
+    }
+
     private fun updateEmailAlertsDisplay() {
-        suppressEmailSwitchListener = true
+        updateEmailAlertLevelDisplay()
         val configured = repository.isEmailConfigured()
-        val enabled = repository.getEmailAlertsEnabled()
-        emailAlertsSwitch.isChecked = configured && enabled
         if (configured) {
             emailAlertsStatusRow.visibility = View.VISIBLE
             updateEmailAlertsStatusText()
@@ -539,8 +548,18 @@ class SettingsFragment : Fragment() {
             emailAlertsStatusRow.visibility = View.GONE
             emailAlertsSetupRow.visibility = View.GONE
         }
-        suppressEmailSwitchListener = false
     }
+
+    private fun updateEmailAlertLevelDisplay() {
+        emailAlertLevelValueView.text = emailAlertLevelDisplayName(repository.getEmailAlertLevel())
+    }
+
+    private fun emailAlertLevelDisplayName(level: AlertLevel): String =
+        when (level) {
+            AlertLevel.OFF -> getString(R.string.email_alert_level_option_off)
+            AlertLevel.ALERTS_ONLY -> getString(R.string.email_alert_level_option_alerts_only)
+            AlertLevel.ALL -> getString(R.string.email_alert_level_option_all)
+        }
 
     private fun updateEmailAlertsStatusText() {
         emailAlertsStatusText.text = repository.getEmailAddress()
@@ -602,7 +621,7 @@ class SettingsFragment : Fragment() {
             .setMessage(R.string.email_alerts_disable_message)
             .setPositiveButton(R.string.email_alerts_disable_confirm) { _, _ ->
                 repository.deleteEmailCredentials()
-                repository.setEmailAlertsEnabled(false)
+                repository.setEmailAlertLevel(AlertLevel.OFF)
                 requireContext()
                     .getSharedPreferences(
                         ModuleHealthRepository.PREFS_HEALTH,
@@ -610,9 +629,7 @@ class SettingsFragment : Fragment() {
                     ).edit()
                     .remove(ModuleHealthRepository.KEY_LAST_EMAILED_STATUS)
                     .apply()
-                suppressEmailSwitchListener = true
-                emailAlertsSwitch.isChecked = false
-                suppressEmailSwitchListener = false
+                updateEmailAlertLevelDisplay()
                 isEditingExisting = false
                 emailAlertsCancelButton.visibility = View.GONE
                 emailAlertsTestButton.visibility = View.GONE
@@ -638,11 +655,11 @@ class SettingsFragment : Fragment() {
         emailAlertsError.visibility = View.GONE
         repository.setEmailAddress(address)
         repository.setEmailAppPassword(password)
-        repository.setEmailAlertsEnabled(true)
+        if (repository.getEmailAlertLevel() == AlertLevel.OFF) {
+            repository.setEmailAlertLevel(AlertLevel.ALERTS_ONLY)
+        }
         isEditingExisting = false
-        suppressEmailSwitchListener = true
-        emailAlertsSwitch.isChecked = true
-        suppressEmailSwitchListener = false
+        updateEmailAlertLevelDisplay()
         emailAlertsCancelButton.visibility = View.GONE
         emailAlertsTestButton.visibility = View.GONE
         emailAlertsClearButton.visibility = View.GONE
@@ -651,11 +668,39 @@ class SettingsFragment : Fragment() {
         updateEmailAlertsStatusText()
     }
 
-    private fun wireNotifications() {
-        notificationsSwitch.isChecked = repository.getNotificationsEnabled()
-        notificationsSwitch.setOnCheckedChangeListener { _, isChecked ->
-            repository.setNotificationsEnabled(isChecked)
+    private fun wireNotifications(view: View) {
+        updateNotificationLevelDisplay()
+        view
+            .findViewById<View>(R.id.settings_notification_level_row)
+            .setOnClickListener { showNotificationLevelDialog() }
+    }
+
+    private fun updateNotificationLevelDisplay() {
+        notificationLevelValueView.text = notificationLevelDisplayName(repository.getNotificationLevel())
+    }
+
+    private fun notificationLevelDisplayName(level: AlertLevel): String =
+        when (level) {
+            AlertLevel.OFF -> getString(R.string.notification_level_option_off)
+            AlertLevel.ALERTS_ONLY -> getString(R.string.notification_level_option_alerts_only)
+            AlertLevel.ALL -> getString(R.string.notification_level_option_all)
         }
+
+    private fun showNotificationLevelDialog() {
+        val options =
+            arrayOf(
+                getString(R.string.notification_level_option_off),
+                getString(R.string.notification_level_option_alerts_only),
+                getString(R.string.notification_level_option_all),
+            )
+        val levels = arrayOf(AlertLevel.OFF, AlertLevel.ALERTS_ONLY, AlertLevel.ALL)
+        AlertDialog
+            .Builder(requireContext())
+            .setTitle(R.string.settings_notification_level_dialog_title)
+            .setItems(options) { _, which ->
+                repository.setNotificationLevel(levels[which])
+                updateNotificationLevelDisplay()
+            }.show()
     }
 
     private fun wireTilesAndWidgets() {
@@ -910,7 +955,7 @@ class SettingsFragment : Fragment() {
         settingApiRequestLimit.value = "${repository.getApiRequestLimit()}"
         updateApiRequestProgress()
         refreshLogs()
-        notificationsSwitch.isChecked = repository.getNotificationsEnabled()
+        updateNotificationLevelDisplay()
         settingBaseUrl.value = repository.getBaseUrl()
         updateLanguageDisplay()
         updateDisplayModeDisplay()

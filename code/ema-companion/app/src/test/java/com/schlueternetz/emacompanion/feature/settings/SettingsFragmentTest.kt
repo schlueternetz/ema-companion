@@ -16,7 +16,6 @@ import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult
 import com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator
 import com.google.android.material.checkbox.MaterialCheckBox
-import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
 import com.schlueternetz.emacompanion.R
@@ -247,36 +246,48 @@ class SettingsFragmentTest {
     }
 
     @Test
-    fun settingsFragment_notificationsToggleReflectsStoredValue() {
+    fun settingsFragment_notificationLevelRowReflectsStoredValue() {
         appContext
             .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
             .edit()
-            .putBoolean("notificationsEnabled", false)
+            .putString("notificationLevel", "OFF")
             .apply()
 
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val switch =
+            val value =
                 fragment
                     .requireView()
-                    .findViewById<MaterialSwitch>(R.id.settings_notifications_switch)
-            assertEquals(false, switch.isChecked)
+                    .findViewById<TextView>(R.id.settings_notification_level_value)
+            assertEquals(fragment.getString(R.string.notification_level_option_off), value.text)
         }
     }
 
     @Test
-    fun settingsFragment_notificationsToggle_persistsChange() {
+    fun settingsFragment_notificationLevelDialog_showsThreeOptions() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val switch =
-                fragment
-                    .requireView()
-                    .findViewById<MaterialSwitch>(R.id.settings_notifications_switch)
-            switch.isChecked = false
+            fragment.requireView().findViewById<View>(R.id.settings_notification_level_row).performClick()
+            val dialog =
+                org.robolectric.shadows.ShadowDialog
+                    .getLatestDialog() as androidx.appcompat.app.AlertDialog
+            assertEquals(3, dialog.listView.adapter.count)
+        }
+    }
+
+    @Test
+    fun settingsFragment_notificationLevelDialog_selectingOptionPersistsImmediately() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            fragment.requireView().findViewById<View>(R.id.settings_notification_level_row).performClick()
+            val dialog =
+                org.robolectric.shadows.ShadowDialog
+                    .getLatestDialog() as androidx.appcompat.app.AlertDialog
+            dialog.listView.performItemClick(dialog.listView.getChildAt(0), 0, 0L)
         }
 
         val prefs = appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
-        assertEquals(false, prefs.getBoolean("notificationsEnabled", true))
+        assertEquals("OFF", prefs.getString("notificationLevel", null))
     }
 
     // API Request Limit
@@ -738,25 +749,54 @@ class SettingsFragmentTest {
     // ── Email Alerts (Phase 6) ────────────────────────────────────────────────
 
     @Test
-    fun emailAlerts_toggleOffByDefault_enablingShowsSetupRow() {
+    fun emailAlerts_offByDefault_selectingAlertsOnlyShowsSetupRow() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            val switch =
+            val valueView =
                 fragment
                     .requireView()
-                    .findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
+                    .findViewById<TextView>(R.id.settings_email_alert_level_value)
             val setupRow =
                 fragment
                     .requireView()
                     .findViewById<View>(R.id.settings_email_alerts_setup_row)
 
-            assertFalse("email alerts toggle should be off by default", switch.isChecked)
+            assertEquals(
+                "email alert level should be Off by default",
+                fragment.getString(R.string.email_alert_level_option_off),
+                valueView.text,
+            )
             assertEquals(View.GONE, setupRow.visibility)
 
-            switch.performClick()
+            selectEmailAlertLevel(fragment, 1)
 
             assertEquals(View.VISIBLE, setupRow.visibility)
         }
+    }
+
+    @Test
+    fun emailAlerts_selectingOff_hidesSetupRow() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            selectEmailAlertLevel(fragment, 1)
+            val setupRow = fragment.requireView().findViewById<View>(R.id.settings_email_alerts_setup_row)
+            assertEquals(View.VISIBLE, setupRow.visibility)
+
+            selectEmailAlertLevel(fragment, 0)
+
+            assertEquals(View.GONE, setupRow.visibility)
+        }
+    }
+
+    private fun selectEmailAlertLevel(
+        fragment: SettingsFragment,
+        index: Int,
+    ) {
+        fragment.requireView().findViewById<View>(R.id.settings_email_alert_level_row).performClick()
+        val dialog =
+            org.robolectric.shadows.ShadowDialog
+                .getLatestDialog() as androidx.appcompat.app.AlertDialog
+        dialog.listView.performItemClick(dialog.listView.getChildAt(index), index, index.toLong())
     }
 
     @Test
@@ -766,7 +806,7 @@ class SettingsFragmentTest {
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "mysecretpassword1")
-            .putBoolean("emailAlertsEnabled", true)
+            .putString("emailAlertLevel", "ALERTS_ONLY")
             .apply()
 
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
@@ -795,7 +835,7 @@ class SettingsFragmentTest {
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "mysecretpassword1")
-            .putBoolean("emailAlertsEnabled", true)
+            .putString("emailAlertLevel", "ALERTS_ONLY")
             .apply()
 
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
@@ -821,10 +861,7 @@ class SettingsFragmentTest {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
             // Enable the toggle so the setup row appears
-            fragment
-                .requireView()
-                .findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
-                .performClick()
+            selectEmailAlertLevel(fragment, 1)
 
             fragment
                 .requireView()
@@ -845,10 +882,7 @@ class SettingsFragmentTest {
     fun emailAlerts_save_withValidInput_savesAndTransitions() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            fragment
-                .requireView()
-                .findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
-                .performClick()
+            selectEmailAlertLevel(fragment, 1)
             fragment
                 .requireView()
                 .findViewById<TextInputEditText>(R.id.email_address_input)
@@ -876,10 +910,7 @@ class SettingsFragmentTest {
     fun emailAlerts_save_stripsPasswordWhitespaceBeforeSaving() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            fragment
-                .requireView()
-                .findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
-                .performClick()
+            selectEmailAlertLevel(fragment, 1)
             fragment
                 .requireView()
                 .findViewById<TextInputEditText>(R.id.email_address_input)
@@ -901,10 +932,7 @@ class SettingsFragmentTest {
     fun emailAlerts_save_withInvalidEmail_showsError() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            fragment
-                .requireView()
-                .findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
-                .performClick()
+            selectEmailAlertLevel(fragment, 1)
             fragment
                 .requireView()
                 .findViewById<TextInputEditText>(R.id.email_address_input)
@@ -929,10 +957,7 @@ class SettingsFragmentTest {
     fun emailAlerts_save_withPasswordWrongLength_showsError() {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         scenario.onFragment { fragment ->
-            fragment
-                .requireView()
-                .findViewById<MaterialSwitch>(R.id.settings_email_alerts_switch)
-                .performClick()
+            selectEmailAlertLevel(fragment, 1)
             fragment
                 .requireView()
                 .findViewById<TextInputEditText>(R.id.email_address_input)
@@ -960,7 +985,7 @@ class SettingsFragmentTest {
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "mysecretpassword1")
-            .putBoolean("emailAlertsEnabled", false)
+            .putString("emailAlertLevel", "OFF")
             .apply()
 
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
@@ -977,7 +1002,7 @@ class SettingsFragmentTest {
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "abcdefghijklmnop")
-            .putBoolean("emailAlertsEnabled", true)
+            .putString("emailAlertLevel", "ALERTS_ONLY")
             .apply()
 
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
@@ -1009,7 +1034,7 @@ class SettingsFragmentTest {
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "abcdefghijklmnop")
-            .putBoolean("emailAlertsEnabled", true)
+            .putString("emailAlertLevel", "ALERTS_ONLY")
             .apply()
 
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
@@ -1031,7 +1056,7 @@ class SettingsFragmentTest {
             .edit()
             .putString("emailAddress", "old@gmail.com")
             .putString("emailAppPassword", "abcdefghijklmnop")
-            .putBoolean("emailAlertsEnabled", true)
+            .putString("emailAlertLevel", "ALERTS_ONLY")
             .apply()
 
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
@@ -1064,7 +1089,7 @@ class SettingsFragmentTest {
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "abcdefghijklmnop")
-            .putBoolean("emailAlertsEnabled", true)
+            .putString("emailAlertLevel", "ALERTS_ONLY")
             .apply()
         SettingsFragment.emailSenderFactory = { _, _ -> FakeEmailSender(EmailResult.Success) }
 
@@ -1093,7 +1118,7 @@ class SettingsFragmentTest {
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "abcdefghijklmnop")
-            .putBoolean("emailAlertsEnabled", true)
+            .putString("emailAlertLevel", "ALERTS_ONLY")
             .apply()
         SettingsFragment.emailSenderFactory = { _, _ -> FakeEmailSender(EmailResult.AuthFailure) }
 
@@ -1122,7 +1147,7 @@ class SettingsFragmentTest {
             .edit()
             .putString("emailAddress", "user@gmail.com")
             .putString("emailAppPassword", "abcdefghijklmnop")
-            .putBoolean("emailAlertsEnabled", true)
+            .putString("emailAlertLevel", "ALERTS_ONLY")
             .apply()
         SettingsFragment.emailSenderFactory = { _, _ -> FakeEmailSender(EmailResult.NetworkError) }
 

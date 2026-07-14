@@ -1,5 +1,24 @@
 # AI Lessons Learned
 
+## 2026-07-14: notification-alert-levels (Off/Alerts Only/All for push + email)
+
+### Went Well
+* Shared `AlertLevel` enum + one pure `shouldAlert(level, previous, new)` fn reused for both push and email gating in `ModuleHealthWorker` — one truth source, plain-JUnit testable, no Robolectric needed
+* Lazy read-time migration in `SettingsRepository` getter (`readLevelWithLegacyMigration`) — old boolean key read once, translated, written under new key; zero explicit "migration step", transparent to every caller including tests
+* Reused Language/Display Mode's tap-to-open-`AlertDialog.setItems()` row pattern for both new level pickers — zero new UI framework, same interaction the user already knows
+* `postOnGreen: Boolean = false` default param on `ModuleHealthNotifier.notify()` kept every pre-existing test/call site compiling unchanged — only new "All"-tier callers pass `true`
+* `android:id/text1` (Android's own internal `select_dialog_item` row ID) + Maestro `index:` — locale-independent way to tap `AlertDialog.setItems()` rows; confirmed via live `uiautomator dump`, no assignable custom ID exists on ArrayAdapter-backed list items
+
+### Didn't Work
+* First Maestro fix used `tapOn: text: "Alerts Only"` for the new dialog — emulator's system locale was German, dialog showed "Nur Warnungen", flow failed; the file's own header comment already warned against text selectors for exactly this reason
+* Own debugging (`adb shell am start` + `uiautomator dump` to inspect the dialog) triggered a real Home fetch against the local `ema-api-stub` between two Maestro runs — desynced its per-ECU cursor, next `a-home-screen.yaml` run failed with "no chart data" (looked like a real regression, was self-inflicted)
+* Removing a boolean setting's persisted key outright (no back-compat shim, per project convention) meant `SettingsRepository`, `ModuleHealthWorker`, and `SettingsFragment` all had to move together in one pass before ANY layer would compile again — no isolated per-file green until the whole call-site chain was done
+
+### Avoid
+* Never use Maestro `text:` selectors for content whose locale isn't pinned — dump the real UI hierarchy (`uiautomator dump`) and use a stable resource ID instead; `android:id/text1` works for any `AlertDialog.setItems()` list, disambiguated by `index`
+* Don't run ad hoc `adb shell am start`/UI-inspection commands against the local stub between Maestro runs without `POST /__stub__/reset` right after — same rule as manual curl, already learned once, bit again via a different tool
+* Before assuming a setting already gates behavior because it's persisted + tested + UI-wired, check whether the actual consumer (a Worker's `doWork()`) reads it at all — `notificationsEnabled` was fully wired end-to-end except the one place that mattered
+
 ## 2026-07-12: api-fetch-scheduler (centralize EMA API fetch triggering)
 
 ### Went Well
@@ -367,20 +386,6 @@
 * Never translate mermaid ids — only quoted label strings (`Person(owner, "...")`: translate the `"..."`, keep `owner`); leaked id breaks render
 * `mmdc` renders raster PNG — never "translate the image"; translate the `.mmd` source and re-render
 * `*-de.mmd` is a throwaway intermediate — render then discard; never commit (regenerate from EN each time)
-
-## 2026-06-12: settings import didn't apply theme/language
-
-### Went Well
-* Display-mode test asserted `AppCompatDelegate.getDefaultNightMode()` directly — synchronous and reliable in Robolectric
-
-### Didn't Work
-* `refreshAllDisplayedValues()` (import + factory-reset path) only updated labels (`updateLanguageDisplay`/`updateDisplayModeDisplay`); it never called `applyDisplayMode`/`applyLanguage`, so the effect was deferred until the next edit triggered a recreate
-* Asserting `AppCompatDelegate.getApplicationLocales()` at `@Config(sdk=[33])` → always empty: on Tiramisu+ it reads the framework `LocaleManager` (unbacked in Robolectric); below 33 AppCompat's backport storage reflects `setApplicationLocales`
-
-### Avoid
-* After import/factory-reset, apply persisted theme AND locale, not just their labels
-* Robolectric per-app-locale assertions: pin the test to `@Config(sdk = [32])` (or lower) so `getApplicationLocales()` reads AppCompat backport storage, not the framework service
-* `setDefaultNightMode` is synchronous in Robolectric; `setApplicationLocales` is not at API 33+
 
 ## 2026-06-12: in-app-user-guide (Markwon + Robolectric assets)
 

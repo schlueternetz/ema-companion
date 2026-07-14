@@ -160,15 +160,31 @@
 
                 </LinearLayout>
 
-                <!-- Notifications toggle -->
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/settings_notifications_switch"
+                <!-- Notification level row (click-to-dialog) -->
+                <LinearLayout
+                    android:id="@+id/settings_notification_level_row"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:minHeight="48dp"
-                    android:paddingVertical="12dp"
-                    android:text="@string/settings_notifications_label"
-                    android:textAppearance="?attr/textAppearanceBodyLarge" />
+                    android:contentDescription="@string/settings_notifications_label"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/settings_notifications_label"
+                        android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+                    <TextView
+                        android:id="@+id/settings_notification_level_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+                </LinearLayout>
 
                 <!-- Historic Data Days -->
                 <com.schlueternetz.emacompanion.feature.settings.SettingRowView
@@ -395,14 +411,31 @@
                     android:text="@string/email_alerts_section_title"
                     android:textAppearance="?attr/textAppearanceTitleMedium" />
 
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/settings_email_alerts_switch"
+                <!-- Email alert level row (click-to-dialog) -->
+                <LinearLayout
+                    android:id="@+id/settings_email_alert_level_row"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:minHeight="48dp"
-                    android:paddingVertical="12dp"
-                    android:text="@string/email_alerts_toggle_title"
-                    android:textAppearance="?attr/textAppearanceBodyLarge" />
+                    android:contentDescription="@string/email_alerts_toggle_title"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/email_alerts_toggle_title"
+                        android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+                    <TextView
+                        android:id="@+id/settings_email_alert_level_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+                </LinearLayout>
 
                 <!-- Setup form: visible when switch ON and not configured, or when editing credentials -->
                 <LinearLayout

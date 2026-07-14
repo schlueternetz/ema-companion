@@ -1,10 +1,16 @@
 # Critical flow: email alerts setup UI (ADR-002).
-# Verifies that the Email Alerts toggle is present in Settings, that enabling
-# it reveals the setup section with all required fields, and that disabling it
-# collapses the section again. Uses clearState to ensure email alerts are off
-# and no credentials are persisted at the start of the flow.
+# Verifies that the Email Alerts level row is present in Settings, that
+# selecting "Alerts Only" reveals the setup section with all required fields,
+# and that selecting "Off" collapses the section again. Uses clearState to
+# ensure the email alert level is Off and no credentials are persisted at the
+# start of the flow.
 #
-# Selectors use resource IDs — the UI labels are localised.
+# Selectors use resource IDs — the UI labels are localised. The AlertDialog
+# list items opened from settings_email_alert_level_row use Android's own
+# internal select_dialog_item layout (android:id/text1) for every row, so
+# taps disambiguate by index (0=Off, 1=Alerts Only, 2=All) instead of text —
+# confirmed via a live uiautomator dump, locale-independent like every other
+# selector in this flow.
 appId: com.schlueternetz.emacompanion
 ---
 - launchApp:
@@ -38,18 +44,22 @@ appId: com.schlueternetz.emacompanion
 # asserting so the test works on both phone and tablet form factors.
 - scrollUntilVisible:
     element:
-      id: "settings_email_alerts_switch"
+      id: "settings_email_alert_level_row"
     direction: DOWN
     timeout: 15000
 
-# Toggle is off by default on a fresh install; setup section is hidden.
+# Level is Off by default on a fresh install; setup section is hidden.
 - assertNotVisible:
     id: "settings_email_alerts_setup_row"
 
-# Enable email alerts — setup section must appear with all required fields.
+# Select "Alerts Only" (index 1: Off, Alerts Only, All) — setup section must
+# appear with all required fields.
 - tapOn:
-    id: "settings_email_alerts_switch"
-# The setup section expands below the switch. Scroll to the save button (the
+    id: "settings_email_alert_level_row"
+- tapOn:
+    id: "android:id/text1"
+    index: 1
+# The setup section expands below the row. Scroll to the save button (the
 # last element in the section) so the full expanded form is in the viewport.
 - scrollUntilVisible:
     element:
@@ -67,9 +77,12 @@ appId: com.schlueternetz.emacompanion
 - assertVisible:
     id: "settings_email_alerts_verify_save"
 
-# Disable email alerts — setup section must collapse.
+# Select "Off" (index 0) — setup section must collapse.
 - tapOn:
-    id: "settings_email_alerts_switch"
+    id: "settings_email_alert_level_row"
+- tapOn:
+    id: "android:id/text1"
+    index: 0
 - assertNotVisible:
     id: "settings_email_alerts_setup_row"
 # Let the collapse animation finish and the accessibility driver drain its

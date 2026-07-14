@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
+import com.schlueternetz.emacompanion.core.AlertLevel
 import com.schlueternetz.emacompanion.core.HomeTile
 import com.schlueternetz.emacompanion.core.HomeWidget
 import org.json.JSONException
@@ -25,8 +26,10 @@ class SettingsRepository(
         const val SYSTEM_CAPACITY_KEY = "systemCapacity"
         const val HISTORIC_DATA_DAYS_KEY = "historicDataDays"
         const val API_REQUEST_LIMIT_KEY = "apiRequestLimit"
-        const val NOTIFICATIONS_ENABLED_KEY = "notificationsEnabled"
-        const val EMAIL_ALERTS_ENABLED_KEY = "emailAlertsEnabled"
+        const val NOTIFICATION_LEVEL_KEY = "notificationLevel"
+        const val EMAIL_ALERT_LEVEL_KEY = "emailAlertLevel"
+        private const val LEGACY_NOTIFICATIONS_ENABLED_KEY = "notificationsEnabled"
+        private const val LEGACY_EMAIL_ALERTS_ENABLED_KEY = "emailAlertsEnabled"
         const val EMAIL_ADDRESS_KEY = "emailAddress"
         const val EMAIL_APP_PASSWORD_KEY = "emailAppPassword"
         const val BASE_URL_KEY = "baseUrl"
@@ -135,16 +138,47 @@ class SettingsRepository(
         prefs.edit().putInt(API_REQUEST_LIMIT_KEY, value).apply()
     }
 
-    fun getNotificationsEnabled(): Boolean = prefs.getBoolean(NOTIFICATIONS_ENABLED_KEY, true)
+    fun getNotificationLevel(): AlertLevel =
+        readLevelWithLegacyMigration(
+            levelKey = NOTIFICATION_LEVEL_KEY,
+            legacyBooleanKey = LEGACY_NOTIFICATIONS_ENABLED_KEY,
+            default = AlertLevel.ALERTS_ONLY,
+        )
 
-    fun setNotificationsEnabled(value: Boolean) {
-        prefs.edit().putBoolean(NOTIFICATIONS_ENABLED_KEY, value).apply()
+    fun setNotificationLevel(value: AlertLevel) {
+        prefs.edit().putString(NOTIFICATION_LEVEL_KEY, value.name).apply()
     }
 
-    fun getEmailAlertsEnabled(): Boolean = prefs.getBoolean(EMAIL_ALERTS_ENABLED_KEY, false)
+    fun getEmailAlertLevel(): AlertLevel =
+        readLevelWithLegacyMigration(
+            levelKey = EMAIL_ALERT_LEVEL_KEY,
+            legacyBooleanKey = LEGACY_EMAIL_ALERTS_ENABLED_KEY,
+            default = AlertLevel.OFF,
+        )
 
-    fun setEmailAlertsEnabled(value: Boolean) {
-        prefs.edit().putBoolean(EMAIL_ALERTS_ENABLED_KEY, value).apply()
+    fun setEmailAlertLevel(value: AlertLevel) {
+        prefs.edit().putString(EMAIL_ALERT_LEVEL_KEY, value.name).apply()
+    }
+
+    /**
+     * Reads a persisted [AlertLevel], migrating a legacy boolean preference (true -> ALERTS_ONLY,
+     * false -> OFF) the first time the new key is read after an upgrade. The migrated value is
+     * persisted under the new key so subsequent reads no longer consult the legacy key.
+     */
+    private fun readLevelWithLegacyMigration(
+        levelKey: String,
+        legacyBooleanKey: String,
+        default: AlertLevel,
+    ): AlertLevel {
+        prefs.getString(levelKey, null)?.let { stored ->
+            return runCatching { AlertLevel.valueOf(stored) }.getOrDefault(default)
+        }
+        if (prefs.contains(legacyBooleanKey)) {
+            val migrated = if (prefs.getBoolean(legacyBooleanKey, false)) AlertLevel.ALERTS_ONLY else AlertLevel.OFF
+            prefs.edit().putString(levelKey, migrated.name).apply()
+            return migrated
+        }
+        return default
     }
 
     fun getEmailAddress(): String = prefs.getString(EMAIL_ADDRESS_KEY, "") ?: ""
@@ -253,7 +287,7 @@ class SettingsRepository(
                 put(SYSTEM_CAPACITY_KEY, getSystemCapacity().toString().toDouble())
                 put(HISTORIC_DATA_DAYS_KEY, getHistoricDataDays())
                 put(API_REQUEST_LIMIT_KEY, getApiRequestLimit())
-                put(NOTIFICATIONS_ENABLED_KEY, getNotificationsEnabled())
+                put(NOTIFICATION_LEVEL_KEY, getNotificationLevel().name)
                 put(BASE_URL_KEY, getBaseUrl())
                 put(DISPLAY_MODE_KEY, getDisplayMode())
                 put(ARRAY_TIMEZONE_KEY, getArrayTimezone())
@@ -279,7 +313,12 @@ class SettingsRepository(
         }
         if (obj.has(HISTORIC_DATA_DAYS_KEY)) edit.putInt(HISTORIC_DATA_DAYS_KEY, obj.getInt(HISTORIC_DATA_DAYS_KEY))
         if (obj.has(API_REQUEST_LIMIT_KEY)) edit.putInt(API_REQUEST_LIMIT_KEY, obj.getInt(API_REQUEST_LIMIT_KEY))
-        if (obj.has(NOTIFICATIONS_ENABLED_KEY)) edit.putBoolean(NOTIFICATIONS_ENABLED_KEY, obj.getBoolean(NOTIFICATIONS_ENABLED_KEY))
+        if (obj.has(NOTIFICATION_LEVEL_KEY)) {
+            edit.putString(NOTIFICATION_LEVEL_KEY, obj.getString(NOTIFICATION_LEVEL_KEY))
+        } else if (obj.has(LEGACY_NOTIFICATIONS_ENABLED_KEY)) {
+            val migrated = if (obj.getBoolean(LEGACY_NOTIFICATIONS_ENABLED_KEY)) AlertLevel.ALERTS_ONLY else AlertLevel.OFF
+            edit.putString(NOTIFICATION_LEVEL_KEY, migrated.name)
+        }
         if (obj.has(BASE_URL_KEY)) edit.putString(BASE_URL_KEY, obj.getString(BASE_URL_KEY))
         if (obj.has(DISPLAY_MODE_KEY)) edit.putString(DISPLAY_MODE_KEY, obj.getString(DISPLAY_MODE_KEY))
         if (obj.has(ARRAY_TIMEZONE_KEY)) edit.putString(ARRAY_TIMEZONE_KEY, obj.getString(ARRAY_TIMEZONE_KEY))

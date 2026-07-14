@@ -43,11 +43,19 @@
     <string name="settings_display_mode_dialog_title">Select Display Mode</string>
 
     <!-- Notifications -->
-    <string name="settings_notifications_label">Notifications Enabled</string>
+    <string name="settings_notifications_label">Notifications</string>
+    <string name="notification_level_option_off">Off</string>
+    <string name="notification_level_option_alerts_only">Alerts Only</string>
+    <string name="notification_level_option_all">All</string>
+    <string name="settings_notification_level_dialog_title">Select Notification Level</string>
 
     <!-- Email Alerts -->
     <string name="email_alerts_section_title">Email Alerts</string>
     <string name="email_alerts_toggle_title">Email Alerts</string>
+    <string name="email_alert_level_option_off">Off</string>
+    <string name="email_alert_level_option_alerts_only">Alerts Only</string>
+    <string name="email_alert_level_option_all">All</string>
+    <string name="settings_email_alert_level_dialog_title">Select Email Alert Level</string>
     <string name="email_alerts_enabled_for">Email alerts enabled for: %1$s</string>
     <string name="email_alerts_instructions">Receive an email when a module goes offline.\n\nPrerequisites: a Gmail account with 2-Step Verification enabled.\n\n1. Open your Google Account › Security › App Passwords.\n2. Create an App Password for "Mail" on "Other device".\n3. Enter your Gmail address and the 16-character App Password below.</string>
     <string name="email_alerts_open_google_account">Open Google Account ↗</string>
@@ -203,6 +211,8 @@
     <string name="notification_module_health_yellow_text">One or more modules have not produced for 1–2 days. Tap to view details.</string>
     <string name="notification_module_health_red_title">Solar module offline — action needed</string>
     <string name="notification_module_health_red_text">One or more modules have not produced for 3 days. Check your array.</string>
+    <string name="notification_module_health_green_title">All modules producing</string>
+    <string name="notification_module_health_green_text">Your daily check is complete — every module in your array is producing normally.</string>
 
     <!-- Email alerts -->
     <string name="email_subject_yellow">EMA Companion: Solar module offline</string>
