@@ -142,7 +142,17 @@
       "Bash(curl -s -X POST http://localhost:8080/__stub__/reset -w \"\\\\nHTTP %{http_code}\\\\n\")",
       "Bash(cp \"C:/Users/micro/.maestro/tests/2026-07-13_221416/screenshot-❌-1784002537065-\\(a-home-screen\\).png\" \"D:/ema-debug/screenshot2.png\" *)",
       "Bash(cp \"C:/Users/micro/.maestro/tests/2026-07-13_223117/screenshot-❌-1784003570587-\\(a-home-screen\\).png\" \"D:/ema-debug/screenshot3.png\")",
-      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.feature.settings.SettingsRepositoryTest\")"
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.feature.settings.SettingsRepositoryTest\")",
+      "PowerShell($env:ANDROID_HOME; $env:LOCALAPPDATA; Test-Path \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\")",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb devices; & $adb logcat -c)",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell pm list packages | Select-String -Pattern \"launcher\")",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell am force-stop com.google.android.apps.nexuslauncher; Start-Sleep -Seconds 2; & $adb shell am start -a android.intent.action.MAIN -c android.intent.category.HOME; Start-Sleep -Seconds 3)",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell dumpsys package com.google.android.apps.nexuslauncher | Select-String -Pattern \"Activity|widget\" -CaseSensitive:$false | Select-Object -First 60)",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell getprop ro.build.version.sdk; & $adb shell getprop ro.product.model; & $adb shell dumpsys package com.schlueternetz.emacompanion | Select-String -Pattern \"versionCode|versionName|targetSdk|firstInstallTime|lastUpdateTime\")",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb shell wm size)",
+      "Skill(widget-preview)",
+      "Skill(widget-preview:*)",
+      "Bash(./gradlew.bat :app:processDebugResources)"
     ],
     "additionalDirectories": [
       "D:\\ema-debug",

@@ -1,5 +1,22 @@
 # AI Lessons Learned
 
+## 2026-07-14: widget-preview-crash (RemoteViews rejects View/Space in previewLayout)
+
+### Went Well
+* Force-stop launcher (`com.google.android.apps.nexuslauncher`) + `adb shell input` long-press-home → Widgets → tap app row + screencap = full repro of widget-picker bug with zero manual interaction, no Maestro needed
+* `adb logcat -c` right before repro, `-d` right after → exact `InflateException` stack per widget, one shot, no noise
+* `InflateException: Class not allowed to be inflated android.view.View` in logcat = decisive; static analysis (resource compile, string refs, theme attrs) all looked fine and would never have caught this
+* Fix verified twice: `:app:processDebugResources` (compiles) AND re-repro on-device after `installDebug` + launcher force-stop (actual preview renders) — resource compile passing does NOT mean RemoteViews will accept the layout
+
+### Didn't Work
+* Assuming `previewLayout` XML is inflated by a normal `LayoutInflater` because it's "just a View XML layout" (per the widget-preview skill's own framing) — the widget picker actually inflates it via `RemoteViews`, which enforces a hidden view-class allowlist
+* `<View>` (used for chart-bar mockups) and `<Space>` (used for vertical gaps) are NOT in that allowlist — both throw `Class not allowed to be inflated`, silently breaking ALL THREE widgets identically since they shared the same pattern
+
+### Avoid
+* Never use plain `<View>` or `<Space>` in an `android:previewLayout` XML — RemoteViews only allows a fixed set of widget classes (TextView, ImageView, Button, layouts like LinearLayout/FrameLayout, etc.); use `<ImageView android:background="...">` for solid-color bars, and `layout_marginBottom`/`layout_marginTop` instead of `<Space>` for gaps
+* `:app:processDebugResources` passing is necessary but NOT sufficient to prove a previewLayout works — it only checks resource references resolve, not that RemoteViews will accept every view class used; always do one live on-device check (force-stop launcher, reopen widget picker) after writing/editing a previewLayout
+* The existing `widget-preview` skill doc doesn't mention the RemoteViews allowlist restriction — anyone hand-writing new previewLayout XML from its instructions alone will hit this same crash
+
 ## 2026-07-14: notification-alert-levels (Off/Alerts Only/All for push + email)
 
 ### Went Well
