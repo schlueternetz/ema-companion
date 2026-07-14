@@ -1,10 +1,15 @@
 package com.schlueternetz.emacompanion.feature.home
 
+import android.content.Context
 import android.os.Looper
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.test.core.app.ApplicationProvider
+import androidx.work.Configuration
+import androidx.work.testing.SynchronousExecutor
+import androidx.work.testing.WorkManagerTestInitHelper
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.DailyEnergySource
 import com.schlueternetz.emacompanion.core.api.DailyProductionState
@@ -44,6 +49,10 @@ class HomeHistorySectionTest {
     fun setUp() {
         HomeFragment.hourlySourceOverride = FakeHourlySource()
         HomeFragment.moduleHealthSourceOverride = null
+        WorkManagerTestInitHelper.initializeTestWorkManager(
+            ApplicationProvider.getApplicationContext<Context>(),
+            Configuration.Builder().setExecutor(SynchronousExecutor()).build(),
+        )
     }
 
     @After

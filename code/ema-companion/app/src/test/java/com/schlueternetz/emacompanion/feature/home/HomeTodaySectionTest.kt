@@ -1,11 +1,16 @@
 package com.schlueternetz.emacompanion.feature.home
 
+import android.content.Context
 import android.os.Looper
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import androidx.test.core.app.ApplicationProvider
+import androidx.work.Configuration
+import androidx.work.testing.SynchronousExecutor
+import androidx.work.testing.WorkManagerTestInitHelper
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.DailyEnergySource
 import com.schlueternetz.emacompanion.core.api.DailyProductionState
@@ -60,6 +65,10 @@ class HomeTodaySectionTest {
     @Before
     fun setUp() {
         HomeFragment.moduleHealthSourceOverride = null
+        WorkManagerTestInitHelper.initializeTestWorkManager(
+            ApplicationProvider.getApplicationContext<Context>(),
+            Configuration.Builder().setExecutor(SynchronousExecutor()).build(),
+        )
     }
 
     @After
@@ -68,6 +77,9 @@ class HomeTodaySectionTest {
         HomeFragment.hourlySourceOverride = null
         HomeFragment.dailySourceOverride = null
         HomeFragment.currentHourOverride = null
+        HomeFragment.requestOpportunisticSyncAction = HomeFragment.defaultRequestOpportunisticSyncAction
+        HomeFragment.requestForcedSyncAction = HomeFragment.defaultRequestForcedSyncAction
+        HomeFragment.observeCompletionAction = HomeFragment.defaultObserveCompletionAction
     }
 
     private fun idle() = shadowOf(Looper.getMainLooper()).idle()
@@ -238,30 +250,22 @@ class HomeTodaySectionTest {
         }
     }
 
-    // ── Pull-to-refresh triggers force=true on both sources (10.3) ────────
+    // ── Pull-to-refresh delegates to ApiSyncScheduler (ADR-010) ────────────
 
     @Test
-    fun pullToRefresh_callsForceRefreshOnAllSources_andHidesSpinner() {
-        val hourly = FakeHourlySource(HourlyProductionState())
-        val daily = FakeDailySource()
-        HomeFragment.hourlySourceOverride = hourly
-        HomeFragment.dailySourceOverride = daily
+    fun pullToRefresh_requestsForcedSync() {
+        HomeFragment.hourlySourceOverride = FakeHourlySource(HourlyProductionState())
+        HomeFragment.dailySourceOverride = FakeDailySource()
+        HomeFragment.requestOpportunisticSyncAction = { } // avoid touching real WorkManager via onResume()
+        var requestedContext: android.content.Context? = null
+        HomeFragment.requestForcedSyncAction = { ctx -> requestedContext = ctx }
 
         val scenario = launchFragmentInContainer<HomeFragment>(themeResId = R.style.Theme_EMACompanion)
         idle()
 
+        // Simulate the pull-to-refresh by invoking the SwipeRefreshLayout listener directly
         scenario.onFragment { fragment ->
             val swipe = fragment.requireView().findViewById<SwipeRefreshLayout>(R.id.home_swipe_refresh)
-            swipe.isRefreshing = true
-            // Trigger the OnRefreshListener directly
-            swipe.post { swipe.isRefreshing = false }
-        }
-
-        // Simulate the pull-to-refresh by invoking via the fragment
-        scenario.onFragment { fragment ->
-            // Access private onPullToRefresh via the SwipeRefreshLayout listener
-            val swipe = fragment.requireView().findViewById<SwipeRefreshLayout>(R.id.home_swipe_refresh)
-            // Call the listener that was registered in onViewCreated
             val listenerField = SwipeRefreshLayout::class.java.getDeclaredField("mListener")
             listenerField.isAccessible = true
             val listener = listenerField.get(swipe) as? SwipeRefreshLayout.OnRefreshListener
@@ -269,9 +273,28 @@ class HomeTodaySectionTest {
         }
         idle()
 
+        assertNotNull(requestedContext)
+    }
+
+    @Test
+    fun syncCompletion_hidesRefreshSpinner() {
+        HomeFragment.hourlySourceOverride = FakeHourlySource(HourlyProductionState())
+        HomeFragment.dailySourceOverride = FakeDailySource()
+        HomeFragment.requestOpportunisticSyncAction = { } // avoid touching real WorkManager via onResume()
+        val completion = kotlinx.coroutines.flow.MutableSharedFlow<Unit>()
+        HomeFragment.observeCompletionAction = { completion }
+
+        val scenario = launchFragmentInContainer<HomeFragment>(themeResId = R.style.Theme_EMACompanion)
+        idle()
         scenario.onFragment { fragment ->
-            assertEquals(true, hourly.lastForce)
-            assertEquals(true, daily.lastForce)
+            val swipe = fragment.requireView().findViewById<SwipeRefreshLayout>(R.id.home_swipe_refresh)
+            swipe.isRefreshing = true
+        }
+
+        kotlinx.coroutines.runBlocking { completion.emit(Unit) }
+        idle()
+
+        scenario.onFragment { fragment ->
             val swipe = fragment.requireView().findViewById<SwipeRefreshLayout>(R.id.home_swipe_refresh)
             assertEquals(false, swipe.isRefreshing)
         }

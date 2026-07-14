@@ -1,5 +1,5 @@
 # Critical flow: bottom-nav reachability (ADR-002).
-# Verifies the three bottom-nav destinations and that the User Guide is
+# Verifies the four bottom-nav destinations and that User Guide and Support are
 # reachable even when the app is unconfigured (Home stays disabled).
 #
 # Selectors use resource IDs, not visible labels: the nav labels are
@@ -41,13 +41,15 @@ appId: com.schlueternetz.emacompanion
       id: "settingsFragment"
     timeout: 60000
 
-# All three bottom-nav destinations are present (unconfigured app starts on Settings).
+# All four bottom-nav destinations are present (unconfigured app starts on Settings).
 - assertVisible:
     id: "homeFragment"
 - assertVisible:
     id: "userGuideFragment"
 - assertVisible:
     id: "settingsFragment"
+- assertVisible:
+    id: "supportFragment"
 
 # User Guide is reachable without configuring the app. The whole guide renders
 # into one TextView (id: user_guide_content), so assert that view — matching the
@@ -57,9 +59,15 @@ appId: com.schlueternetz.emacompanion
 - assertVisible:
     id: "user_guide_content"
 
-# Settings is reachable again (always rightmost). The guide content view being
-# gone proves we navigated away.
+# Settings is reachable again. The guide content view being gone proves we
+# navigated away.
 - tapOn:
     id: "settingsFragment"
 - assertNotVisible:
     id: "user_guide_content"
+
+# Support is reachable without configuring the app (rightmost item now).
+- tapOn:
+    id: "supportFragment"
+- assertVisible:
+    id: "support_bmac_button"

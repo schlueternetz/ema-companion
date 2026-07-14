@@ -5,7 +5,7 @@
     android:targetCellWidth="3"
     android:targetCellHeight="1"
     android:updatePeriodMillis="0"
-    android:previewImage="@drawable/ic_launcher_foreground"
+    android:previewLayout="@layout/production_summary_widget_preview"
     android:initialLayout="@layout/glance_widget_loading"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"

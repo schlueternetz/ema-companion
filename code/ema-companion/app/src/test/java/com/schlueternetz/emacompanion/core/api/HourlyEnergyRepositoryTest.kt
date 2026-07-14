@@ -76,6 +76,23 @@ class HourlyEnergyRepositoryTest {
         }
 
     @Test
+    fun throttle_stillActiveAt44Minutes_elapsedAt45Minutes() =
+        runBlocking {
+            val client = FakeClient()
+            val r = repo(client)
+            r.refresh()
+            assertEquals(1, client.calls)
+
+            now += 44 * 60 * 1000L
+            r.refresh()
+            assertEquals(1, client.calls)
+
+            now += 60 * 1000L + 1L
+            r.refresh()
+            assertEquals(2, client.calls)
+        }
+
+    @Test
     fun force_bypassesThrottle() =
         runBlocking {
             val client = FakeClient()

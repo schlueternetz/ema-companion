@@ -5,8 +5,12 @@ import android.os.Looper
 import android.view.View
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.Configuration
+import androidx.work.testing.SynchronousExecutor
+import androidx.work.testing.WorkManagerTestInitHelper
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.ApiResult
+import com.schlueternetz.emacompanion.core.api.ApiSyncWorker
 import com.schlueternetz.emacompanion.core.api.ApiUsageRepository
 import com.schlueternetz.emacompanion.core.api.BatchEnergyFetch
 import com.schlueternetz.emacompanion.core.api.DailyEnergyRepository
@@ -15,8 +19,11 @@ import com.schlueternetz.emacompanion.core.api.HourlyEnergyFetch
 import com.schlueternetz.emacompanion.core.api.HourlyEnergyRepository
 import com.schlueternetz.emacompanion.core.api.HourlySnapshot
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLogRepository
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -46,9 +53,35 @@ class SettingsWidgetRefreshTest {
         }
     }
 
+    private fun realHourlyRepo(
+        client: EmaApiClient,
+        settings: SettingsRepository,
+    ) = HourlyEnergyRepository(
+        client = client,
+        usageCounter = ApiUsageRepository.create(appContext),
+        log = ApiCallLogRepository.create(appContext),
+        appSecretProvider = { settings.getEmaAppSecret() },
+        prefs = appContext.getSharedPreferences("ema_hourly", Context.MODE_PRIVATE),
+    )
+
+    private fun realDailyRepo(
+        client: EmaApiClient,
+        settings: SettingsRepository,
+    ) = DailyEnergyRepository(
+        client = client,
+        usageCounter = ApiUsageRepository.create(appContext),
+        log = ApiCallLogRepository.create(appContext),
+        appSecretProvider = { settings.getEmaAppSecret() },
+        prefs = appContext.getSharedPreferences("ema_daily", Context.MODE_PRIVATE),
+    )
+
     @Before
     fun setUp() {
         appContext = ApplicationProvider.getApplicationContext()
+        WorkManagerTestInitHelper.initializeTestWorkManager(
+            appContext,
+            Configuration.Builder().setExecutor(SynchronousExecutor()).build(),
+        )
         listOf("ema_companion_settings", "ema_api_usage", "ema_api_log", "ema_hourly", "ema_daily").forEach { name ->
             appContext
                 .getSharedPreferences(name, Context.MODE_PRIVATE)
@@ -58,33 +91,36 @@ class SettingsWidgetRefreshTest {
         }
         val settings = SettingsRepository.create(appContext)
         client = FakeClient(configuredProvider = { settings.isConfigured() })
-        SettingsFragment.hourlyRepoOverride =
-            HourlyEnergyRepository(
-                client = client,
-                usageCounter = ApiUsageRepository.create(appContext),
-                log = ApiCallLogRepository.create(appContext),
-                appSecretProvider = { settings.getEmaAppSecret() },
-                prefs = appContext.getSharedPreferences("ema_hourly", Context.MODE_PRIVATE),
-            )
-        SettingsFragment.dailyRepoOverride =
-            DailyEnergyRepository(
-                client = client,
-                usageCounter = ApiUsageRepository.create(appContext),
-                log = ApiCallLogRepository.create(appContext),
-                appSecretProvider = { settings.getEmaAppSecret() },
-                prefs = appContext.getSharedPreferences("ema_daily", Context.MODE_PRIVATE),
-            )
-        SettingsFragment.widgetUpdateAction = { widgetUpdateCallCount++ }
+        ApiSyncWorker.hourlySourceOverride = realHourlyRepo(client, settings)
+        ApiSyncWorker.dailySourceOverride = realDailyRepo(client, settings)
+        ApiSyncWorker.updateAllAction = { _, _ -> widgetUpdateCallCount++ }
     }
 
     @After
     fun tearDown() {
-        SettingsFragment.hourlyRepoOverride = null
-        SettingsFragment.dailyRepoOverride = null
-        SettingsFragment.widgetUpdateAction = SettingsFragment.defaultWidgetUpdateAction
+        ApiSyncWorker.hourlySourceOverride = null
+        ApiSyncWorker.dailySourceOverride = null
+        ApiSyncWorker.updateAllAction = ApiSyncWorker.defaultUpdateAllAction
     }
 
     private fun idle() = shadowOf(Looper.getMainLooper()).idle()
+
+    /**
+     * `enqueueUniqueWork()` doesn't block for completion, so a bare `idle()` right after
+     * triggering a resync is not a reliable wait for the resulting `ApiSyncWorker.doWork()` to
+     * have actually finished — poll briefly instead.
+     */
+    private fun awaitUntil(
+        maxAttempts: Int = 100,
+        condition: () -> Boolean,
+    ) {
+        var attempts = 0
+        while (!condition() && attempts < maxAttempts) {
+            idle()
+            Thread.sleep(20)
+            attempts++
+        }
+    }
 
     @Test
     fun changingCredential_triggersImmediateHourlyAndDailyRefresh_andUpdatesWidgets() {
@@ -104,10 +140,15 @@ class SettingsWidgetRefreshTest {
                 .onSave
                 .invoke("a".repeat(32))
         }
-        idle()
+        awaitUntil { widgetUpdateCallCount >= 2 }
 
         assertEquals(1, client.hourlyCalls)
-        assertEquals(1, widgetUpdateCallCount)
+        // ApiSyncWorker (unlike the old inline invalidateApiThrottle()) updates widgets once per
+        // successfully-completed branch, not once for the whole resync — hourly succeeds for
+        // real; daily's backfill call hits FakeClient's default getDailyEnergy() (unimplemented
+        // here, returns ConfigurationError), which the repository treats as a no-op success
+        // (error stays null), so it also counts as a completed branch.
+        assertEquals(2, widgetUpdateCallCount)
     }
 
     @Test
@@ -150,10 +191,11 @@ class SettingsWidgetRefreshTest {
         val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
         idle()
         scenario.onFragment { fragment -> fragment.refreshAllDisplayedValues() }
-        idle()
+        awaitUntil { widgetUpdateCallCount >= 2 }
 
         assertEquals(1, client.hourlyCalls)
-        assertEquals(1, widgetUpdateCallCount)
+        // See changingCredential_..._andUpdatesWidgets: one call per successfully-completed branch.
+        assertEquals(2, widgetUpdateCallCount)
     }
 
     @Test
@@ -175,10 +217,11 @@ class SettingsWidgetRefreshTest {
             idle()
             dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).performClick()
         }
-        idle()
+        awaitUntil { widgetUpdateCallCount >= 2 }
 
         assertEquals(0, client.hourlyCalls)
-        assertEquals(1, widgetUpdateCallCount)
+        // See changingCredential_..._andUpdatesWidgets: one call per successfully-completed branch.
+        assertEquals(2, widgetUpdateCallCount)
     }
 
     @Test
@@ -206,12 +249,97 @@ class SettingsWidgetRefreshTest {
         }
         idle()
 
-        // .clear() removes the cached data; resetThrottle() (also part of the reset path) then
-        // legitimately re-adds a lastFetchMs=0 marker, so assert on the cached data keys, not
-        // "prefs is completely empty".
         val hourlyPrefs = appContext.getSharedPreferences("ema_hourly", Context.MODE_PRIVATE)
         val dailyPrefs = appContext.getSharedPreferences("ema_daily", Context.MODE_PRIVATE)
         assertEquals(null, hourlyPrefs.getString("hours", null))
         assertEquals(true, dailyPrefs.all.keys.none { it.startsWith("day_") })
+    }
+
+    // ── The regression this whole change exists to fix ──────────────────────
+    //
+    // Mirrors the exact CI failure: saving one connection-affecting field then immediately
+    // saving another used to fire two independent, uncoordinated forced refreshes. If the
+    // earlier one finished LAST with a failure (e.g. the stub's single-use interaction had
+    // already been consumed by the redundant earlier attempt), it silently overwrote the
+    // later save's success with a stale error. `ExistingWorkPolicy.REPLACE` must make this
+    // structurally impossible: the earlier request is cancelled, never persists, regardless
+    // of which one would otherwise have finished last.
+
+    @Test
+    fun rapidSequentialCredentialSaves_onlyLatestSavePersists_noStaleErrorOverwrite() {
+        val settings = SettingsRepository.create(appContext)
+        settings.setEmaAppId("a".repeat(32))
+        settings.setEmaAppSecret("b".repeat(12))
+        settings.setEmaSystemId("c".repeat(16))
+        settings.setEmaEcuId("1".repeat(12))
+        settings.setSystemCapacity(5f)
+
+        val gate = CompletableDeferred<Unit>()
+        val firstFetchStarted = CompletableDeferred<Unit>()
+        var callCount = 0
+        val gatedClient =
+            object : EmaApiClient {
+                override suspend fun getBatchInverterEnergy(date: String) = BatchEnergyFetch(ApiResult.ConfigurationError)
+
+                override suspend fun getHourlyEnergy(date: String): HourlyEnergyFetch {
+                    callCount++
+                    if (callCount == 1) {
+                        firstFetchStarted.complete(Unit)
+                        gate.await() // suspends until released below
+                        // The earlier, now-superseded attempt "fails" here — it must never be
+                        // allowed to persist over the later save's result.
+                        return HourlyEnergyFetch(ApiResult.NetworkError)
+                    }
+                    return HourlyEnergyFetch(ApiResult.Success(HourlySnapshot(mapOf(6 to 9.0))), "/x", 1L, "req", "{}")
+                }
+            }
+        ApiSyncWorker.hourlySourceOverride = realHourlyRepo(gatedClient, settings)
+        ApiSyncWorker.dailySourceOverride = realDailyRepo(gatedClient, settings)
+
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        idle()
+
+        // The first save's resulting resync is simulated by calling ApiSyncScheduler directly on
+        // a background thread (exactly what SettingRowView.onSave -> invalidateApiThrottle() does
+        // today) — invoking Fragment/View code itself from a raw background JVM thread is not
+        // safe in Robolectric, so the *second*, real save below is driven through the actual
+        // SettingsFragment UI on the main thread, proving the production wiring end-to-end while
+        // the concurrency needed to exercise REPLACE's cancellation comes from the first call.
+        val firstThread = Thread { com.schlueternetz.emacompanion.core.api.ApiSyncScheduler.requestResyncAfterSettingsChange(appContext) }
+        firstThread.isDaemon = true
+        firstThread.start()
+        runBlocking { firstFetchStarted.await() }
+
+        // Second save (ECU ID), via the real Fragment UI, while the first fetch is still
+        // suspended — REPLACE must cancel it.
+        scenario.onFragment { fragment ->
+            fragment
+                .requireView()
+                .findViewById<SettingRowView>(R.id.setting_ema_ecu_id)
+                .onSave
+                .invoke("9".repeat(12))
+        }
+
+        gate.complete(Unit)
+        firstThread.join(5_000)
+
+        // Poll briefly: enqueueUniqueWork() doesn't block for completion, so the second (real)
+        // fetch may still be finishing its own dispatch/execution at this point.
+        var finalState = ApiSyncWorker.hourlySourceOverride!!.currentState()
+        var attempts = 0
+        while (finalState.snapshot?.hours?.get(6) == null && attempts < 100) {
+            idle()
+            Thread.sleep(20)
+            finalState = ApiSyncWorker.hourlySourceOverride!!.currentState()
+            attempts++
+        }
+
+        assertEquals(
+            "callCount=$callCount, error=${finalState.error}, snapshot=${finalState.snapshot}, attempts=$attempts",
+            2,
+            callCount,
+        )
+        assertNull("the earlier, superseded attempt's failure must not have persisted", finalState.error)
+        assertEquals(9.0, finalState.snapshot?.hours?.get(6)!!, 0.001)
     }
 }

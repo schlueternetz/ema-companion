@@ -1,5 +1,20 @@
 # AI Lessons Learned
 
+## 2026-07-13: support-buy-me-a-coffee (4th bottom-nav tab + email footer links)
+
+### Went Well
+* Reused `MainActivity.applyUnconfiguredNavState()` pattern (add supportFragment to always-enabled set) instead of new logic — static screen needs no EMA config, same as User Guide
+* Reused single `support_bmac_url`/`support_website_url` string resources in both `SupportFragment` and `EmailContentBuilder` — one URL literal per link, not duplicated across two features
+* Skipped adding a Maestro flow that taps BMAC/website buttons — would fire real `ACTION_VIEW` intent and send emulator to external browser mid-flow; covered button behavior at Robolectric layer instead, only extended `bottom-nav.yaml` for reachability
+* `ktlintCheck` actually linted `.kt` this run (past lessons said it didn't) — caught a real indentation violation in `MainActivity.kt`; `ktlintFormat` auto-fixed it in one pass
+
+### Didn't Work
+* `a-home-screen.yaml` failed on `"0.42" is visible` — root cause was `ema-api-stub` server simply not running (nothing on port 8080), unrelated to this change; starting it (`./gradlew run` in `code/ema-api-stub`) + `POST /__stub__/reset` before retry fixed it
+
+### Avoid
+* Don't assume `ktlintCheck` is still only linting `.kts` — the repo-wide gap noted in older lessons may already be fixed; verify per-run instead of trusting a stale note
+* Before blaming a Maestro flow failure on your own change, check whether it depends on infra you didn't touch (e.g. `ema-api-stub` on port 8080) — a 000/connection-refused check is faster than re-reading unrelated code
+
 ## 2026-07-12: configurable-tiles-widgets (remove Current Production + tile/widget visibility settings)
 
 ### Went Well

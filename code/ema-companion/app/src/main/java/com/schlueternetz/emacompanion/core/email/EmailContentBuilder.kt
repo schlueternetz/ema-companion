@@ -35,9 +35,16 @@ class EmailContentBuilder(
                             context.getString(R.string.email_body_module_line, module.uid, module.offlineDays)
                         }
                 val cta = context.getString(R.string.email_body_cta)
-                "$intro\n\n$moduleLines\n\n$cta"
+                "$intro\n\n$moduleLines\n\n$cta\n\n${buildSupportFooter()}"
             }
-            ModuleHealthStatus.GREEN -> context.getString(R.string.email_body_green)
+            ModuleHealthStatus.GREEN -> "${context.getString(R.string.email_body_green)}\n\n${buildSupportFooter()}"
             ModuleHealthStatus.UNKNOWN -> ""
         }
+
+    private fun buildSupportFooter(): String =
+        context.getString(
+            R.string.email_body_support_footer,
+            context.getString(R.string.support_bmac_url),
+            context.getString(R.string.support_website_url),
+        )
 }

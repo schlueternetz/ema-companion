@@ -32,7 +32,6 @@ import com.schlueternetz.emacompanion.core.HomeWidget
 import com.schlueternetz.emacompanion.core.api.ApiUsageRepository
 import com.schlueternetz.emacompanion.core.api.DailyEnergyRepository
 import com.schlueternetz.emacompanion.core.api.HourlyEnergyRepository
-import com.schlueternetz.emacompanion.core.api.ThrottleResettable
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLog
 import com.schlueternetz.emacompanion.core.api.log.ApiCallLogRepository
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthRepository
@@ -53,7 +52,6 @@ class SettingsFragment : Fragment() {
     private lateinit var moduleHealthRepository: ModuleHealthRepository
     private lateinit var hourlyEnergyRepository: HourlyEnergyRepository
     private lateinit var dailyEnergyRepository: DailyEnergyRepository
-    private lateinit var tileRepositories: List<ThrottleResettable>
     private lateinit var logRepository: ApiCallLogRepository
     private lateinit var languageValueView: TextView
     private lateinit var displayModeValueView: TextView
@@ -120,7 +118,6 @@ class SettingsFragment : Fragment() {
         moduleHealthRepository = ModuleHealthRepository.create(requireContext())
         hourlyEnergyRepository = hourlyRepoOverride ?: HourlyEnergyRepository.create(requireContext())
         dailyEnergyRepository = dailyRepoOverride ?: DailyEnergyRepository.create(requireContext())
-        tileRepositories = listOf(moduleHealthRepository, hourlyEnergyRepository, dailyEnergyRepository)
         logRepository = ApiCallLogRepository.create(requireContext())
 
         settingEmaAppId = view.findViewById(R.id.setting_ema_app_id)
@@ -393,20 +390,13 @@ class SettingsFragment : Fragment() {
         }
     }
 
-    // A changed connection setting (credentials or base URL) means the next Home fetch should run
-    // immediately with the new config, not wait out a throttle started by a prior attempt. Clearing
-    // the stale error avoids showing the old failure until that fetch completes.
+    // A changed connection setting (credentials or base URL) means the next fetch should run
+    // against the new config, not wait out a throttle started by a prior attempt. Routing through
+    // ApiSyncScheduler (rather than resetting throttle + force-refreshing inline, as before)
+    // coalesces a burst of several field saves into one resulting fetch per data source — see
+    // ADR-010.
     private fun invalidateApiThrottle() {
-        tileRepositories.forEach { it.resetThrottle() }
-        // A widget sitting unattended has no "revisit Home" moment to naturally pick up the new
-        // config, unlike HomeFragment — so force an immediate hourly+daily fetch (or, if the
-        // credentials were just cleared, a free ConfigurationError) and push the result to any
-        // placed widgets rather than leaving them showing a stale or now-invalid system's data.
-        viewLifecycleOwner.lifecycleScope.launch {
-            if (repository.isHourlyDataNeeded()) hourlyEnergyRepository.refresh(force = true)
-            if (repository.isDailyDataNeeded()) dailyEnergyRepository.refresh(force = true)
-            widgetUpdateAction(requireContext())
-        }
+        requestResyncAfterSettingsChangeAction(requireContext())
     }
 
     private fun updateApiRequestProgress() {
@@ -1050,13 +1040,10 @@ class SettingsFragment : Fragment() {
         /** Test seam: substitutes the daily energy repository. */
         var dailyRepoOverride: DailyEnergyRepository? = null
 
-        internal val defaultWidgetUpdateAction: suspend (android.content.Context) -> Unit =
-            { context ->
-                com.schlueternetz.emacompanion.feature.widgets.WidgetUpdater
-                    .updateAll(context)
-            }
+        internal val defaultRequestResyncAfterSettingsChangeAction: (android.content.Context) -> Unit =
+            { ctx -> com.schlueternetz.emacompanion.core.api.ApiSyncScheduler.requestResyncAfterSettingsChange(ctx) }
 
-        /** Test seam: substitutes the widget-update side effect invoked after an immediate forced refresh. */
-        var widgetUpdateAction: suspend (android.content.Context) -> Unit = defaultWidgetUpdateAction
+        /** Test seam: substitutes the settings-changed resync request side effect. */
+        var requestResyncAfterSettingsChangeAction: (android.content.Context) -> Unit = defaultRequestResyncAfterSettingsChangeAction
     }
 }

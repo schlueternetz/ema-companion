@@ -17,10 +17,13 @@ data class DailyProductionState(
 /**
  * Caches daily kWh totals in [PREFS_NAME]. Caching rules:
  * - Past days are immutable — once persisted they are never re-fetched.
- * - The current calendar day is re-fetched on each trigger, subject to a 1-hour throttle.
+ * - The current calendar day's total is derived from [todayTotalProvider] (the hourly
+ *   repository's own cached data) at zero API cost — never fetched independently.
  * - On first fetch (no past-day cache), one full-window call is issued.
- * - On subsequent fetches, only today is fetched.
- * - [resetThrottle] clears only the today-throttle; the per-day cache is untouched.
+ * - Once a day rolls over, exactly one call backfills that newly-completed day's authoritative
+ *   total (its derived value is not trusted as a substitute — the app may not have been open
+ *   near midnight to capture a complete hourly sum).
+ * - [resetThrottle] clears the persisted fetch error; the per-day cache is untouched.
  * - [clear] removes all cached data (factory reset).
  */
 class DailyEnergyRepository(
@@ -32,8 +35,8 @@ class DailyEnergyRepository(
     private val historyDays: () -> Int = { 45 },
     private val clock: () -> Long = { System.currentTimeMillis() },
     private val prefs: SharedPreferences,
-) : DailyEnergySource,
-    ThrottleResettable {
+    private val todayTotalProvider: () -> Double? = { null },
+) : DailyEnergySyncSource {
     private var cachedDays: MutableMap<String, Double> = loadDays()
     private var cachedAtEpochMs: Long? = prefs.getLong(KEY_UPDATED_AT, 0L).takeIf { it > 0 }
     private var error: FetchError? =
@@ -50,15 +53,11 @@ class DailyEnergyRepository(
 
     override suspend fun refresh(force: Boolean): DailyProductionState {
         val now = clock()
-        val lastFetch = prefs.getLong(KEY_LAST_FETCH, 0L)
-        if (!force && now - lastFetch < THROTTLE_MS) {
-            return currentState()
-        }
-
         val todayStr = today()
         val windowStart = LocalDate.parse(todayStr).minusDays(historyDays().toLong()).toString()
 
-        // Determine missing past days in the window (excluding today).
+        // Determine missing past days in the window (excluding today) — a day rolling over to
+        // "past" without ever having been locked in shows up here on the very next refresh().
         val startDate = LocalDate.parse(windowStart)
         val todayDate = LocalDate.parse(todayStr)
         val hasMissingPastDays =
@@ -67,15 +66,21 @@ class DailyEnergyRepository(
                 if (next.isBefore(todayDate)) next else null
             }.any { !cachedDays.containsKey(it.toString()) }
 
-        val fetchStart = if (hasMissingPastDays) windowStart else todayStr
-        val fetchEnd = todayStr
+        if (!hasMissingPastDays) {
+            val derivedToday = todayTotalProvider()
+            if (derivedToday != null) {
+                cachedDays[todayStr] = derivedToday
+                cachedAtEpochMs = now
+                saveDays(cachedDays, now)
+            }
+            return currentState()
+        }
 
-        val fetch = client.getDailyEnergy(fetchStart, fetchEnd)
+        val fetch = client.getDailyEnergy(windowStart, todayStr)
         when (val result = fetch.result) {
             is ApiResult.ConfigurationError -> Unit
             is ApiResult.Success -> {
                 logCall(now, fetch)
-                prefs.edit().putLong(KEY_LAST_FETCH, now).apply()
                 usageCounter.recordRequest()
                 cachedDays.putAll(result.data.days)
                 cachedAtEpochMs = now
@@ -95,12 +100,7 @@ class DailyEnergyRepository(
     }
 
     override fun resetThrottle() {
-        prefs
-            .edit()
-            .putLong(KEY_LAST_FETCH, 0L)
-            .remove(KEY_LAST_ERROR)
-            .apply()
-        error = null
+        setError(null)
     }
 
     fun clear() {
@@ -169,8 +169,6 @@ class DailyEnergyRepository(
         const val PREFS_NAME = "ema_daily"
         private const val KEY_UPDATED_AT = "updatedAtMs"
         private const val KEY_LAST_ERROR = "lastError"
-        private const val KEY_LAST_FETCH = "lastFetchMs"
-        private const val THROTTLE_MS = 3_600_000L
         private val AUTH_CODES = setOf(2000, 2001, 2002, 2003, 2004, 3000, 3001, 3002, 3003, 3004)
 
         fun create(context: Context): DailyEnergyRepository {
@@ -182,6 +180,11 @@ class DailyEnergyRepository(
                 appSecretProvider = { settings.getEmaAppSecret() },
                 historyDays = { settings.getHistoricDataDays() },
                 prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE),
+                // Constructed fresh on each call (not captured once) so it always reflects
+                // whichever component most recently wrote HourlyEnergyRepository's persisted
+                // snapshot — a long-lived captured instance's in-memory cache would go stale
+                // the moment a *different* HourlyEnergyRepository instance performs the fetch.
+                todayTotalProvider = { HourlyEnergyRepository.create(context).currentState().snapshot?.hours?.values?.sum() },
             )
         }
     }

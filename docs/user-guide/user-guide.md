@@ -21,11 +21,13 @@ A bottom navigation bar runs across the bottom of every screen:
 - **Home** — the main dashboard showing current solar production and module health
 - **User Guide** — this guide, viewable inside the app
 - **Settings** — app preferences and configuration
+- **Support** — links to support the developer
 
-When the app is not fully configured, only **Settings** and **User Guide** are reachable. Home re-enables automatically once configuration is complete.
+When the app is not fully configured, only **Settings**, **User Guide**, and **Support** are reachable. Home re-enables automatically once configuration is complete.
 
 ## Sections
 
 - [Home](home.md) — current production, today's hourly chart, production history, module health, and push notifications
 - [Settings](settings.md) — credentials, array timezone, app preferences, and API configuration
 - [Home-Screen Widgets](widgets.md) — three Android home-screen widgets for at-a-glance production data
+- [Support](support.md) — Buy Me a Coffee and website links

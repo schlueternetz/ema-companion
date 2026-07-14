@@ -21,6 +21,8 @@ import androidx.glance.layout.padding
 import androidx.glance.text.Text
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.HomeWidget
+import com.schlueternetz.emacompanion.core.api.ApiSyncScheduler
+import com.schlueternetz.emacompanion.core.api.ApiSyncWorker
 import com.schlueternetz.emacompanion.core.api.DailyEnergyRepository
 import com.schlueternetz.emacompanion.core.api.DailyEnergySource
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
@@ -123,4 +125,17 @@ class ProductionHistoryWidget : GlanceAppWidget() {
 
 class ProductionHistoryWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = ProductionHistoryWidget()
+
+    override fun onEnabled(context: android.content.Context) {
+        super.onEnabled(context)
+        ApiSyncScheduler.schedulePeriodic(context)
+    }
+
+    override fun onDisabled(context: android.content.Context) {
+        super.onDisabled(context)
+        val stillPlaced = kotlinx.coroutines.runBlocking { ApiSyncWorker.hasConsumingWidgetPlacedAction(context) }
+        if (!stillPlaced) {
+            ApiSyncScheduler.cancelPeriodic(context)
+        }
+    }
 }

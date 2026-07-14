@@ -2,6 +2,7 @@
     <string name="nav_home">Startseite</string>
     <string name="nav_settings">Einstellungen</string>
     <string name="nav_user_guide">Benutzerhandbuch</string>
+    <string name="nav_support">Unterstützen</string>
 
     <!-- Settings section headers -->
     <string name="settings_section_solar_array">Solaranlagen-Einstellungen</string>
@@ -202,6 +203,7 @@
     <string name="email_body_green">Alle Solarmodule deiner Anlage produzieren wieder.</string>
     <string name="email_body_module_line">Modul %1$s: Keine Produktion seit %2$d Tag(en)</string>
     <string name="email_body_cta">EMA Companion öffnen für Details.</string>
+    <string name="email_body_support_footer">EMA Companion ist kostenlos nutzbar. Falls sie dir hilft: %1$s | %2$s</string>
 
     <!-- Home-screen widgets -->
     <string name="widget_not_configured">Nicht konfiguriert – EMA Companion öffnen</string>
@@ -215,4 +217,15 @@
     <string name="widget_history_title">Letzte %1$d Tage</string>
     <string name="production_history_widget_label">Produktionshistorie</string>
     <string name="production_history_widget_description">Balkendiagramm der täglichen Produktion über den konfigurierten Zeitraum.</string>
+
+    <!-- Widget-picker preview sample data (static, not live values) -->
+    <string name="widget_preview_value_today">8,20 kWh</string>
+    <string name="widget_preview_value_month">142,50 kWh</string>
+    <string name="widget_preview_value_last30">205,30 kWh</string>
+    <string name="widget_preview_history_title">Letzte 7 Tage</string>
+
+    <!-- Support screen -->
+    <string name="support_intro">EMA Companion ist kostenlos für alle nutzbar. Falls sie dir hilft, freue ich mich über einen Kaffee.</string>
+    <string name="support_bmac_action">Buy Me a Coffee</string>
+    <string name="support_website_action">Website besuchen</string>
 </resources>

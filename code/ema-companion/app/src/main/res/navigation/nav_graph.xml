@@ -24,4 +24,9 @@
             android:defaultValue="user-guide/user-guide.md" />
     </fragment>
 
+    <fragment
+        android:id="@+id/supportFragment"
+        android:name="com.schlueternetz.emacompanion.feature.support.SupportFragment"
+        android:label="@string/nav_support" />
+
 </navigation>

@@ -1,10 +1,12 @@
 ---
 name: write-user-guide
-description: Writes or updates the English user guide in docs/user-guide/ when the app frontend (UX) changes — layouts, activities, fragments, menus, or navigation. Use after any UI change is complete. Do NOT use for backend-only changes, test files, or build config edits.
+description: Writes or updates the English user guide in docs/user-guide/ when the app frontend (UX) changes — layouts, activities, fragments, menus, or navigation. Use after any UI change is complete and actually implemented in code. Do NOT use for backend-only changes, test files, build config edits, or content that only exists as an OpenSpec proposal/design (not yet implemented).
 allowed-tools: Read Write Glob Bash
 ---
 
 After a UI change, write or update the **English** user guide pages in `docs/user-guide/`, then regenerate the German translations (Step 3). `Bash` is used only to run the mermaid CLI (`mmdc`) for diagram rendering in Step 3.
+
+**Gate: only for already-implemented behavior.** Before writing anything, confirm the behavior/numbers being documented actually exist in the current codebase (not merely an OpenSpec proposal's `design.md`/`proposal.md`). If the content is about a change that hasn't been implemented yet (an open `openspec/changes/<name>/` with unchecked `tasks.md` items), do not invoke this skill now — instead add or update a task in that change's `tasks.md` Documentation section so the guide gets written during `/opsx:apply`, once the described behavior is real. Writing ahead of implementation produces a guide that's either wrong (if the design changes before shipping) or immediately stale (rework when it ships) — both worse than waiting.
 
 ## Page structure
 

@@ -16,10 +16,10 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.schlueternetz.emacompanion.core.api.ApiSyncScheduler
 import com.schlueternetz.emacompanion.feature.home.ModuleHealthNotifier
 import com.schlueternetz.emacompanion.feature.home.ModuleHealthWorker
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
-import com.schlueternetz.emacompanion.feature.widgets.WidgetRefreshWorker
 import com.schlueternetz.emacompanion.feature.widgets.WidgetTapTarget
 
 class MainActivity : AppCompatActivity() {
@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
 
         ModuleHealthNotifier.ensureChannelCreated(this)
         ModuleHealthWorker.schedule(this, repository.getArrayTimezone())
-        WidgetRefreshWorker.schedule(this)
+        ApiSyncScheduler.schedulePeriodic(this)
         requestNotificationPermissionIfNeeded()
     }
 
@@ -93,7 +93,10 @@ class MainActivity : AppCompatActivity() {
         val menu = bottomNav.menu
         for (i in 0 until menu.size()) {
             val item = menu.getItem(i)
-            item.isEnabled = item.itemId == R.id.settingsFragment || item.itemId == R.id.userGuideFragment
+            item.isEnabled =
+                item.itemId == R.id.settingsFragment ||
+                item.itemId == R.id.userGuideFragment ||
+                item.itemId == R.id.supportFragment
         }
     }
 

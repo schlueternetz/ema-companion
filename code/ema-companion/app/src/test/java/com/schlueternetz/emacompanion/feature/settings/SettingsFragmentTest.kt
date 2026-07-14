@@ -10,6 +10,9 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.Configuration
+import androidx.work.testing.SynchronousExecutor
+import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult
 import com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator
 import com.google.android.material.checkbox.MaterialCheckBox
@@ -42,6 +45,10 @@ class SettingsFragmentTest {
     fun setUp() {
         AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
         appContext = ApplicationProvider.getApplicationContext()
+        WorkManagerTestInitHelper.initializeTestWorkManager(
+            appContext,
+            Configuration.Builder().setExecutor(SynchronousExecutor()).build(),
+        )
         // Clear settings between tests
         appContext
             .getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)

@@ -35,6 +35,11 @@ Architecture decisions are documented in [`docs/adr/`](docs/adr/). Read the rele
 - Prefer in order: reuse already-fetched data → cache immutable past data → throttle guards → fresh fetch
 - Flag any design that makes redundant or unbounded API calls and propose an alternative before implementing
 
+**Centralized API sync scheduler** (ADR-010):
+- All EMA API fetch requests go through `ApiSyncScheduler` — never call a tile repository's `refresh()` directly from a Fragment, Activity, or ad hoc Worker
+- New alerting-class data (must run unconditionally in the background, like Module Health) gets its own dedicated `PeriodicWorkRequest`, never gated by tile/widget-enabled state, app-open state, or widget placement; new display-class data (a Home tile or widget) routes through `ApiSyncScheduler`/`ApiSyncWorker`'s existing gating instead
+- Before adding a new endpoint call, check whether the value is derivable from an already-fetched sibling data source (see `DailyEnergyRepository`'s `todayTotalProvider` pattern) instead of issuing a redundant fetch
+
 **Debugging** (cost discipline):
 - For any bug or unexpected-behavior report, reproduce it at the lowest test layer first (unit, then Robolectric) before launching the emulator — a deterministic failing test is cheaper and pinpoints the cause
 - Reserve the emulator and screenshots for final confirmation or genuinely visual/layout bugs, not for exploratory "did it move?" loops (each screenshot read costs thousands of tokens)
@@ -78,6 +83,7 @@ Architecture decisions are documented in [`docs/adr/`](docs/adr/). Read the rele
 
 **User guide**:
 - After completing any UI (frontend) change — layouts, activities, fragments, menus, or navigation — invoke the `write-user-guide` skill to update the relevant pages in `docs/user-guide/`
+- "Completing" means the code has actually been implemented and the behavior/numbers it describes are real — not while an OpenSpec change is still in the proposal/design stage. If a proposal's design implies a user-guide update, add it as a task in that change's `tasks.md` (Documentation section) instead of writing the guide immediately; the guide gets updated when `/opsx:apply` implements that task, not before
 - The guide is split into one file per screen plus an index: `user-guide.md` (index), `home.md`, `settings.md`, `import-export.md`. Each page must stay under ~600 words (3-minute read). Only add a new page when a section is logically self-contained and too long for an existing page.
 
 **Hooks** (`.claude/settings.json` — fire automatically, but know they exist):

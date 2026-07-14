@@ -100,7 +100,38 @@
       "Bash(taskkill //F //PID 13540)",
       "Bash(curl -s -X POST \"http://localhost:8080/__stub__/reset\")",
       "Bash(curl -s \"http://localhost:8080/user/api/v2/systems/x/devices/ecu/energy/203000001234?energy_level=hourly\")",
-      "Bash(taskkill //F //PID 21760)"
+      "Bash(taskkill //F //PID 21760)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(python3 -c \"import yaml,sys; yaml.safe_load\\(open\\('.github/workflows/ci.yml'\\)\\); print\\('OK: valid YAML'\\)\")",
+      "Bash(python -c \"import yaml,sys; yaml.safe_load\\(open\\('.github/workflows/ci.yml'\\)\\); print\\('OK: valid YAML'\\)\")",
+      "Bash(unzip -o -q artifact.zip -d extracted)",
+      "Read(//tmp/maestro-debug/extracted/2026-07-13_210044/**)",
+      "Read(//c/Users/micro/AppData/Local/Temp/maestro-debug/extracted/2026-07-13_210044/**)",
+      "Bash(xargs grep -l \"credential\\\\|Base URL\\\\|base url\" -i)",
+      "Edit(/.claude/skills/write-user-guide/**)",
+      "Edit(/.claude/skills/widget-preview/**)",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.core.api.AppForegroundTrackerTest\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.json','utf8'\\)\\); console.log\\('JSON_VALID'\\)\")",
+      "Bash(echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"D:\\\\\\\\projects\\\\\\\\ema-companion\\\\\\\\code\\\\\\\\ema-companion\\\\\\\\app\\\\\\\\src\\\\\\\\main\\\\\\\\java\\\\\\\\com\\\\\\\\schlueternetz\\\\\\\\emacompanion\\\\\\\\feature\\\\\\\\widgets\\\\\\\\TodayProductionWidget.kt\"}}')",
+      "Bash(node -e ' *)",
+      "Bash(node /tmp/hook_test.js)",
+      "Bash(printf '%s' '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"D:\\\\\\\\\\\\\\\\projects\\\\\\\\\\\\\\\\ema-companion\\\\\\\\\\\\\\\\code\\\\\\\\\\\\\\\\ema-companion\\\\\\\\\\\\\\\\app\\\\\\\\\\\\\\\\src\\\\\\\\\\\\\\\\main\\\\\\\\\\\\\\\\java\\\\\\\\\\\\\\\\com\\\\\\\\\\\\\\\\schlueternetz\\\\\\\\\\\\\\\\emacompanion\\\\\\\\\\\\\\\\feature\\\\\\\\\\\\\\\\widgets\\\\\\\\\\\\\\\\TodayProductionWidget.kt\"}}')",
+      "Bash(echo \"\\(exit code: $?\\)\")",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.core.api.HourlyEnergyRepositoryTest\")",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.core.api.DailyEnergyRepositoryTest\" --tests \"com.schlueternetz.emacompanion.core.api.HourlyEnergyRepositoryTest\")",
+      "Bash(./gradlew.bat testDebugUnitTest)",
+      "Bash(./gradlew.bat compileDebugKotlin compileDebugUnitTestKotlin)",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.core.api.ApiSyncWorkerTest\" --tests \"com.schlueternetz.emacompanion.feature.home.ModuleHealthWorkerTest\")",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.core.api.ApiSyncWorkerTest\")",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.feature.home.ModuleHealthWorkerTest\")",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.core.api.ApiSyncSchedulerTest\")",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.feature.widgets.WidgetPlacementHooksTest\")",
+      "Bash(./gradlew.bat compileDebugKotlin)",
+      "Bash(rm -f d:/projects/ema-companion/code/ema-companion/app/src/test/java/com/schlueternetz/emacompanion/feature/home/HomeWidgetUpdateTest.kt)",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.feature.home.*\")",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.feature.settings.SettingsWidgetRefreshTest\")",
+      "Bash(./gradlew.bat testDebugUnitTest --tests \"com.schlueternetz.emacompanion.feature.settings.*\")",
+      "Bash(./gradlew.bat --stop)"
     ],
     "additionalDirectories": [
       "D:\\ema-debug",
@@ -127,6 +158,12 @@
             "command": "node -e \"const c=[];process.stdin.on('data',d=>c.push(d));process.stdin.on('end',()=>{try{const data=JSON.parse(Buffer.concat(c).toString());const raw=((data.tool_input||{}).file_path||'');let fp='';for(let i=0;i<raw.length;i++){fp+=raw.charCodeAt(i)===92?'/':raw[i];}if(fp.includes('.claude/skills/')&&fp.endsWith('/SKILL.md')){process.stdout.write(JSON.stringify({systemMessage:'SKILL.md written - run skill-check to validate.',hookSpecificOutput:{hookEventName:'PostToolUse',additionalContext:'A SKILL.md file was just written. Invoke the skill-check skill now to validate it against Anthropic guidelines before finishing.'}}));}process.exit(0);}catch(e){process.exit(0);}});\"",
             "shell": "bash",
             "statusMessage": "Checking skill..."
+          },
+          {
+            "type": "command",
+            "command": "node -e \"const c=[];process.stdin.on('data',d=>c.push(d));process.stdin.on('end',()=>{try{const data=JSON.parse(Buffer.concat(c).toString());const raw=((data.tool_input||{}).file_path||'');let fp='';for(let i=0;i<raw.length;i++){fp+=raw.charCodeAt(i)===92?'/':raw[i];}const isWidgetKt=fp.includes('feature/widgets/')&&fp.endsWith('.kt')&&!fp.includes('Test');const isWidgetInfoXml=fp.includes('res/xml/')&&fp.endsWith('_widget_info.xml');if(isWidgetKt||isWidgetInfoXml){process.stdout.write(JSON.stringify({systemMessage:'Widget visuals changed - invoke widget-preview.',hookSpecificOutput:{hookEventName:'PostToolUse',additionalContext:'A Glance widget file was just changed. Invoke the widget-preview skill now to regenerate its widget-picker previewLayout before finishing.'}}));}process.exit(0);}catch(e){process.exit(0);}});\"",
+            "shell": "bash",
+            "statusMessage": "Checking for widget visual changes..."
           }
         ]
       }

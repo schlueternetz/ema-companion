@@ -104,7 +104,7 @@ class MainActivityTest {
         val activity = Robolectric.buildActivity(MainActivity::class.java).create().get()
         val bottomNav = activity.findViewById<BottomNavigationView>(R.id.bottom_nav)
         val menu = bottomNav.menu
-        val alwaysEnabled = setOf(R.id.settingsFragment, R.id.userGuideFragment)
+        val alwaysEnabled = setOf(R.id.settingsFragment, R.id.userGuideFragment, R.id.supportFragment)
         for (i in 0 until menu.size()) {
             val item = menu.getItem(i)
             if (item.itemId in alwaysEnabled) {
@@ -211,6 +211,16 @@ class MainActivityTest {
         assertTrue(
             "User Guide nav item should be enabled even when unconfigured",
             bottomNav.menu.findItem(R.id.userGuideFragment).isEnabled,
+        )
+    }
+
+    @Test
+    fun mainActivity_unconfigured_supportNavItemIsEnabled() {
+        val activity = Robolectric.buildActivity(MainActivity::class.java).create().get()
+        val bottomNav = activity.findViewById<BottomNavigationView>(R.id.bottom_nav)
+        assertTrue(
+            "Support nav item should be enabled even when unconfigured",
+            bottomNav.menu.findItem(R.id.supportFragment).isEnabled,
         )
     }
 

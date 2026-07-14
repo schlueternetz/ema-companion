@@ -24,6 +24,7 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.HomeTile
+import com.schlueternetz.emacompanion.core.api.ApiSyncScheduler
 import com.schlueternetz.emacompanion.core.api.DailyEnergyRepository
 import com.schlueternetz.emacompanion.core.api.DailyEnergySource
 import com.schlueternetz.emacompanion.core.api.DailyProductionState
@@ -38,8 +39,7 @@ import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthSource
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthState
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthStatus
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
-import com.schlueternetz.emacompanion.feature.widgets.WidgetUpdater
-import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.time.LocalDate
@@ -143,35 +143,33 @@ class HomeFragment : Fragment() {
 
         applyTileVisibility()
 
-        // Seed from persisted state immediately (no flash before fetch in onResume)
+        // Seed from persisted state immediately (no flash before a sync completes)
         renderModuleHealth(moduleHealthSource.currentState())
         bindHourlyState(hourlySource.currentState(), systemCapacity())
         bindDailyState(dailySource.currentState(), systemCapacity(), historyDays)
+
+        observeSyncCompletion()
     }
 
     override fun onResume() {
         super.onResume()
         applyTileVisibility()
-        val settings = SettingsRepository.create(requireContext())
-        val cap = systemCapacity()
-        val historyDays = settings.getHistoricDataDays()
-        if (settings.isModuleHealthDataNeeded()) {
-            viewLifecycleOwner.lifecycleScope.launch {
-                renderModuleHealth(moduleHealthSource.refresh())
-            }
-        }
-        if (settings.isHourlyDataNeeded()) {
-            viewLifecycleOwner.lifecycleScope.launch {
-                val state = hourlySource.refresh(force = false)
-                bindHourlyState(state, cap)
-                if (state.error == null) widgetUpdateAction(requireContext())
-            }
-        }
-        if (settings.isDailyDataNeeded()) {
-            viewLifecycleOwner.lifecycleScope.launch {
-                val state = dailySource.refresh(force = false)
-                bindDailyState(state, cap, historyDays)
-                if (state.error == null) widgetUpdateAction(requireContext())
+        // Module Health has no on-demand fetch of its own (ModuleHealthWorker's daily schedule is
+        // the only trigger, per ADR-010's always-on-alerting invariant) — just re-render whatever
+        // it last persisted, in case it changed while the app was backgrounded.
+        renderModuleHealth(moduleHealthSource.currentState())
+        requestOpportunisticSyncAction(requireContext())
+    }
+
+    /** Re-renders hourly/daily state from `currentState()` whenever a requested sync completes. */
+    private fun observeSyncCompletion() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            observeCompletionAction(requireContext()).collect {
+                val cap = systemCapacity()
+                val historyDays = SettingsRepository.create(requireContext()).getHistoricDataDays()
+                bindHourlyState(hourlySource.currentState(), cap)
+                bindDailyState(dailySource.currentState(), cap, historyDays)
+                swipeRefresh.isRefreshing = false
             }
         }
     }
@@ -185,22 +183,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun onPullToRefresh() {
-        val settings = SettingsRepository.create(requireContext())
-        val cap = systemCapacity()
-        val historyDays = settings.getHistoricDataDays()
-        viewLifecycleOwner.lifecycleScope.launch {
-            val hourly = if (settings.isHourlyDataNeeded()) async { hourlySource.refresh(force = true) } else null
-            val daily = if (settings.isDailyDataNeeded()) async { dailySource.refresh(force = true) } else null
-            hourly?.await()?.let { hourlyState ->
-                bindHourlyState(hourlyState, cap)
-                if (hourlyState.error == null) widgetUpdateAction(requireContext())
-            }
-            daily?.await()?.let { dailyState ->
-                bindDailyState(dailyState, cap, historyDays)
-                if (dailyState.error == null) widgetUpdateAction(requireContext())
-            }
-            swipeRefresh.isRefreshing = false
-        }
+        requestForcedSyncAction(requireContext())
     }
 
     private fun systemCapacity(): Float = SettingsRepository.create(requireContext()).getSystemCapacity()
@@ -709,11 +692,23 @@ class HomeFragment : Fragment() {
         /** Test seam: overrides the current hour used for chart rendering (0–23). */
         var currentHourOverride: Int? = null
 
-        internal val defaultWidgetUpdateAction: suspend (android.content.Context) -> Unit =
-            { context -> WidgetUpdater.updateAll(context) }
+        internal val defaultRequestOpportunisticSyncAction: (android.content.Context) -> Unit =
+            { ctx -> ApiSyncScheduler.requestOpportunisticSync(ctx) }
 
-        /** Test seam: substitutes the widget-update side effect invoked after a successful hourly/daily refresh. */
-        var widgetUpdateAction: suspend (android.content.Context) -> Unit = defaultWidgetUpdateAction
+        /** Test seam: substitutes the opportunistic-sync request side effect. */
+        var requestOpportunisticSyncAction: (android.content.Context) -> Unit = defaultRequestOpportunisticSyncAction
+
+        internal val defaultRequestForcedSyncAction: (android.content.Context) -> Unit =
+            { ctx -> ApiSyncScheduler.requestForcedSync(ctx) }
+
+        /** Test seam: substitutes the forced-sync (pull-to-refresh) request side effect. */
+        var requestForcedSyncAction: (android.content.Context) -> Unit = defaultRequestForcedSyncAction
+
+        internal val defaultObserveCompletionAction: (android.content.Context) -> Flow<Unit> =
+            { ctx -> ApiSyncScheduler.observeCompletion(ctx) }
+
+        /** Test seam: substitutes the sync-completion observable used to re-render after a request finishes. */
+        var observeCompletionAction: (android.content.Context) -> Flow<Unit> = defaultObserveCompletionAction
 
         private val MONTH_PALETTE =
             listOf(

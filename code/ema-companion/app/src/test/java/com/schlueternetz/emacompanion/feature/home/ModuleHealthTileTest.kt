@@ -1,9 +1,14 @@
 package com.schlueternetz.emacompanion.feature.home
 
+import android.content.Context
 import android.os.Looper
 import android.view.View
 import android.widget.TextView
 import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.test.core.app.ApplicationProvider
+import androidx.work.Configuration
+import androidx.work.testing.SynchronousExecutor
+import androidx.work.testing.WorkManagerTestInitHelper
 import com.schlueternetz.emacompanion.R
 import com.schlueternetz.emacompanion.core.api.FetchError
 import com.schlueternetz.emacompanion.core.api.modulehealth.Module
@@ -12,6 +17,7 @@ import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthState
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthStatus
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -22,6 +28,14 @@ import org.robolectric.shadows.ShadowDialog
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class ModuleHealthTileTest {
+    @Before
+    fun setUp() {
+        WorkManagerTestInitHelper.initializeTestWorkManager(
+            ApplicationProvider.getApplicationContext<Context>(),
+            Configuration.Builder().setExecutor(SynchronousExecutor()).build(),
+        )
+    }
+
     @After
     fun tearDown() {
         HomeFragment.moduleHealthSourceOverride = null

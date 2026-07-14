@@ -83,6 +83,30 @@ class EmailContentBuilderEnTest {
         assertTrue(body.contains("All solar modules in your array are producing again."))
         assertFalse("GREEN body must not contain 'Module '", body.contains("Module "))
     }
+
+    @Test
+    fun buildBody_yellow_containsSupportLinks() {
+        val body = builder.buildBody(ModuleHealthStatus.YELLOW, listOf(Module("INV1", 1)))
+
+        assertTrue(body.contains("https://buymeacoffee.com/schlueternetz"))
+        assertTrue(body.contains("https://www.schlueternetz.com"))
+    }
+
+    @Test
+    fun buildBody_red_containsSupportLinks() {
+        val body = builder.buildBody(ModuleHealthStatus.RED, listOf(Module("INV1", 3)))
+
+        assertTrue(body.contains("https://buymeacoffee.com/schlueternetz"))
+        assertTrue(body.contains("https://www.schlueternetz.com"))
+    }
+
+    @Test
+    fun buildBody_green_containsSupportLinks() {
+        val body = builder.buildBody(ModuleHealthStatus.GREEN, emptyList())
+
+        assertTrue(body.contains("https://buymeacoffee.com/schlueternetz"))
+        assertTrue(body.contains("https://www.schlueternetz.com"))
+    }
 }
 
 @RunWith(RobolectricTestRunner::class)

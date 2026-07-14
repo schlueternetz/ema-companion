@@ -32,19 +32,21 @@ This rule is already enforced in `ProductionRepository` and `ModuleHealthReposit
 
 Update this table whenever a new feature is added or an existing one changes its call pattern. Estimates use realistic daily usage (not theoretical maximums).
 
-| Feature | Endpoint | Throttle | Calls/trigger | Triggers/day | Calls/month |
+| Feature | Endpoint | Throttle | Calls/trigger | Triggers/day | Calls/month (×31d) |
 |---------|----------|----------|---------------|--------------|-------------|
-| Module Health tile | `getBatchInverterEnergy` | 24 hr | 1 (steady state†) | 1 | ~30 |
-| Today hourly chart + widgets | `getHourlyEnergy` | 1 hr | 1 | ~12 (widget background worker, every 2h, no time-of-day gating; app opens absorbed by the same throttle) | ~360 |
-| History daily chart + widgets | `getDailyEnergy` | 1 hr | 1 (steady state‡) | 1 (widget background worker replaces app-open trigger 1:1) | ~30 |
-| **Total allocated** | | | | | **~420** |
-| **Headroom** | | | | | **~580** |
+| Module Health tile | `getBatchInverterEnergy` | 24 hr | 1 (steady state†) | 1 — always on, never gated by tile/widget-enabled or app-open state | ~31 |
+| Today hourly chart + widgets | `getHourlyEnergy` | 45 min | 1 | ~21 (centralized scheduler, every 45 min, 06:00–22:00 array-local only; gated on an enabled hourly consumer **or** an enabled daily consumer — see ‡) | ~651 |
+| History daily chart + widgets | `getDailyEnergy` | n/a — day-rollover backfill only‡ | 1 | 1 (once, at the first trigger after local midnight) | ~31 |
+| **Total allocated** | | | | | **~713** |
+| **Headroom** | | | | | **~287** |
+
+Calls/month is computed as triggers/day × 31 (the longest possible calendar month), not a 30-day average, so this table is never understated regardless of which month it is.
 
 † First run ever: up to 3 calls (3-day window, no cache). Steady state: 1 call/day (today always re-fetched; past days cached permanently).
 
-‡ First run ever: 1–2 calls (one per calendar month in the history window). Steady state: 1 call/day (today only; past days cached permanently).
+‡ Today's daily total is **derived from the hourly repository's cached values** (`sum(hours.values())`) at zero additional API cost, not fetched independently — see [ADR-010](010-centralized-api-sync-scheduler.md). `getDailyEnergy` is only called for the one-time historical backfill on first use and once per day to lock in each newly-completed day's authoritative total after it rolls over to "past" (past-day totals are immutable and must come from the API, not a possibly-incomplete hourly sum). Because of this dependency, the hourly trigger above fires whenever *either* an hourly or a daily consumer is enabled.
 
-The Current Production tile (`getCurrentProduction`, ~150 calls/month) was removed from the app — it duplicated the instantaneous production reading already shown in the original APsystems EMA app — freeing the headroom above.
+The Current Production tile (`getCurrentProduction`, ~150 calls/month) was removed from the app — it duplicated the instantaneous production reading already shown in the original APsystems EMA app — freeing headroom that was reallocated to the schedule above. See [ADR-010](010-centralized-api-sync-scheduler.md) for the centralized scheduler that owns all fetch timing decisions.
 
 ### Design constraints for new features
 

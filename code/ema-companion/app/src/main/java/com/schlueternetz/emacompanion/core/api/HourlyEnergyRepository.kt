@@ -31,8 +31,7 @@ class HourlyEnergyRepository(
     private val today: () -> String = { LocalDate.now().toString() },
     private val clock: () -> Long = { System.currentTimeMillis() },
     private val prefs: SharedPreferences,
-) : HourlyEnergySource,
-    ThrottleResettable {
+) : HourlyEnergySyncSource {
     private var cached: HourlySnapshot? = loadSnapshot()
     private var cachedAtEpochMs: Long? = prefs.getLong(KEY_UPDATED_AT, 0L).takeIf { it > 0 }
     private var error: FetchError? =
@@ -152,7 +151,7 @@ class HourlyEnergyRepository(
         private const val KEY_UPDATED_AT = "updatedAtMs"
         private const val KEY_LAST_ERROR = "lastError"
         private const val KEY_LAST_FETCH = "lastFetchMs"
-        private const val THROTTLE_MS = 3_600_000L
+        private const val THROTTLE_MS = 2_700_000L
         private val AUTH_CODES = setOf(2000, 2001, 2002, 2003, 2004, 3000, 3001, 3002, 3003, 3004)
 
         fun create(context: Context): HourlyEnergyRepository {

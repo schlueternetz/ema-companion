@@ -22,11 +22,13 @@ Eine untere Navigationsleiste erscheint am unteren Rand jedes Bildschirms:
 - **Startseite** — das Haupt-Dashboard mit aktueller Solarproduktion und Modulstatus
 - **Benutzerhandbuch** — dieses Handbuch, in der App einsehbar
 - **Einstellungen** — App-Einstellungen und Konfiguration
+- **Unterstützen** — Links zur Unterstützung des Entwicklers
 
-Wenn die App nicht vollständig konfiguriert ist, sind nur **Einstellungen** und **Benutzerhandbuch** erreichbar. Die Startseite wird automatisch freigeschaltet, sobald die Konfiguration abgeschlossen ist.
+Wenn die App nicht vollständig konfiguriert ist, sind nur **Einstellungen**, **Benutzerhandbuch** und **Unterstützen** erreichbar. Die Startseite wird automatisch freigeschaltet, sobald die Konfiguration abgeschlossen ist.
 
 ## Abschnitte
 
 - [Startseite](home.md) — aktuelle Produktion, heutige Stundengrafik, Produktionsverlauf, Modulstatus und Push-Benachrichtigungen
 - [Einstellungen](settings.md) — Zugangsdaten, Anlage-Zeitzone, App-Einstellungen und API-Konfiguration
 - [Startbildschirm-Widgets](widgets.md) — drei Android-Startbildschirm-Widgets für Produktionsdaten auf einen Blick
+- [Unterstützen](support.md) — Buy Me a Coffee und Website-Link

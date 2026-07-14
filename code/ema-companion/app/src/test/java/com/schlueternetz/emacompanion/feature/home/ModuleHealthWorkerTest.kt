@@ -11,6 +11,7 @@ import com.schlueternetz.emacompanion.core.api.BatchEnergyFetch
 import com.schlueternetz.emacompanion.core.api.EmaApiClient
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthRepository
 import com.schlueternetz.emacompanion.core.api.modulehealth.ModuleHealthStatus
+import com.schlueternetz.emacompanion.core.HomeTile
 import com.schlueternetz.emacompanion.core.email.EmailResult
 import com.schlueternetz.emacompanion.core.email.EmailSender
 import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
@@ -117,6 +118,24 @@ class ModuleHealthWorkerTest {
         val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         assertEquals("UNKNOWN status never notifies", 0, Shadows.shadowOf(nm).size())
         assertNull(repo.getLastNotifiedStatus())
+    }
+
+    // ── alerting is never gated (ADR-010) ───────────────────────────────────
+
+    @Test
+    fun doWork_tileDisabled_stillChecksAndNotifies() {
+        settingsRepo.setTileEnabled(HomeTile.MODULE_HEALTH, false)
+        seedYellow()
+
+        runWorker()
+
+        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        assertEquals(
+            "Module Health tile being disabled must not stop the background check or its alert",
+            1,
+            Shadows.shadowOf(nm).size(),
+        )
+        assertEquals(ModuleHealthStatus.YELLOW, repo.getLastNotifiedStatus())
     }
 
     // ── email integration ─────────────────────────────────────────────────────
