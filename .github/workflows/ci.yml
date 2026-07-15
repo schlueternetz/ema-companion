@@ -106,9 +106,21 @@ jobs:
           # a-home-screen.yaml is written to run first (see its header comment) to avoid
           # the accessibility driver degrading after other flows' clearState+relaunch
           # cycles, so pin that order here rather than trust directory listing.
+          # logcat is captured inside this script (not a later step) because the emulator
+          # process only lives for the duration of android-emulator-runner's `script` — by
+          # the next step it's already been torn down and `adb` has nothing to talk to.
+          # `set +e` around the maestro command plus manual exit-code propagation keeps the
+          # logcat dump running even when Maestro fails, which is the case we actually need
+          # it for.
           script: |
             ./gradlew installDebug
+            adb logcat -c
+            set +e
             maestro test maestro/a-home-screen.yaml maestro/bottom-nav.yaml maestro/email-alerts.yaml
+            MAESTRO_EXIT=$?
+            set -e
+            adb logcat -d > /tmp/emulator-logcat.txt
+            exit $MAESTRO_EXIT
 
       # Maestro's screenshots/commands-*.json/maestro.log for a failed run only ever exist on
       # this ephemeral runner — without this step a CI failure is undiagnosable after the job
@@ -121,5 +133,18 @@ jobs:
         with:
           name: maestro-debug
           path: ~/.maestro/tests/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      # Screenshots show what was on screen but not why (e.g. an app crash vs. a system
+      # dialog covering a healthy app) — logcat is the only way to tell those apart.
+      # /tmp survives past the emulator-runner action (only the emulator process is torn
+      # down), same pattern as the ema-api-stub log above.
+      - name: Upload emulator logcat
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-logcat
+          path: /tmp/emulator-logcat.txt
           if-no-files-found: ignore
           retention-days: 14

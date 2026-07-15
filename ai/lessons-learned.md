@@ -1,5 +1,23 @@
 # AI Lessons Learned
 
+## 2026-07-14: ci-maestro-anr (Pixel Launcher ANR blocks all 3 flows, 8 consecutive CI failures)
+
+### Went Well
+* No `gh` CLI in shell, but `$GITHUB_TOKEN` already in env — `curl -H "Authorization: token $GITHUB_TOKEN"` against api.github.com listed runs, jobs, job logs, and downloaded the artifact zip directly, no new auth setup needed
+* `maestro-debug` artifact (screenshots + commands-*.json + maestro.log) was ALREADY being uploaded on failure (added 2026-07-13) — didn't need to add anything to see the failure, just had to go look at it
+* Screenshot alone was decisive: "Pixel Launcher isn't responding" system dialog sitting on top of an already fully-rendered Settings screen (fields still say "Required" = right at cold launch) — proved app was fine, launcher process was the ANR'd one, not the app
+* `commands-(flow).json`'s `error.hierarchyRoot` has the full accessibility tree at failure time — walked it for `resource-id`+`text` pairs, found exact button ids (`android:id/aerr_close` "Close app", `android:id/aerr_wait` "Wait") without ever touching a live device
+* `gh run list`-equivalent via API showed this has failed on EVERY run since 2026-07-12 (8 straight failures across 3 days) — user's "not flaky, plain not working" was right; would've wasted time chasing a flake fix otherwise
+* Fix: `runFlow: when: visible: id: "android:id/aerr_close"` block, same shape as the existing POST_NOTIFICATIONS-dialog dismissal, added to all 3 flow files right after the permission-dialog check
+
+### Didn't Work
+* `pyyaml` not installed by default in this shell — `pip install pyyaml` needed before `yaml.safe_load` could confirm the edited flow files still parse
+
+### Avoid
+* Don't assume "CI Maestro failure" = flaky/needs-more-timeout without first pulling the actual `maestro-debug` artifact from the failed run — this one looked identical to the 2026-06-14 ANR/permission-dialog class of bug from the log alone, but the specific dialog (launcher ANR, not permission or app-own-ANR) only became clear from the screenshot + hierarchy dump
+* A system dialog covering a fully-rendered, correct app screen is not an app bug — check what process the dialog's title names ("Pixel Launcher isn't responding") before assuming the assertion target itself is broken
+* When CI has been red for many commits in a row, check `actions/runs` history for the LAST GREEN commit before debugging the latest diff — this bug predated the most recent 5+ commits, so reading recent diffs for a root cause was a dead end
+
 ## 2026-07-14: widget-preview-crash (RemoteViews rejects View/Space in previewLayout)
 
 ### Went Well

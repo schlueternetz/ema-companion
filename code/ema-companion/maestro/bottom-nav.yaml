@@ -32,6 +32,21 @@ appId: com.schlueternetz.emacompanion
       - tapOn:
           id: "com.android.permissioncontroller:id/permission_allow_button"
 
+# Dismiss a system "isn't responding" (ANR) dialog for the launcher/home app if it
+# appears. GitHub Actions' shared runners are CPU/RAM constrained enough that the
+# Pixel Launcher process can itself ANR on a cold emulator boot — a separate system
+# window that covers our already fully-rendered app, so Maestro's visibility checks
+# see the dialog instead of our content. "Close app" force-stops only the frozen
+# launcher process, not our app (confirmed via CI screenshot: our Settings screen
+# was fully rendered underneath).
+- runFlow:
+    when:
+      visible:
+        id: "android:id/aerr_close"
+    commands:
+      - tapOn:
+          id: "android:id/aerr_close"
+
 # On a freshly-booted CI emulator the app window can take a while to reach the
 # foreground after a clear-state launch (the system itself may still be settling
 # right after boot). Wait for the bottom nav to be up before asserting individual

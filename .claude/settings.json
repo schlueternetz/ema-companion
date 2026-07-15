@@ -166,7 +166,17 @@
       "Bash(where gh *)",
       "Read(//c/Program Files/**)",
       "Bash(curl -fsS -X POST \"http://localhost:8080/__stub__/reset\" -o /dev/null -w \"status=%{http_code}\\\\n\")",
-      "Bash(break)"
+      "Bash(break)",
+      "PowerShell(gh run list --workflow=ci.yml --limit 5 --json databaseId,status,conclusion,createdAt,headSha,displayTitle 2>&1)",
+      "Read(//d/GitHub/**)",
+      "Bash(/d/GitHub/platform-tools/adb.exe devices *)",
+      "Bash(unzip -o maestro-debug.zip -d extracted)",
+      "Read(//c/Users/micro/tmp/maestro-artifact/extracted/2026-07-14_230010/**)",
+      "Read(//tmp/maestro-artifact/extracted/**)",
+      "Bash(pwd -W)",
+      "Read(//c/Users/micro/AppData/Local/Temp/maestro-artifact/extracted/2026-07-14_230010/**)",
+      "Bash(python3 -m pip install --quiet pyyaml)",
+      "Bash(rm -rf /tmp/maestro-artifact /tmp/maestro-job.log *)"
     ],
     "additionalDirectories": [
       "D:\\ema-debug",
@@ -174,7 +184,8 @@
       "C:\\Users\\micro\\.maestro\\tests\\2026-07-11_190529",
       "C:\\Users\\micro\\.maestro\\tests\\2026-07-13_221416",
       "C:\\Users\\micro\\.maestro\\tests\\2026-07-13_223117",
-      "d:\\projects\\ema-companion\\.git"
+      "d:\\projects\\ema-companion\\.git",
+      "\\tmp"
     ]
   },
   "enabledMcpjsonServers": [
