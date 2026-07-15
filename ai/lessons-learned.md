@@ -1,5 +1,27 @@
 # AI Lessons Learned
 
+## 2026-07-15: ci-two-bugs-root-cause (gh unavailable + Maestro index regression)
+
+### Went Well
+* curl + `$GITHUB_TOKEN` (no `gh`) pulled workflow runs/jobs/artifacts fine — confirms 2026-07-14 lesson still holds
+* Per-commit CI run history showed failures started exactly at the gradle-wrapper/okhttp/robolectric/kotlin dependabot merge commit, not at any of the 4 "fix tests" commits after it
+* `commands-(flow).json`'s `metadata.sequenceNumber` field (not array order) gives true execution order + per-step status/duration — raw array order in the JSON is scrambled
+* Failed step's `error.hierarchyRoot` showed only 3 `setting_edit_button` nodes present (not 5) — rows scrolled off the TOP of the viewport are missing from the tree entirely, not just invisible
+* Diffed the same step against an older pre-regression artifact (2026-07-13, same flow) — identical `tapOn` COMPLETED there, proving a real regression, not inherent flakiness
+* Checked Maestro CLI's own GitHub releases feed — still `cli-2.6.1`, same as before; ruled out a Maestro version bump as the cause
+* `ApiSyncSchedulerTest` flaky-race fix (already in the user's own last commit) verified via 8x local `--rerun` + the real CI job already green — nothing left to fix there; said so instead of touching working code
+* Root fix: `childOf: id: <rowId>` selector instead of `index: N` for every `setting_edit_button` tap — scopes to the specific row's subtree regardless of scroll position, kills the whole fragility class instead of patching one occurrence
+
+### Didn't Work
+* Tried `gh run list` first despite this exact gap already being documented in this file's 2026-07-14 entry — wasted a turn, user had to redirect
+* Assumed "Element not found" for `setting_edit_button` meant an app crash/ANR — hierarchy dump showed a normal, correctly-rendered screen; `taskbar_container`/`navbuttons_view` nodes are just persistent tablet gesture-nav chrome, not a launcher-foreground signal
+
+### Avoid
+* Don't reach for `gh` in this repo, ever — not installed; use `curl -H "Authorization: token $GITHUB_TOKEN"` against api.github.com instead (now also in cross-session memory, not just this file)
+* Don't trust a `sort -u` resource-id list to mean "only one instance exists" — count actual occurrences (`grep -c`) before concluding "index out of range" vs "element truly absent"
+* Don't use index-based Maestro selectors across a scroll that only guarantees the TARGET element visible — elements above/below it can silently drop from the accessibility tree; use `childOf: id:` to scope to a specific row's container instead
+* `sdkmanager --channel=0` / no-build-id installs of emulator, platform-tools, and system-image in `ci.yml` are unpinned — flagged as a real risk (a Google-side update can silently change on-device behavior) but pinning was deferred, not done
+
 ## 2026-07-14: ci-maestro-anr (Pixel Launcher ANR blocks all 3 flows, 8 consecutive CI failures)
 
 ### Went Well
@@ -421,28 +443,3 @@
 * Never translate mermaid ids — only quoted label strings (`Person(owner, "...")`: translate the `"..."`, keep `owner`); leaked id breaks render
 * `mmdc` renders raster PNG — never "translate the image"; translate the `.mmd` source and re-render
 * `*-de.mmd` is a throwaway intermediate — render then discard; never commit (regenerate from EN each time)
-
-## 2026-06-12: in-app-user-guide (Markwon + Robolectric assets)
-
-### Went Well
-* Diagnostic test that throws an `AssertionError` dumping `text.javaClass`, length, and all span class names — pinpointed the real cause (error-fallback text) in one run
-* Linting the engine directly from the Gradle cache (resolved the exact classpath via `gradlew app:dependencies --configuration ktlint`) when the plugin wouldn't lint `.kt`
-
-### Didn't Work
-* `src/test/assets/` is NOT on the Robolectric asset path — `android_merged_assets` points to `build/intermediates/assets/debug/mergeDebugAssets` (the **debug variant** merge = `src/main` + `src/debug`). `isIncludeAndroidResources` does not add `src/test/assets`. Fragment silently fell back to error text; weak `isNotEmpty()` assertions passed falsely
-* `Markwon.builder()` does NOT register `CorePlugin` (unlike `Markwon.create()`) — without it, text still renders but `.md` links never become `LinkSpan`s
-* ktlint 12.1.1 plugin under AGP 9.2.1 only wires `.kts` script tasks — `ktlintCheck` passes while linting **zero** `.kt` files (whole repo, not just this change)
-
-### Avoid
-* Robolectric test-only assets → put in `src/debug/assets/` (read by Robolectric, excluded from release APK), never `src/test/assets/`
-* Assert real fixture content (`contains("index")`), never bare `isNotEmpty()` — error fallbacks are non-empty and mask load failures
-* Markwon image-from-assets: use built-in `FileSchemeHandler.createWithAssets()` + rewrite relative paths to `file:///android_asset/…`; don't hand-roll an `AsyncDrawableLoader`
-* When `gradlew ktlintCheck` looks suspiciously cheap, confirm it actually lints `.kt` (grep the report for a source file) before trusting it
-
-## 2026-06-11: Robolectric appcompat AlertDialog + nav orphaned back stack (condensed)
-
-### Avoid
-* Appcompat `AlertDialog` in Robolectric: use `ShadowDialog.getLatestDialog()` cast to `androidx.appcompat.app.AlertDialog` (not `ShadowAlertDialog`/platform class); needs `Robolectric.buildActivity(AppCompatActivity)`, not Application context
-* Don't push a gated screen over the start destination — breaks `popUpTo`; set it AS start destination instead
-* `bottomNav.selectedItemId = id` alone doesn't fire the nav listener in Robolectric (re-confirmed 2026-07-06) — test/drive via `NavigationUI.onNavDestinationSelected`
-* Batch UX edits; invoke `write-user-guide` once at end, not per edit (recurring lesson — PostToolUse hook fires per-edit, not per-task)

@@ -20,11 +20,11 @@
 #   ECU-ID       \d{12}
 #   Capacity     positive decimal ≤ 2 dp
 #
-# Index-based edit-button selection works because the Solar Array Settings card
-# is always above the App Settings card, and no other SettingRowViews appear
-# between them on the tablet viewport without scrolling. Indices 0–4 are the
-# five solar-array fields in layout order. Historic Days (index 5) is in the
-# next card and is never edited here, so its index doesn't interfere.
+# Each edit button is selected via childOf: the row's own id (e.g.
+# setting_ema_app_id), not by index — index-based selection broke once a row
+# above the target scrolled out of the accessibility tree (off-screen
+# SettingRowViews are not guaranteed to still be reported), so childOf scopes
+# the search to the specific row regardless of scroll position or ordering.
 #
 # Selectors use resource IDs (locale-independent).
 appId: com.schlueternetz.emacompanion
@@ -71,51 +71,56 @@ appId: com.schlueternetz.emacompanion
 
 # All-digit values avoid IME autocorrect.
 # SettingRowView.exitEditMode() calls hideSoftInputFromWindow() so the keyboard is
-# dismissed by the app on every save — indices stay stable for the next tap.
-# App-ID (index 0) — 32 alphanumeric chars
+# dismissed by the app on every save.
+# App-ID — 32 alphanumeric chars
 - tapOn:
     id: "setting_edit_button"
-    index: 0
+    childOf:
+      id: "setting_ema_app_id"
 - assertVisible:
     id: "setting_save_button"
 - inputText: "12345678901234567890123456789012"
 - tapOn:
     id: "setting_save_button"
 
-# App-Secret (index 1) — 12 alphanumeric chars
+# App-Secret — 12 alphanumeric chars
 - tapOn:
     id: "setting_edit_button"
-    index: 1
+    childOf:
+      id: "setting_ema_app_secret"
 - assertVisible:
     id: "setting_save_button"
 - inputText: "123456789012"
 - tapOn:
     id: "setting_save_button"
 
-# System-ID (index 2) — 16 alphanumeric chars
+# System-ID — 16 alphanumeric chars
 - tapOn:
     id: "setting_edit_button"
-    index: 2
+    childOf:
+      id: "setting_ema_system_id"
 - assertVisible:
     id: "setting_save_button"
 - inputText: "1234567890123456"
 - tapOn:
     id: "setting_save_button"
 
-# ECU-ID (index 3) — 12 digits
+# ECU-ID — 12 digits
 - tapOn:
     id: "setting_edit_button"
-    index: 3
+    childOf:
+      id: "setting_ema_ecu_id"
 - assertVisible:
     id: "setting_save_button"
 - inputText: "123456789012"
 - tapOn:
     id: "setting_save_button"
 
-# System Capacity (index 4) — positive decimal ≤ 2 dp
+# System Capacity — positive decimal ≤ 2 dp
 - tapOn:
     id: "setting_edit_button"
-    index: 4
+    childOf:
+      id: "setting_system_capacity"
 - assertVisible:
     id: "setting_save_button"
 - inputText: "5"
@@ -186,7 +191,7 @@ appId: com.schlueternetz.emacompanion
 - tapOn:
     id: "setting_use_local_stub"
 
-# ECU-ID (index 3) — replace the dummy value with the stub's Good Data id.
+# ECU-ID — replace the dummy value with the stub's Good Data id.
 # Scroll back up: the Use local stub tap above left the API Settings card
 # (further down the page) in view, but the ECU-ID edit button lives in the
 # Solar Array Settings card above it.
@@ -197,7 +202,8 @@ appId: com.schlueternetz.emacompanion
     timeout: 10000
 - tapOn:
     id: "setting_edit_button"
-    index: 3
+    childOf:
+      id: "setting_ema_ecu_id"
 - assertVisible:
     id: "setting_save_button"
 - eraseText: 50

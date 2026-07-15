@@ -178,7 +178,13 @@
       "Bash(python3 -m pip install --quiet pyyaml)",
       "Bash(rm -rf /tmp/maestro-artifact /tmp/maestro-job.log *)",
       "Bash(./gradlew.bat :app:testDebugUnitTest --tests \"*ApiSyncSchedulerTest*\" -q)",
-      "Bash(./gradlew.bat :app:testDebugUnitTest --tests \"*ApiSyncSchedulerTest*\" --rerun -q)"
+      "Bash(./gradlew.bat :app:testDebugUnitTest --tests \"*ApiSyncSchedulerTest*\" --rerun -q)",
+      "Bash(xargs grep -l 'failures=\"1\"')",
+      "Bash(./gradlew.bat :app:testDebugUnitTest --tests \"*ProductionHistoryWidgetTest*\" --rerun -q)",
+      "Bash(./gradlew.bat testDebugUnitTest ktlintCheck -q)",
+      "Bash(gh --version)",
+      "Bash(sed -n '330,349p' /tmp/unit_fail.log)",
+      "Read(//c/Users/micro/AppData/tmp/maestro-debug/2026-07-15_064412/**)"
     ],
     "additionalDirectories": [
       "D:\\ema-debug",
