@@ -148,6 +148,7 @@ class ApiSyncSchedulerTest {
     fun slowBurst_secondRequestWhileFirstIsSuspended_onlySecondPersists() {
         val gate = CompletableDeferred<Unit>()
         val firstStarted = CompletableDeferred<Unit>()
+        val firstCancelled = CompletableDeferred<Unit>()
         val hourly =
             object : HourlyEnergySyncSource {
                 var refreshCallCount = 0
@@ -159,8 +160,13 @@ class ApiSyncSchedulerTest {
                     refreshCallCount++
                     if (refreshCallCount == 1) {
                         firstStarted.complete(Unit)
-                        gate.await() // suspends here until the test releases it
-                        lastLabel = "first"
+                        try {
+                            gate.await() // suspends here until the test releases it
+                            lastLabel = "first"
+                        } catch (e: kotlinx.coroutines.CancellationException) {
+                            firstCancelled.complete(Unit)
+                            throw e
+                        }
                     } else {
                         lastLabel = "second"
                     }
@@ -186,7 +192,16 @@ class ApiSyncSchedulerTest {
         // CoroutineWorker (its `refresh()` coroutine observes cancellation at `gate.await()`).
         ApiSyncScheduler.requestResyncAfterSettingsChange(context)
 
-        gate.complete(Unit) // let the first resume (if not already cancelled) so the thread can finish
+        // enqueueUniqueWork(REPLACE) only *requests* cancellation of the first CoroutineWorker;
+        // delivering that cancellation to its suspended `gate.await()` happens asynchronously on
+        // its own dispatcher, racing against this thread. Wait for the cancellation to actually
+        // land before releasing the gate, instead of hoping it wins a timing race — otherwise
+        // `gate.complete()` can resume `await()` normally before the cancellation is observed,
+        // which is exactly what happened under CI's slower scheduling (this test is flaky, not
+        // the production cancellation behavior it verifies).
+        kotlinx.coroutines.runBlocking { kotlinx.coroutines.withTimeout(5_000) { firstCancelled.await() } }
+
+        gate.complete(Unit) // let the first thread's runBlocking finish now that it's cancelled
         firstThread.join(5_000)
 
         assertEquals("second (later) request's fetch must be the one that ran last", "second", hourly.label())

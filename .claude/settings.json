@@ -176,7 +176,9 @@
       "Bash(pwd -W)",
       "Read(//c/Users/micro/AppData/Local/Temp/maestro-artifact/extracted/2026-07-14_230010/**)",
       "Bash(python3 -m pip install --quiet pyyaml)",
-      "Bash(rm -rf /tmp/maestro-artifact /tmp/maestro-job.log *)"
+      "Bash(rm -rf /tmp/maestro-artifact /tmp/maestro-job.log *)",
+      "Bash(./gradlew.bat :app:testDebugUnitTest --tests \"*ApiSyncSchedulerTest*\" -q)",
+      "Bash(./gradlew.bat :app:testDebugUnitTest --tests \"*ApiSyncSchedulerTest*\" --rerun -q)"
     ],
     "additionalDirectories": [
       "D:\\ema-debug",
