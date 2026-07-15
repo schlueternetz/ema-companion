@@ -194,10 +194,17 @@ appId: com.schlueternetz.emacompanion
 # ECU-ID — replace the dummy value with the stub's Good Data id.
 # Scroll back up: the Use local stub tap above left the API Settings card
 # (further down the page) in view, but the ECU-ID edit button lives in the
-# Solar Array Settings card above it.
+# Solar Array Settings card above it. Scrolling to setting_ema_app_id (the
+# TOP of that card) rather than setting_ema_ecu_id itself is deliberate:
+# scrollUntilVisible can stop as soon as the target is only barely peeking
+# onto screen (observed in CI: setting_ema_ecu_id's own reported bounds were
+# just 9px tall, clipping its child edit button out of the accessibility
+# tree entirely). Scrolling further, to the row above it, guarantees the
+# whole card — including ECU-ID — lands solidly mid-viewport instead of
+# edge-clipped.
 - scrollUntilVisible:
     element:
-      id: "setting_ema_ecu_id"
+      id: "setting_ema_app_id"
     direction: UP
     timeout: 10000
 - tapOn:
