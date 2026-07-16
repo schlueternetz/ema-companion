@@ -159,9 +159,16 @@ appId: com.schlueternetz.emacompanion
     timeout: 20000
 
 # History section — scroll further and assert the card and the chart.
+# Scrolling to tile_module_health (the row BELOW tile_history_production) rather
+# than tile_history_production itself is deliberate: scrollUntilVisible can stop
+# as soon as the target is only barely peeking onto screen (same class of bug
+# fixed for setting_ema_ecu_id below — observed in CI: tile_history_production's
+# own reported bounds were just 2px tall, clipping its child history_chart out of
+# the accessibility tree entirely). Scrolling one row further guarantees the whole
+# History card lands solidly mid-viewport instead of edge-clipped.
 - scrollUntilVisible:
     element:
-      id: "tile_history_production"
+      id: "tile_module_health"
     direction: DOWN
     timeout: 10000
 - assertVisible:
@@ -240,10 +247,14 @@ appId: com.schlueternetz.emacompanion
 - assertVisible:
     id: "hourly_chart"
 
+# Same edge-clipping avoidance as above: scroll to tile_module_health (the row
+# below), not tile_history_production itself.
 - scrollUntilVisible:
     element:
-      id: "tile_history_production"
+      id: "tile_module_health"
     direction: DOWN
     timeout: 10000
-- assertVisible:
-    id: "history_chart"
+- extendedWaitUntil:
+    visible:
+      id: "history_chart"
+    timeout: 20000
