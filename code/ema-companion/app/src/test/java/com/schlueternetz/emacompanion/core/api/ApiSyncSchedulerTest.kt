@@ -180,11 +180,15 @@ class ApiSyncSchedulerTest {
         ApiSyncWorker.hourlySourceOverride = hourly
         ApiSyncWorker.dailySourceOverride = CountingDailySource()
 
-        // enqueueUniqueWork runs synchronously on the calling thread under SynchronousExecutor,
-        // so the first request is enqueued from a background thread while it blocks on `gate`.
-        val firstThread = Thread { ApiSyncScheduler.requestResyncAfterSettingsChange(context) }
-        firstThread.isDaemon = true
-        firstThread.start()
+        // enqueueUniqueWork's own bookkeeping (a Room/SQLite query, via SynchronousExecutor) must
+        // run on THIS thread, not a spawned background Thread — confirmed via jstack that doing so
+        // deadlocks: Robolectric's SQLite shadow needs its paused main-thread Looper serviced to
+        // hand out a connection, but this test's own JUnit/Robolectric runner thread IS that main
+        // thread, and a background Thread has no way to pump it. CoroutineWorker.doWork() itself
+        // still runs on Dispatchers.Default (no `setWorkerCoroutineContext` override in setUp), so
+        // this call returns as soon as the worker is *started* — well before `refresh()` reaches
+        // `gate.await()` — so calling it inline here does not block on the first request finishing.
+        ApiSyncScheduler.requestResyncAfterSettingsChange(context)
 
         kotlinx.coroutines.runBlocking { firstStarted.await() }
 
@@ -194,15 +198,14 @@ class ApiSyncSchedulerTest {
 
         // enqueueUniqueWork(REPLACE) only *requests* cancellation of the first CoroutineWorker;
         // delivering that cancellation to its suspended `gate.await()` happens asynchronously on
-        // its own dispatcher, racing against this thread. Wait for the cancellation to actually
+        // Dispatchers.Default, racing against this thread. Wait for the cancellation to actually
         // land before releasing the gate, instead of hoping it wins a timing race — otherwise
         // `gate.complete()` can resume `await()` normally before the cancellation is observed,
         // which is exactly what happened under CI's slower scheduling (this test is flaky, not
         // the production cancellation behavior it verifies).
         kotlinx.coroutines.runBlocking { kotlinx.coroutines.withTimeout(5_000) { firstCancelled.await() } }
 
-        gate.complete(Unit) // let the first thread's runBlocking finish now that it's cancelled
-        firstThread.join(5_000)
+        gate.complete(Unit) // resolve `gate` so the cancelled coroutine's `await()` call site is clean
 
         assertEquals("second (later) request's fetch must be the one that ran last", "second", hourly.label())
     }

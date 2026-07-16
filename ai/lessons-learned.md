@@ -1,5 +1,24 @@
 # AI Lessons Learned
 
+## 2026-07-16: ci-6hr-hang (raw Thread + WorkManager deadlocks Robolectric SQLite)
+
+### Went Well
+* CI run showed `conclusion: cancelled` not `failure` on `testDebugUnitTest` — 6h wall time = GitHub's default job timeout killed it, not a real assertion failure; distinguishing signal from `failure`-conclusion runs
+* Reproduced locally via loop: `timeout 50 ./gradlew test --tests X --rerun` repeated ~15x, hang hit on attempt 2-3 — matches "verified via 8x rerun, still shipped a hang" from prior session, more reps needed to catch a rare deadlock
+* `jstack <GradleWorkerMain pid>` mid-hang (found pid via `jps -l`) was decisive: "SDK 33 Main Thread" parked in the test's OWN `runBlocking { firstStarted.await() }`, while the spawned raw `Thread` was RUNNABLE-but-stuck inside `WorkTagDao_Impl` → `SQLiteCursor.getDatabase()` (Robolectric shadow) — real deadlock, not coroutine-cancellation flakiness the previous fix assumed
+* Root cause: Robolectric's whole test method runs on ONE simulated "main thread" (`Sandbox.runOnMainThread`); WorkManager's `SynchronousExecutor` makes `enqueueUniqueWork`'s Room/SQLite bookkeeping run synchronously on whichever thread calls it — calling it from a second raw `Thread` starves Robolectric's SQLite shadow of the main-thread Looper it needs, while that main thread sits blocked waiting on the raw Thread's signal — circular wait
+* Fix: delete the raw `Thread`, call `ApiSyncScheduler.requestResyncAfterSettingsChange()` directly on the test's own (Robolectric main) thread — safe because `CoroutineWorker.doWork()` itself still dispatches onto `Dispatchers.Default` (no `setWorkerCoroutineContext` override), so the enqueue call returns as soon as the worker *starts*, well before `refresh()` reaches `gate.await()`
+* Verified: 15x local rerun loop clean after fix (vs. hung by attempt 2-3 before)
+
+### Didn't Work
+* Prior session's "flaky-race fix" (`999f545`, see 2026-07-15 entry) added a `withTimeout(5_000)` guard against the wrong race — real bug was never coroutine-cancellation timing, it was the raw `Thread` touching WorkManager/Room at all; the timeout couldn't fire because the hang was upstream of it, inside the enqueue call itself
+* "8x local rerun + real CI green" (previous session's confidence marker) wasn't enough reps to catch this — deadlock only manifested every 2nd-4th run per this session's own loop
+
+### Avoid
+* Never call `WorkManager.enqueueUniqueWork` (or anything touching Room/SQLite through it) from a raw `Thread`/non-main thread in a Robolectric test — Robolectric's SQLite shadow needs the paused main-thread Looper serviced; only the Robolectric-designated main thread can do that, a spawned Thread deadlocks against it
+* Don't trust "N passing reruns" as proof a concurrency test is deadlock-free — a low-frequency real deadlock (not just an assertion race) needs many more reps (10-15+) and ideally a `jstack` capture plan before declaring it fixed
+* When a CI job's `conclusion` is `cancelled` (not `failure`) after run duration ≈ the platform's default job timeout (6h on GitHub Actions), suspect a genuine hang/deadlock, not a flaky assertion — go straight to reproducing + thread-dumping rather than re-reading the last diff for logic bugs
+
 ## 2026-07-15: ci-two-bugs-root-cause (gh unavailable + Maestro index regression)
 
 ### Went Well
