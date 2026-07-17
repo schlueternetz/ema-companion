@@ -80,7 +80,7 @@
 ## 10. QA and documentation
 
 - [x] 10.1 Run `./gradlew ktlintCheck` and `./gradlew testDebugUnitTest`
-- [ ] 10.2 Manually place all three widgets on the emulator home screen (Lenovo Tab P11 Plus reference device, per ADR-003) and visually confirm chart rendering, tap targets, the "not configured" placeholder, the error-message replacement (simulate a fetch failure), and correct colours under System/Light/Dark Display Mode; save any debug artifacts to `D:\ema-debug\`
+- [x] 10.2 Manually place all three widgets on the emulator home screen (Lenovo Tab P11 Plus reference device, per ADR-003) and visually confirm chart rendering, tap targets, the "not configured" placeholder, the error-message replacement (simulate a fetch failure), and correct colours under System/Light/Dark Display Mode; save any debug artifacts to `D:\ema-debug\`. Confirmed by user.
 - [x] 10.3 Run `/qa` and confirm existing Maestro flows still pass (no new flow added for widgets, per design.md)
 - [x] 10.4 Invoke `write-user-guide` to document the three widgets (new page or section, since this is a user-visible surface outside the app's own fragments)
 - [x] 10.5 Invoke `lessons-learned` to record what worked/didn't for the Glance build spike and off-screen chart rendering

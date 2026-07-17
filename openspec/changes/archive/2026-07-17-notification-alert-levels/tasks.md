@@ -42,8 +42,8 @@
 
 ## 5. Docs
 
-- [ ] 5.1 Invoke the `write-adr` skill to update ADR-008: the "status-change-only trigger" decision is superseded by the level-based trigger; document `AlertLevel`, the shared `shouldAlert()` rule, and the GREEN "All" notification/email addition
-- [ ] 5.2 Invoke the `write-user-guide` skill to update `docs/user-guide/settings.md` for the new notification level and email alert level pickers
+- [x] 5.1 Invoke the `write-adr` skill to update ADR-008: the "status-change-only trigger" decision is superseded by the level-based trigger; document `AlertLevel`, the shared `shouldAlert()` rule, and the GREEN "All" notification/email addition
+- [x] 5.2 Invoke the `write-user-guide` skill to update `docs/user-guide/settings.md` for the new notification level and email alert level pickers
 
 ## 6. Verification
 

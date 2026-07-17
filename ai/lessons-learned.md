@@ -1,5 +1,17 @@
 # AI Lessons Learned
 
+## 2026-07-16: notification-alert-levels docs tasks (5.1/5.2 already done, just unchecked)
+
+### Went Well
+* `git log -- <file>` + `git merge-base --is-ancestor <commit> HEAD` proved ADR-008 and both settings.md/settings-de.md were already fully rewritten and on `main` (commit `b832875`) before touching anything — read actual file content too, not just git log, to confirm content matched the task description
+* Ticked both checkboxes with zero code/doc changes instead of redoing already-correct work
+
+### Didn't Work
+* N/A — caught before any wasted edit
+
+### Avoid
+* Don't assume an unchecked `tasks.md` box means work is undone — a prior session can finish real work and forget to flip the checkbox; verify current file state + git log before implementing "from scratch"
+
 ## 2026-07-16: ci-6hr-hang (raw Thread + WorkManager deadlocks Robolectric SQLite)
 
 ### Went Well
