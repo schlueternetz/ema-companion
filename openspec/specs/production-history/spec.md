@@ -1,3 +1,7 @@
+## Purpose
+
+Defines what the Home screen shows for production history — chart, totals, and summary cards — sourced from cached daily EMA data.
+
 ## Requirements
 
 ### Requirement: Home screen shows history bar chart

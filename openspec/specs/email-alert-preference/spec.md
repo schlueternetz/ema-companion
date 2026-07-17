@@ -1,3 +1,7 @@
+## Purpose
+
+Lets the user control when module-health status changes are emailed to them, independently of push notifications.
+
 ## Requirements
 
 ### Requirement: Email alert level can be selected

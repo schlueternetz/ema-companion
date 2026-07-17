@@ -1,3 +1,7 @@
+## Purpose
+
+Provides a home-screen widget showing today's, this month's, and the trailing 30-day production totals at a glance.
+
 ## Requirements
 
 ### Requirement: Home-screen widget shows today/month/last-30-days totals

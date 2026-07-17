@@ -1,3 +1,7 @@
+## Purpose
+
+Lets the user configure how many days of production history the app retains and displays.
+
 ## Requirements
 
 ### Requirement: Historic Data Days is configurable

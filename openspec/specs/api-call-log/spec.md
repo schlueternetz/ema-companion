@@ -1,3 +1,7 @@
+## Purpose
+
+Records every EMA API call the app issues, with timestamp, endpoint, duration, and success/failure, so usage and errors are auditable from within the app.
+
 ## Requirements
 
 ### Requirement: API calls are recorded

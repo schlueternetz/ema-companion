@@ -1,3 +1,7 @@
+## Purpose
+
+Gives debug builds a one-tap way to point the app at the local EMA API stub, without hand-typing its URL, to speed up local development and testing.
+
 ## Requirements
 
 ### Requirement: Debug-only "Use local stub" Settings action

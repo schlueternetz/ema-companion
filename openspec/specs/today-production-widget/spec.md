@@ -1,3 +1,7 @@
+## Purpose
+
+Provides a home-screen widget showing today's hourly production chart, matching the Home screen's Today section.
+
 ## Requirements
 
 ### Requirement: Home-screen widget shows today's hourly production chart

@@ -1,3 +1,7 @@
+## Purpose
+
+Lets the user record their solar array's rated capacity, used to scale production chart Y-axes.
+
 ## Requirements
 
 ### Requirement: System Capacity is configurable

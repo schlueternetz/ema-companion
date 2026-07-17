@@ -1,3 +1,7 @@
+## Purpose
+
+Provides a standalone, locally-run mock EMA API server driven by scripted per-ECU scenarios, so app and integration tests can exercise real HTTP calls without hitting the live EMA API or consuming its call budget.
+
 ## Requirements
 
 ### Requirement: Local HTTP server exposing the EMA API surface

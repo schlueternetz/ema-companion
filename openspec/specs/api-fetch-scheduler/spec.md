@@ -1,3 +1,7 @@
+## Purpose
+
+Centralizes every EMA API fetch trigger behind a single scheduler so redundant, ungated, or fire-and-forget requests never bypass throttling, coalescing, or lifecycle-safety rules.
+
 ## Requirements
 
 ### Requirement: A single scheduler is the only path to a data-source fetch

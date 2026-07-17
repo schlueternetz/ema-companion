@@ -1,3 +1,7 @@
+## Purpose
+
+Provides an in-app, localized User Guide screen that renders the project's own Markdown documentation with formatting and inline images.
+
 ## Requirements
 
 ### Requirement: User Guide screen renders the entry Markdown file with formatting

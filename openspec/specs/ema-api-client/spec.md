@@ -1,3 +1,7 @@
+## Purpose
+
+Isolates all EMA API access — request signing, typed results, and endpoint calls — behind a single client component so UI code never talks to the network directly.
+
 ## Requirements
 
 ### Requirement: Separated EMA API client

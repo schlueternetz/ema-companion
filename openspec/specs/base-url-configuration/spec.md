@@ -1,3 +1,7 @@
+## Purpose
+
+Lets the user override the EMA API's base URL, so the app can be pointed at a different environment (e.g. a local stub) without a rebuild.
+
 ## Requirements
 
 ### Requirement: Base URL is configurable

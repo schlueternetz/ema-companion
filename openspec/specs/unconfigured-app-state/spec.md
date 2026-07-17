@@ -1,3 +1,7 @@
+## Purpose
+
+Defines how the app behaves before the required EMA connection fields are filled in — routing to Settings and restricting navigation until configuration is complete.
+
 ## Requirements
 
 ### Requirement: App navigates to Settings when required fields are missing

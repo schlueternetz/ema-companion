@@ -1,3 +1,7 @@
+## Purpose
+
+Gives each Solar Array Settings field an in-app hint describing where to find its value in the official EMA app, so users don't have to guess or search externally.
+
 ## Requirements
 
 ### Requirement: Solar Array Settings fields display a contextual hint

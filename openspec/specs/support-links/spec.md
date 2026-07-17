@@ -1,3 +1,7 @@
+## Purpose
+
+Provides a dedicated screen with outbound links for supporting the developer, reachable from the bottom navigation bar.
+
 ## Requirements
 
 ### Requirement: Support screen with outbound links

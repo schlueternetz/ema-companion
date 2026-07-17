@@ -1,3 +1,7 @@
+## Purpose
+
+Adds a footer with the developer's support links to every module-health alert email, so recipients have a path to support the project from the emails they already receive.
+
 ## Requirements
 
 ### Requirement: Module-health alert emails include a support-links footer

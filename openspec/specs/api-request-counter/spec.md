@@ -1,3 +1,7 @@
+## Purpose
+
+Tracks how many successful EMA API reads have been made in the current calendar month, since APsystems bills only on successful data access.
+
 ## Requirements
 
 ### Requirement: Count successful EMA API reads per calendar month

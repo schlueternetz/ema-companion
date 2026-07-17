@@ -1,3 +1,7 @@
+## Purpose
+
+Lets the user configure the monthly EMA API call budget the app tracks against, so consumption can be monitored relative to a known ceiling.
+
 ## Requirements
 
 ### Requirement: API Request Limit is a configurable setting

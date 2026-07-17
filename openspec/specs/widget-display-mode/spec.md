@@ -1,3 +1,7 @@
+## Purpose
+
+Ensures all home-screen widgets follow the app's own Display Mode preference rather than only the device's ambient theme.
+
 ## Requirements
 
 ### Requirement: Widgets follow the app's Display Mode preference

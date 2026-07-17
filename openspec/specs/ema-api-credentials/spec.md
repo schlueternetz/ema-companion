@@ -1,3 +1,7 @@
+## Purpose
+
+Lets the user enter and persist the EMA account credentials (App ID, App Secret, System ID, ECU ID) the app needs to authenticate against the EMA API.
+
 ## Requirements
 
 ### Requirement: EMA App ID is configurable

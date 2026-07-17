@@ -13,7 +13,7 @@
 - [x] 1.11 Remove now-unused strings (`home_current_production_title`, `home_production_value`, `home_production_updated`, `home_production_neutral`, `home_status_network_error`, `home_status_auth_error`, `home_status_api_error`) from `values/strings.xml` and `values-de/strings.xml`
 - [x] 1.12 Update `docs/adr/009-ema-api-call-budget.md`: remove the "Production tile" allocation row and recompute the allocated total and headroom
 - [x] 1.13 Rewrite `maestro/a-home-screen.yaml`: remove all `tile_current_production` references and the "8000 W" assertion; assert the remaining two tiles (`tile_today_production`, `tile_history_production`) in both the never-fetched (placeholder/dummy-credentials) and stub-populated phases, using a concrete populated-data signal (e.g. `today_total` text) in place of "8000 W" to prove the stub round trip actually returned data
-- [ ] 1.14 Run the full local Maestro suite against the emulator and confirm `a-home-screen.yaml` and the other flows still pass after the rewrite (deferred to the group 8 `/qa` pass)
+- [x] 1.14 Run the full local Maestro suite against the emulator and confirm `a-home-screen.yaml` and the other flows still pass after the rewrite (deferred to the group 8 `/qa` pass)
 
 ## 2. Settings model: enabled flags and derived data-need methods
 

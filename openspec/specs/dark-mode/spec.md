@@ -1,3 +1,7 @@
+## Purpose
+
+Lets the user choose the app's light/dark appearance independently of, or following, the device's system theme.
+
 ## Requirements
 
 ### Requirement: Display mode is user-selectable

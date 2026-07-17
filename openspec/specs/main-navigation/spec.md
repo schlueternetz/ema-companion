@@ -1,3 +1,7 @@
+## Purpose
+
+Defines the app's persistent bottom navigation bar and its four destinations.
+
 ## Requirements
 
 ### Requirement: Bottom navigation bar with Home, Settings, User Guide, and Support destinations

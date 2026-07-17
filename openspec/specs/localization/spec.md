@@ -1,3 +1,7 @@
+## Purpose
+
+Ensures all user-visible text is defined as translatable string resources rather than hardcoded, so the app can be fully localized.
+
 ## Requirements
 
 ### Requirement: String resources for all user-visible text

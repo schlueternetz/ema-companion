@@ -1,3 +1,7 @@
+## Purpose
+
+Defines what the Home screen shows for today's production — chart, table, totals, and best-day cards — sourced from cached hourly EMA data.
+
 ## Requirements
 
 ### Requirement: Home screen shows today's hourly production chart

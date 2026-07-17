@@ -1,3 +1,7 @@
+## Purpose
+
+Provides a home-screen widget showing the same daily production history bar chart as the Home screen's history section.
+
 ## Requirements
 
 ### Requirement: Home-screen widget shows daily production history bar chart

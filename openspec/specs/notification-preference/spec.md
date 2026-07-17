@@ -1,3 +1,7 @@
+## Purpose
+
+Lets the user control when module-health status changes trigger a push notification.
+
 ## Requirements
 
 ### Requirement: Notification level can be selected

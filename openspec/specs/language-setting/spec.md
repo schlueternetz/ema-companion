@@ -1,3 +1,7 @@
+## Purpose
+
+Lets the user override the app's display language independently of the device's system locale.
+
 ## Requirements
 
 ### Requirement: In-app language selector
