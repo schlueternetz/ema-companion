@@ -110,10 +110,10 @@ class SettingRowView
             errorView = findViewById(R.id.setting_error)
 
             editButton.setOnClickListener { enterEditMode() }
-            saveButton.setOnClickListener { attemptSave() }
+            saveButton.setOnClickListener { saveEdit() }
             cancelButton.setOnClickListener { cancelEdit() }
             editText.setOnEditorActionListener { _, _, _ ->
-                attemptSave()
+                saveEdit()
                 true
             }
         }
@@ -133,7 +133,7 @@ class SettingRowView
             onEditStateChanged?.invoke(true)
         }
 
-        private fun attemptSave() {
+        fun saveEdit() {
             val input = editText.text?.toString() ?: ""
             if (!validator(input)) {
                 errorView.text = errorMessage

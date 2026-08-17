@@ -429,7 +429,7 @@ class SettingsFragment : Fragment() {
                 if (editing) {
                     val prev = activeEditRow
                     activeEditRow = row
-                    if (prev !== row) prev?.cancelEdit()
+                    if (prev !== row) prev?.saveEdit()
                 } else {
                     if (activeEditRow === row) activeEditRow = null
                 }

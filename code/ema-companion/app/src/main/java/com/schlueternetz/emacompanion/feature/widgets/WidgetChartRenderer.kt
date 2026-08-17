@@ -106,7 +106,6 @@ object WidgetChartRenderer {
     fun renderHistoryChart(
         context: Context,
         daysInWindow: List<Pair<LocalDate, Double>>,
-        capacity: Float,
         widthPx: Int,
         heightPx: Int,
     ): Bitmap {
@@ -124,7 +123,9 @@ object WidgetChartRenderer {
             position = XAxis.XAxisPosition.BOTTOM
             setDrawGridLines(false)
         }
-        configureValueAxis(chart, capacity)
+        // Bars are daily kWh totals, not instantaneous kW — unlike the hourly chart, the Y-axis
+        // must never be capped at System Capacity (a kW figure), so always auto-scale.
+        configureValueAxis(chart, capacity = -1f)
         chart.data =
             if (entries.isEmpty()) {
                 null

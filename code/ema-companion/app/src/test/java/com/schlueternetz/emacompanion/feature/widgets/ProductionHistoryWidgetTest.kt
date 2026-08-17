@@ -148,10 +148,12 @@ class ProductionHistoryWidgetTest {
         }
 
     @Test
-    fun capacityConfigured_chartRendersWithoutError() =
+    fun dailyKwhExceedingSystemCapacity_chartStillRenders() =
         runTest {
-            settings.setSystemCapacity(9f)
-            seed(DailyProductionState(snapshot = DailySnapshot(mapOf("2026-07-15" to 4.0))))
+            // Daily energy (kWh) is a different unit than System Capacity (kW) and can exceed it
+            // many times over — the chart's Y-axis must not be capped at this kW figure.
+            settings.setSystemCapacity(5f)
+            seed(DailyProductionState(snapshot = DailySnapshot(mapOf("2026-07-15" to 30.0))))
 
             runWidget {
                 onNode(hasContentDescription(context.getString(R.string.widget_history_chart_description))).assertExists()

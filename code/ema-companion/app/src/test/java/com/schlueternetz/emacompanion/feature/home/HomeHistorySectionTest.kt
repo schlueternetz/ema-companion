@@ -17,6 +17,7 @@ import com.schlueternetz.emacompanion.core.api.DailySnapshot
 import com.schlueternetz.emacompanion.core.api.FetchError
 import com.schlueternetz.emacompanion.core.api.HourlyEnergySource
 import com.schlueternetz.emacompanion.core.api.HourlyProductionState
+import com.schlueternetz.emacompanion.feature.settings.SettingsRepository
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -95,6 +96,9 @@ class HomeHistorySectionTest {
 
     @Test
     fun historyLegend_showsOneChipPerMonth() {
+        // Window must exceed the longest possible calendar month (31 days) so that
+        // "one month ago" always falls inside it, regardless of which day this runs on.
+        SettingsRepository.create(ApplicationProvider.getApplicationContext()).setHistoricDataDays(40)
         val today = LocalDate.now()
         val lastMonth = today.minusMonths(1)
         val days =
