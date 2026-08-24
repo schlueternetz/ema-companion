@@ -630,11 +630,75 @@ class SettingsFragmentTest {
 
             appIdRow.findViewById<android.widget.ImageButton>(R.id.setting_edit_button).performClick()
             assertEquals(View.VISIBLE, appIdRow.findViewById<View>(R.id.setting_input_layout).visibility)
+            appIdRow
+                .findViewById<TextInputEditText>(R.id.setting_edit_text)
+                .setText("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4")
 
             secretRow.findViewById<android.widget.ImageButton>(R.id.setting_edit_button).performClick()
 
             assertEquals(View.GONE, appIdRow.findViewById<View>(R.id.setting_input_layout).visibility)
             assertEquals(View.VISIBLE, secretRow.findViewById<View>(R.id.setting_input_layout).visibility)
+        }
+    }
+
+    @Test
+    fun openingSecondEditRow_withInvalidFirstRow_keepsFirstRowOpenWithError() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val appIdRow = fragment.requireView().findViewById<SettingRowView>(R.id.setting_ema_app_id)
+            val secretRow = fragment.requireView().findViewById<SettingRowView>(R.id.setting_ema_app_secret)
+
+            appIdRow.findViewById<android.widget.ImageButton>(R.id.setting_edit_button).performClick()
+            appIdRow
+                .findViewById<TextInputEditText>(R.id.setting_edit_text)
+                .setText("not-32-chars")
+
+            secretRow.findViewById<android.widget.ImageButton>(R.id.setting_edit_button).performClick()
+
+            assertEquals(View.VISIBLE, appIdRow.findViewById<View>(R.id.setting_input_layout).visibility)
+            assertEquals(View.VISIBLE, appIdRow.findViewById<View>(R.id.setting_error).visibility)
+        }
+    }
+
+    @Test
+    fun openingSecondEditRow_savesFirstRowInsteadOfDiscarding() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val appIdRow = fragment.requireView().findViewById<SettingRowView>(R.id.setting_ema_app_id)
+            val secretRow = fragment.requireView().findViewById<SettingRowView>(R.id.setting_ema_app_secret)
+            val newAppId = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"
+
+            appIdRow.findViewById<android.widget.ImageButton>(R.id.setting_edit_button).performClick()
+            appIdRow
+                .findViewById<TextInputEditText>(R.id.setting_edit_text)
+                .setText(newAppId)
+
+            secretRow.findViewById<android.widget.ImageButton>(R.id.setting_edit_button).performClick()
+
+            assertEquals(newAppId, appIdRow.value)
+            val prefs = appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            val repository = SettingsRepository(prefs)
+            assertEquals(newAppId, repository.getEmaAppId())
+        }
+    }
+
+    @Test
+    fun cancelButton_discardsEditEvenThoughSwitchingRowsSaves() {
+        val scenario = launchFragmentInContainer<SettingsFragment>(themeResId = R.style.Theme_EMACompanion)
+        scenario.onFragment { fragment ->
+            val appIdRow = fragment.requireView().findViewById<SettingRowView>(R.id.setting_ema_app_id)
+            val originalAppId = appIdRow.value
+
+            appIdRow.findViewById<android.widget.ImageButton>(R.id.setting_edit_button).performClick()
+            appIdRow
+                .findViewById<TextInputEditText>(R.id.setting_edit_text)
+                .setText("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4")
+            appIdRow.findViewById<android.widget.ImageButton>(R.id.setting_cancel_button).performClick()
+
+            assertEquals(originalAppId, appIdRow.value)
+            val prefs = appContext.getSharedPreferences("ema_companion_settings", Context.MODE_PRIVATE)
+            val repository = SettingsRepository(prefs)
+            assertEquals(originalAppId, repository.getEmaAppId())
         }
     }
 

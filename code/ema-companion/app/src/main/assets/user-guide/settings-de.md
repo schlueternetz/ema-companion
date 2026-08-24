@@ -9,7 +9,7 @@ Der Bildschirm Einstellungen ist scrollbar und in Abschnitte gegliedert.
 
 Diese Felder verbinden EMA Companion mit deinem APsystems-Konto und deiner Solaranlage. Alle fünf Zugangsdaten-Felder sind Pflichtfelder — jedes Feld, das noch nicht ausgefüllt wurde, zeigt **Erforderlich** als Hinweis.
 
-Alle Felder verwenden ein integriertes Bearbeitungsmuster: Tippe auf das Symbol **Bearbeiten** (Stift) neben einem Feld, gib einen Wert ein, tippe dann auf **Speichern** (Häkchen) oder drücke die Eingabetaste. Tippe auf **Abbrechen**, um die Änderung zu verwerfen. Es kann jeweils nur ein Feld gleichzeitig bearbeitet werden — das Öffnen eines zweiten Felds schließt automatisch das erste.
+Alle Felder verwenden ein integriertes Bearbeitungsmuster: Tippe auf das Symbol **Bearbeiten** (Stift) neben einem Feld, gib einen Wert ein, tippe dann auf **Speichern** (Häkchen) oder drücke die Eingabetaste. Tippe auf **Abbrechen** (X), um die Änderung zu verwerfen. Es kann jeweils nur ein Feld gleichzeitig bearbeitet werden — das Öffnen eines zweiten Felds speichert automatisch den ausstehenden Wert des ersten Felds (oder lässt das erste Feld geöffnet mit einer Fehlermeldung, falls der Wert ungültig ist). Nur Abbrechen verwirft eine Änderung.
 
 Jedes Feld hat eine Schaltfläche **Info** (ⓘ). Tippe darauf, um zu sehen, wo du diesen Wert in der EMA-App findest. Die Info-Schaltfläche wird ausgeblendet, wenn sich ein Feld im Bearbeitungsmodus befindet.
 

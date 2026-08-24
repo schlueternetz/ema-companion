@@ -54,7 +54,6 @@ class WidgetChartRendererTest {
             WidgetChartRenderer.renderHistoryChart(
                 context = context,
                 daysInWindow = days,
-                capacity = -1f,
                 widthPx = 300,
                 heightPx = 150,
             )

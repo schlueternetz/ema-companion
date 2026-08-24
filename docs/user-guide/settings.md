@@ -8,7 +8,7 @@ The Settings screen is scrollable and organised into sections.
 
 These fields connect EMA Companion to your APsystems account and solar array. All five credential fields are required — any field that has not yet been filled in shows **Required** as a hint.
 
-All fields use an inline edit pattern: tap the **Edit** (pencil) icon next to a field, enter a value, then tap **Save** (check) or press Enter. Tap **Cancel** to discard. Only one field can be in edit mode at a time — opening a second field automatically closes the first.
+All fields use an inline edit pattern: tap the **Edit** (pencil) icon next to a field, enter a value, then tap **Save** (check) or press Enter. Tap **Cancel** (X) to discard your change. Only one field can be in edit mode at a time — opening a second field automatically saves the first field's pending value (or, if it's invalid, leaves the first field open showing its error). Cancel is the only way to discard an edit.
 
 Each field has an **Info** (ⓘ) button. Tap it to see where to find that value in the EMA app. The info button is hidden while a field is in edit mode.
 

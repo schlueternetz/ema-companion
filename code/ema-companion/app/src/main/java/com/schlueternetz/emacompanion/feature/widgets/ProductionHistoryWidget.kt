@@ -98,7 +98,6 @@ class ProductionHistoryWidget : GlanceAppWidget() {
                             WidgetChartRenderer.renderHistoryChart(
                                 context = context,
                                 daysInWindow = daysInWindow,
-                                capacity = settings.getSystemCapacity(),
                                 widthPx = widthPx,
                                 heightPx = heightPx,
                             )
