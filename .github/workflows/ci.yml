@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch: {}
 
 # A newer push to the same ref supersedes an in-progress run — don't burn
