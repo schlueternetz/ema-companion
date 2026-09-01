@@ -131,7 +131,9 @@ class HomeHistorySectionTest {
         days["$thisMonth-02"] = 5.0
         days["$thisMonth-03"] = 6.0
         // 1 day last month within 30 days: 3 kWh
-        val recentLastMonth = today.minusDays(20)
+        // Fixed to the 28th of last month (not today.minusDays(20)) so this always lands in
+        // the previous calendar month regardless of what day of the current month "today" is.
+        val recentLastMonth = thisMonth.minusMonths(1).atDay(28)
         days[recentLastMonth.toString()] = 3.0
 
         HomeFragment.dailySourceOverride =
