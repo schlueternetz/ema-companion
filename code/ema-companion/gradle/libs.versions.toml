@@ -24,7 +24,7 @@ greenmail = "1.6.15"
 mpandroidchart = "v3.1.0"
 swiperefreshlayout = "1.1.0"
 glance = "1.1.1"
-kotlinComposePlugin = "2.2.10"
+kotlinComposePlugin = "2.4.21"
 composeMaterial3 = "1.4.0"
 
 [libraries]
