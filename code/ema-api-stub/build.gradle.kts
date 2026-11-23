@@ -11,7 +11,7 @@ plugins {
 group = "com.schlueternetz.emaapistub"
 version = "1.0"
 
-val ktorVersion = "3.6.0"
+val ktorVersion = "3.6.1"
 
 dependencies {
     // `api` (not `implementation`): the Companion app's embedded-stub tests consume
